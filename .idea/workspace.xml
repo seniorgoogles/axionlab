@@ -4,28 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="abfc8f8c-a4b9-45cc-b20d-74f69ea3d489" name="Changes" comment="* YAML config">
-      <change afterPath="$PROJECT_DIR$/.idea/SynapseLab.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/core/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/core/inject/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/core/inject/enum.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/utils/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/utils/dataset_builder.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/utils/datasets/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/utils/datasets/imagenet.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/utils/model_builder.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/utils/models/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/utils/models/resnet.py" afterDir="false" />
+    <list default="true" id="abfc8f8c-a4b9-45cc-b20d-74f69ea3d489" name="Changes" comment="* YAML config works&#10;* ResNet18 works now&#10;* ImageNet is implemented&#10;- Clean up is necessary">
+      <change afterPath="$PROJECT_DIR$/quant_config.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/config.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/models/resnet.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/models/resnet.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -205,12 +189,26 @@
       <workItem from="1707599171847" duration="3571000" />
       <workItem from="1708020274116" duration="2926000" />
       <workItem from="1708035171291" duration="30663000" />
-      <workItem from="1708543255711" duration="49756000" />
+      <workItem from="1708543255711" duration="50026000" />
+      <workItem from="1708846903539" duration="9703000" />
     </task>
+    <task id="LOCAL-00001" summary="* YAML config works&#10;* ResNet18 works now&#10;* ImageNet is implemented&#10;- Clean up is necessary">
+      <option name="closed" value="true" />
+      <created>1708816735604</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1708816735604</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="* YAML config works&#10;* ResNet18 works now&#10;* ImageNet is implemented&#10;- Clean up is necessary" />
+    <option name="LAST_COMMIT_MESSAGE" value="* YAML config works&#10;* ResNet18 works now&#10;* ImageNet is implemented&#10;- Clean up is necessary" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -222,8 +220,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/utils/models/resnet.py</url>
-          <line>51</line>
+          <line>97</line>
           <option name="timeStamp" value="54" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main.py</url>
+          <line>32</line>
+          <option name="timeStamp" value="56" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -236,7 +239,7 @@
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/SynapseLab$main.coverage" NAME="main Coverage Results" MODIFIED="1708816460911" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/SynapseLab$main.coverage" NAME="main Coverage Results" MODIFIED="1708866548911" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/SynapseLab$trace_example.coverage" NAME="trace_example Coverage Results" MODIFIED="1708021827757" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
     <SUITE FILE_PATH="coverage/SynapseLab$reconfigurable_layer.coverage" NAME="reconfigurable_layer Coverage Results" MODIFIED="1708604183476" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
     <SUITE FILE_PATH="coverage/SynapseLab$parse_yaml.coverage" NAME="parse_yaml Coverage Results" MODIFIED="1708684698545" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />

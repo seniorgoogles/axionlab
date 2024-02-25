@@ -5,7 +5,24 @@ import torchvision.models as models
 
 def map_config_as_attr(config, module, obj, attr_name):
 
-    if issubclass(module, nn.Conv2d):
+    if issubclass(module, qnn.QuantConv2d):
+        in_channels = config[0]
+        out_channels = config[1]
+        kernel_size = (config[2], config[2])
+        stride = (config[3],config[3])
+        padding = (config[4],config[4])
+        bias = config[5]
+        dilation = config[6]
+
+        # If has quant config
+        if len(config) > 7:
+            quant_config = config[7]
+            setattr(obj, attr_name, module(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size,
+                                       stride=stride,padding=padding, bias=bias, dilation=dilation, weight_bit_width=quant_config["weight_bit_width"]))
+
+        setattr(obj, attr_name, module(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size,
+                                       stride=stride,padding=padding, bias=bias, dilation=dilation))
+    elif issubclass(module, nn.Conv2d):
         in_channels = config[0]
         out_channels = config[1]
         kernel_size = (config[2], config[2])
@@ -15,6 +32,7 @@ def map_config_as_attr(config, module, obj, attr_name):
         dilation = config[6]
         setattr(obj, attr_name, module(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size,
                                        stride=stride,padding=padding, bias=bias, dilation=dilation))
+
     elif issubclass(module, nn.BatchNorm2d):
         num_features = config[0]
         eps = float(config[1])
@@ -23,12 +41,34 @@ def map_config_as_attr(config, module, obj, attr_name):
         track_running_stats = config[4]
         setattr(obj, attr_name, module(num_features=num_features, eps=eps, momentum=momentum, affine=affine,
                                        track_running_stats=track_running_stats))
+    elif issubclass(module, qnn.QuantReLU):
+        config = config[0]
+        return_quant_tensor = config['return_quant_tensor']
+        setattr(obj, attr_name, module(return_quant_tensor=return_quant_tensor))
     else:
         setattr(obj, attr_name, module(*config))
 
 def map_config_to_module(config, module):
+    if issubclass(module, qnn.QuantConv2d):
+        in_channels = config[0]
+        out_channels = config[1]
+        kernel_size = (config[2], config[2])
+        stride = (config[3], config[3])
+        padding = (config[4], config[4])
+        bias = config[5]
+        dilation = config[6]
 
-    if issubclass(module, nn.Conv2d):
+        # If has quant config
+        if len(config) > 7:
+            quant_config = config[7]
+            return module(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size,
+                                           stride=stride, padding=padding, bias=bias, dilation=dilation,
+                                           weight_bit_width=quant_config["weight_bit_width"])
+
+        return module(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size,
+                                       stride=stride, padding=padding, bias=bias, dilation=dilation)
+
+    elif issubclass(module, nn.Conv2d):
         in_channels = config[0]
         out_channels = config[1]
         kernel_size = (config[2], config[2])
@@ -48,6 +88,12 @@ def map_config_to_module(config, module):
         track_running_stats = config[4]
         return module(num_features=num_features, eps=eps, momentum=momentum, affine=affine,
                       track_running_stats=track_running_stats)
+    elif issubclass(module, qnn.QuantReLU):
+        config = config[0]
+        return_quant_tensor = config['return_quant_tensor']
+        act_bit_width = config['act_bit_width']
+
+        return module(return_quant_tensor=return_quant_tensor, act_bit_width=act_bit_width)
     else:
         return module(*config)
 
@@ -106,7 +152,7 @@ class ResNet(nn.Sequential):
 
         if preload_weights:
             resnet18 = models.resnet18(pretrained=True)
-            self.load_state_dict(resnet18.state_dict())
+            self.load_state_dict(resnet18.state_dict(), strict=False)
     def build(self, config):
         for layer_config in config:
             if isinstance(layer_config, list):

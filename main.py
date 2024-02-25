@@ -5,9 +5,69 @@ import torch
 import torchvision.models as models
 import onnx
 import time
+from tqdm import tqdm
 
+def validate_model(model, val_loader, criterion):
+    model.eval()  # Set the model to evaluation mode
+    val_loss = 0.0
+    correct = 0
+    total = 0
 
-def validate(model1, model2, val_loader, criterion):
+    device = torch.device("cpu")
+
+    # Check that MPS is available
+    if not torch.backends.mps.is_available():
+        if not torch.backends.mps.is_built():
+            print("MPS not available because the current PyTorch install was not "
+                  "built with MPS enabled.")
+        else:
+            print("MPS not available because the current MacOS version is not 12.3+ "
+                  "and/or you do not have an MPS-enabled device on this machine.")
+
+    else:
+        device = torch.device("mps")
+
+    num_batches = len(val_loader)
+    index = 1
+
+    start_time = time.time()  # Record the start time
+    with torch.no_grad():  # Disable gradient calculation during validation
+        with tqdm(total=num_batches, desc="Progress", unit="iteration") as pbar:
+            for inputs, targets in val_loader:
+                inputs = inputs.to(device)
+                targets = targets.to(device)
+
+                model = model.to(device)
+                # Forward pass
+
+                outputs = model(inputs)
+                loss = criterion(outputs, targets)
+
+                val_loss += loss.item() * inputs.size(0)
+
+                _, predicted = torch.max(outputs, 1)
+                total += targets.size(0)
+                correct += (predicted == targets).sum().item()
+
+                accuracy = (100.0 * correct / total)
+                val_loss = (val_loss / total)
+
+                pbar.update(1)
+                # Optionally, update the progress bar description with additional values
+                pbar.set_description(
+                    "Progress: {:d}/{:d}, accuracy: {:.4f}%, validation loss: {:.4f}".format(index, num_batches, accuracy, val_loss))
+
+                index += 1
+            avg_val_loss = val_loss / total
+            accuracy = 100.0 * correct / total
+
+            print(f'Validation Loss: {avg_val_loss:.4f} {accuracy:.4f}')
+            end_time = time.time()  # Record the end time
+            elapsed_time = end_time - start_time  # Calculate the elapsed time
+
+            print(f'Validation Time: {elapsed_time:.2f} seconds')
+
+def compare_models(model1, model2, val_loader, criterion):
     model1.eval()  # Set the model to evaluation mode
     model2.eval()
     val_loss1 = 0.0
@@ -79,6 +139,7 @@ def validate(model1, model2, val_loader, criterion):
     #return avg_val_loss, accuracy
 
 # Function to check if two models have the same weights
+'''
 def compare_models(model1, model2):
     index = 0
     for param1, param2 in zip(model1.parameters(), model2.parameters()):
@@ -105,13 +166,13 @@ def are_models_identical(model1, model2):
     return True
 
 
-
+'''
 
 if __name__ == "__main__":
     modelbuilder = ModelBuilder()
-    model = modelbuilder.build(ModelTypes.RESNET, "config.yaml", preload_weights=True)
+    model = modelbuilder.build(ModelTypes.RESNET, "quant_config.yaml", preload_weights=True)
     resnet18 = models.resnet18(pretrained=True)
-    dataset = DatasetBuilder.build(DatasetTypes.IMAGENET, "config.yaml")
+    dataset = DatasetBuilder.build(DatasetTypes.IMAGENET, "quant_config.yaml")
 
     '''
     # Check if the models have the same weights
@@ -164,4 +225,7 @@ if __name__ == "__main__":
 
     #model.load_state_dict(resnet18.state_dict())
     '''
-    validate(model, resnet18, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
+    #compare_models(model, resnet18, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
+    validate_model(model, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
+
+    from brevitas.nn import QuantIdentity, QuantReLU

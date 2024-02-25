@@ -15,70 +15,70 @@ nc: 1000 # number of classes
 
 backbone:
   # [from, repeats, module, args]
-  - [-1, 1, Conv2d, "conv1", [3, 64, 7, 2, 3, False, 1]]
+  - [-1, 1, QuantConv2d, "conv1", [3, 64, 7, 2, 3, False,1,{'weight_bit_width':8}]]
   - [-1, 1, BatchNorm2d, "bn1", [64, 1e-05,0.1, True, True]]
-  - [-1, 1, ReLU, "relu", [True]]
+  - [-1, 1, ReLU, "relu", [True] ]
   - [-1, 1, MaxPool2d, "maxpool", [3, 2, 1, 1, False]]
   - layer1:
       - BasicBlock:
-        - [-1, 1, Conv2d, "conv1", [64, 64, 3, 1, 1, False, 1]]
+        - [-1, 1, QuantConv2d, "conv1", [64, 64, 3, 1, 1, False,1,{'weight_bit_width':8}]]
         - [-1, 1, BatchNorm2d, "bn1", [64, 1e-05,0.1, True, True]]
         - [-1, 1, ReLU, "relu", [True]]
-        - [-1, 1, Conv2d, "conv2", [64, 64, 3, 1, 1, False, 1]]
+        - [-1, 1, QuantConv2d, "conv2", [64, 64, 3, 1, 1, False,1,{'weight_bit_width':8}]]
         - [-1, 1, BatchNorm2d, "bn2", [64, 1e-05,0.1, True, True]]
       - BasicBlock:
-        - [-1, 1, Conv2d, "conv1", [64, 64, 3, 1, 1, False, 1]]
+        - [-1, 1, QuantConv2d, "conv1", [64, 64, 3, 1, 1, False,1,{'weight_bit_width':8}]]
         - [-1, 1, BatchNorm2d, "bn1", [64, 1e-05,0.1, True, True]]
         - [-1, 1, ReLU, "relu", [True]]
-        - [-1, 1, Conv2d, "conv2", [64, 64, 3, 1, 1, False, 1]]
+        - [-1, 1, QuantConv2d, "conv2", [64, 64, 3, 1, 1, False,1,{'weight_bit_width':8}]]
         - [-1, 1, BatchNorm2d, "bn2", [64, 1e-05,0.1, True, True]]
   - layer2:
       - BasicBlock:
-        - [-1, 1, Conv2d, "conv1", [64, 128, 3, 2, 1, False, 1]]
+        - [-1, 1, QuantConv2d, "conv1", [64, 128, 3, 2, 1, False,1,{'weight_bit_width':8}]]
         - [-1, 1, BatchNorm2d, "bn1", [128, 1e-05,0.1, True, True]]
         - [-1, 1, ReLU, "relu", [True]]
-        - [-1, 1, Conv2d, "conv2", [128, 128, 3, 1, 1, False, 1]]
+        - [-1, 1, QuantConv2d, "conv2", [128, 128, 3, 1, 1, False,1,{'weight_bit_width':8}]]
         - [-1, 1, BatchNorm2d, "bn2", [128, 1e-05,0.1, True, True]]
         - downsample:
-          - [-1, 1, Conv2d, "0", [64, 128, 1, 2, 0, False, 1]]
+          - [-1, 1, QuantConv2d, "0", [64, 128, 1, 2, 0, False,1,{'weight_bit_width':8}]]
           - [-1, 1, BatchNorm2d, "1", [128, 1e-05,0.1, True, True]]
       - BasicBlock:
-          - [-1, 1, Conv2d, "conv1", [128, 128, 3, 1, 1, False, 1]]
+          - [-1, 1, QuantConv2d, "conv1", [128, 128, 3, 1, 1, False,1,{'weight_bit_width':8}]]
           - [-1, 1, BatchNorm2d, "bn1", [128, 1e-05,0.1, True, True]]
           - [-1, 1, ReLU, "relu", [True]]
-          - [-1, 1, Conv2d, "conv2", [128, 128, 3, 1, 1, False, 1]]
+          - [-1, 1, QuantConv2d, "conv2", [128, 128, 3, 1, 1, False,1,{'weight_bit_width':8}]]
           - [-1, 1, BatchNorm2d, "bn2", [128, 1e-05,0.1, True, True]]
   - layer3:
       - BasicBlock:
-        - [-1, 1, Conv2d, "conv1", [128, 256, 3, 2, 1, False, 1]]
+        - [-1, 1, QuantConv2d, "conv1", [128, 256, 3, 2, 1, False,1,{'weight_bit_width':8}]]
         - [-1, 1, BatchNorm2d, "bn1", [256, 1e-05,0.1, True, True]]
         - [-1, 1, ReLU, "relu", [True]]
-        - [-1, 1, Conv2d, "conv2", [256, 256, 3, 1, 1, False, 1]]
+        - [-1, 1, QuantConv2d, "conv2", [256, 256, 3, 1, 1, False,1,{'weight_bit_width':8}]]
         - [-1, 1, BatchNorm2d, "bn2", [256, 1e-05,0.1, True, True]]
         - downsample:
-            - [-1, 1, Conv2d, "0", [128, 256, 1, 2, 0, False, 1]]
+            - [-1, 1, QuantConv2d, "0", [128, 256, 1, 2, 0, False,1,{'weight_bit_width':8}]]
             - [-1, 1, BatchNorm2d, "1", [256, 1e-05,0.1, True, True]]
       - BasicBlock:
-          - [-1, 1, Conv2d, "conv1", [256, 256, 3, 1, 1, False, 1]]
+          - [-1, 1, QuantConv2d, "conv1", [256, 256, 3, 1, 1, False,1,{'weight_bit_width':8}]]
           - [-1, 1, BatchNorm2d, "bn1", [256, 1e-05,0.1, True, True]]
           - [-1, 1, ReLU, "relu", [True]]
-          - [-1, 1, Conv2d, "conv2", [256, 256, 3, 1, 1, False, 1]]
+          - [-1, 1, QuantConv2d, "conv2", [256, 256, 3, 1, 1, False,1,{'weight_bit_width':8}]]
           - [-1, 1, BatchNorm2d, "bn2", [256, 1e-05,0.1, True, True]]
   - layer4:
       - BasicBlock:
-        - [-1, 1, Conv2d, "conv1", [256, 512, 3, 2, 1, False, 1]]
+        - [-1, 1, QuantConv2d, "conv1", [256, 512, 3, 2, 1, False,1,{'weight_bit_width':8}]]
         - [-1, 1, BatchNorm2d, "bn1", [512, 1e-05,0.1, True, True]]
         - [-1, 1, ReLU, "relu", [True]]
-        - [-1, 1, Conv2d, "conv2", [512, 512, 3, 1, 1, False, 1]]
+        - [-1, 1, QuantConv2d, "conv2", [512, 512, 3, 1, 1, False,1,{'weight_bit_width':8}]]
         - [-1, 1, BatchNorm2d, "bn2", [512, 1e-05,0.1, True, True]]
         - downsample:
-            - [-1, 1, Conv2d, "0", [256, 512, 1, 2, 0, False, 1]]
+            - [-1, 1, QuantConv2d, "0", [256, 512, 1, 2, 0, False,1,{'weight_bit_width':8}]]
             - [-1, 1, BatchNorm2d, "1", [512, 1e-05,0.1, True, True]]
       - BasicBlock:
-          - [-1, 1, Conv2d, "conv1", [512, 512, 3, 1, 1, False, 1]]
+          - [-1, 1, QuantConv2d, "conv1", [512, 512, 3, 1, 1, False,1,{'weight_bit_width':8}]]
           - [-1, 1, BatchNorm2d, "bn1", [512, 1e-05,0.1, True, True]]
           - [-1, 1, ReLU, "relu", [True]]
-          - [-1, 1, Conv2d, "conv2", [512, 512, 3, 1, 1, False, 1]]
+          - [-1, 1, QuantConv2d, "conv2", [512, 512, 3, 1, 1, False,1,{'weight_bit_width':8}]]
           - [-1, 1, BatchNorm2d, "bn2", [512, 1e-05,0.1, True, True]]
   - [-1, 1, AdaptiveAvgPool2d, "avgpool", [1]]
   - [-1, 1, Linear, "fc", [512, 1000]]
