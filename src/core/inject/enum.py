@@ -3,6 +3,7 @@ from enum import auto
 
 class ModelTypes:
     """Enum for model types."""
+    LENET = auto()
     VGG = auto()
     RESNET = auto()
 

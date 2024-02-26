@@ -1,9 +1,8 @@
-from src.utils.model_builder import ModelBuilder
-from src.utils.dataset_builder import DatasetBuilder
+from src.models.model_builder import ModelBuilder
+from src.datasets.dataset_builder import DatasetBuilder
 from src.core.inject.enum import ModelTypes, DatasetTypes
 import torch
 import torchvision.models as models
-import onnx
 import time
 from tqdm import tqdm
 
@@ -170,10 +169,15 @@ def are_models_identical(model1, model2):
 
 if __name__ == "__main__":
     modelbuilder = ModelBuilder()
-    model = modelbuilder.build(ModelTypes.RESNET, "quant_config.yaml", preload_weights=True)
-    resnet18 = models.resnet18(pretrained=True)
-    dataset = DatasetBuilder.build(DatasetTypes.IMAGENET, "quant_config.yaml")
+    #model = modelbuilder.build(ModelTypes.RESNET, "quant_config.yaml", preload_weights=True)
+    #resnet18 = models.resnet18(pretrained=True)
+    #dataset = DatasetBuilder.build(DatasetTypes.IMAGENET, "quant_config.yaml")
 
+    model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/config.yaml", preload_weights=True)
+    print(model)
+
+    inp = torch.rand(1, 1, 32, 32)
+    model(inp)
     '''
     # Check if the models have the same weights
     if compare_models(model, resnet18):
@@ -226,6 +230,5 @@ if __name__ == "__main__":
     #model.load_state_dict(resnet18.state_dict())
     '''
     #compare_models(model, resnet18, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
-    validate_model(model, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
+    #validate_model(model, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
 
-    from brevitas.nn import QuantIdentity, QuantReLU

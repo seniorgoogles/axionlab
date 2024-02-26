@@ -1,14 +1,7 @@
 from src.core.inject.enum import DatasetTypes
-from src.utils.datasets.imagenet import ImageNet
-
+from src.datasets.imagenet import ImageNet
+from src.utils.mapper import Mapper
 import yaml
-
-def has_key(yaml, key):
-    try:
-        return True if key in yaml else False
-    except yaml.YAMLError as exc:
-        print(exc)
-        return False
 
 class DatasetBuilder:
     @staticmethod
@@ -27,7 +20,7 @@ class DatasetBuilder:
             train_path = config["train_path"]
             test_path = config["test_path"]
 
-            if has_key(config, "val_path") is True:
+            if Mapper.has_key(config, "val_path") is True:
                 val_path = config["val_path"]
 
             batch_size = config["batch_size"]
