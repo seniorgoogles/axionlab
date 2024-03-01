@@ -2,13 +2,12 @@ import torchvision.datasets as datasets
 import torchvision.transforms as T
 from torch.utils.data import DataLoader, distributed
 
-class ImageNet(object):
+class Mnist(object):
 
     def __init__(self, train_path, test_path, batch_size, distributed_training, num_workers):
         self.batch_size_train = batch_size[0]
         self.batch_size_test = batch_size[1]
-        self.train_path = train_path
-        self.test_path = test_path
+
         self.distributed_training = distributed_training
         self.num_workers = num_workers
 
@@ -23,13 +22,12 @@ class ImageNet(object):
 
     def __do_preprocessing__(self):
 
-        # === data transformation === #
-        normalize = T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        train_T = T.Compose([T.RandomResizedCrop(224), T.RandomHorizontalFlip(), T.ToTensor(), normalize, ])
-        test_T = T.Compose([T.Resize(256), T.CenterCrop(224), T.ToTensor(), normalize, ])
-
-        train_dataset = datasets.ImageFolder(root=self.train_path,transform=train_T)
-        test_dataset = datasets.ImageFolder(root=self.test_path,transform=test_T)
+        transform = T.Compose([
+            T.ToTensor(),
+            T.Normalize((0.1307,), (0.3081,))
+        ])
+        train_dataset = datasets.MNIST('../tmp/dataset/mnist', train=True, download=True,transform=transform)
+        test_dataset = datasets.MNIST('../tmp/dataset/mnist', train=False,transform=transform)
 
         return train_dataset, test_dataset
 

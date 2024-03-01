@@ -23,7 +23,7 @@ backbone:
   - [-1, 1, BatchNorm2d, "bn2", {'num_features':16, 'eps':0.00001, 'momentum':0.1, 'affine':True, 'track_running_stats':True}]
   - [-1, 1, ReLU, "relu2", {'inplace':True}]
   - [-1, 1, MaxPool2d, "pool2", {'kernel_size':2, 'stride':2, 'padding':0, 'dilation':1, 'ceil_mode':False}]
-  - [-1, 1, Linear, "fc1", {'in_features':400, 'out_features':120, 'bias':False}]
+  - [-1, 1, Linear, "fc1", {'in_features':256, 'out_features':120, 'bias':False}]
   - [-1, 1, ReLU, "relu3", {'inplace':True}]
   - [-1, 1, Linear, "fc2", {'in_features':120, 'out_features':84, 'bias':False}]
   - [-1, 1, ReLU, "relu4", {'inplace':True}]

@@ -1,6 +1,9 @@
 from src.models.model_builder import ModelBuilder
 from src.datasets.dataset_builder import DatasetBuilder
 from src.core.inject.enum import ModelTypes, DatasetTypes
+from src.engine.validator import Validator
+from src.engine.trainer import Trainer
+
 import torch
 import torchvision.models as models
 import time
@@ -171,13 +174,17 @@ if __name__ == "__main__":
     modelbuilder = ModelBuilder()
     #model = modelbuilder.build(ModelTypes.RESNET, "quant_config.yaml", preload_weights=True)
     #resnet18 = models.resnet18(pretrained=True)
-    #dataset = DatasetBuilder.build(DatasetTypes.IMAGENET, "quant_config.yaml")
+    dataset = DatasetBuilder.build(DatasetTypes.MNIST, "configs/lenet5/config.yaml")
 
     model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/config.yaml", preload_weights=True)
-    print(model)
+    #validator = Validator()
 
-    inp = torch.rand(1, 1, 32, 32)
-    model(inp)
+    #validator.validate(model, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
+
+    trainer = Trainer()
+    trainer.train(model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(model.parameters(), lr=0.001))
+
+    #validate_model(model, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
     '''
     # Check if the models have the same weights
     if compare_models(model, resnet18):
