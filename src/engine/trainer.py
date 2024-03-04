@@ -10,6 +10,17 @@ class Trainer(object):
         self.criterion = None
 
     def train(self, model, config, dataset, criterion, optimizer, update_step_count=200):
+        """
+        Basic training function
+
+        :param model:
+        :param config:
+        :param dataset:
+        :param criterion:
+        :param optimizer:
+        :param update_step_count:
+        :return:
+        """
         self.lr = 0.01
         self.epochs = 10
         self.optimizer = optimizer
@@ -65,12 +76,44 @@ class Trainer(object):
             self.__eval__(model, test_loader, criterion, device, None, None)
             model.train()
 
+    def train_by_strategy(self, model, config, dataset, criterion, optimizer, strategy):
+        """
+        Train the model by using the strateg, e.g. conquer and divide, by params, etc.
+        :param model:
+        :param config:
+        :param dataset:
+        :param criterion:
+        :param optimizer:
+        :param strategy:
+        :return:
+        """
+        pass
 
 
     def train_teacher_student(self, teacher, student, config, dataset_loader, criterion, optimizer):
+        """
+        Training model by using teacher-student learning strategy
+        :param teacher:
+        :param student:
+        :param config:
+        :param dataset_loader:
+        :param criterion:
+        :param optimizer:
+        :return:
+        """
         pass
 
     def __eval__(self, model, test_loader, criterion, device, epoch, epochs):
+        """
+        Evaluate the model
+        :param model:
+        :param test_loader:
+        :param criterion:
+        :param device:
+        :param epoch:
+        :param epochs:
+        :return:
+        """
         val_loss = 0
         correct = 0
         total = 0

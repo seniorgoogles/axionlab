@@ -4,21 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="abfc8f8c-a4b9-45cc-b20d-74f69ea3d489" name="Changes" comment="* Refactoring&#10;- Moving some files around&#10;* LeNet5 was implemented">
-      <change afterPath="$PROJECT_DIR$/src/datasets/mnist.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/engine/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/engine/trainer.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/engine/tuner.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/engine/validator.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/utils/device_selector.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/utils/timer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/SynapseLab.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/SynapseLab.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="abfc8f8c-a4b9-45cc-b20d-74f69ea3d489" name="Changes" comment="* Training and Validation is implemented&#10;- Basic features. &#10;* Upcoming next:&#10;- ResNet18 and ResNet50 support with kwargs">
+      <change afterPath="$PROJECT_DIR$/configs/vgg19/config.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/models/vgg.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/lenet5/config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/lenet5/config.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/datasets/dataset_builder.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/datasets/dataset_builder.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/datasets/imagenet.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/datasets/imagenet.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/engine/trainer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/engine/trainer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/models/lenet.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/lenet.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/models/model_builder.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/model_builder.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,33 +40,34 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python.kwargs_example.executor&quot;: &quot;Run&quot;,
-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
-    &quot;Python.parse_yaml.executor&quot;: &quot;Run&quot;,
-    &quot;Python.reconfigurable_layer.executor&quot;: &quot;Run&quot;,
-    &quot;Python.trace_example.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/mmecik/repositories/SynapseLab/configs&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.kwargs_example.executor": "Run",
+    "Python.main.executor": "Run",
+    "Python.parse_yaml.executor": "Run",
+    "Python.reconfigurable_layer.executor": "Run",
+    "Python.trace_example.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "develop",
+    "last_opened_file_path": "/Users/mmecik/repositories/SynapseLab/configs/vgg19",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "vue.rearranger.settings.migration": "true"
   },
-  &quot;keyToStringList&quot;: {
-    &quot;com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File&quot;: [
-      &quot;TEXT&quot;
+  "keyToStringList": {
+    "com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File": [
+      "TEXT"
     ]
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/configs/vgg19" />
       <recent name="$PROJECT_DIR$/configs" />
       <recent name="$PROJECT_DIR$" />
     </key>
@@ -243,7 +237,7 @@
       <workItem from="1708981893641" duration="660000" />
       <workItem from="1709129157698" duration="603000" />
       <workItem from="1709240507906" duration="5195000" />
-      <workItem from="1709282426867" duration="7671000" />
+      <workItem from="1709282426867" duration="14218000" />
     </task>
     <task id="LOCAL-00001" summary="* YAML config works&#10;* ResNet18 works now&#10;* ImageNet is implemented&#10;- Clean up is necessary">
       <option name="closed" value="true" />
@@ -269,7 +263,15 @@
       <option name="project" value="LOCAL" />
       <updated>1708981955681</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="* Training and Validation is implemented&#10;- Basic features. &#10;* Upcoming next:&#10;- ResNet18 and ResNet50 support with kwargs">
+      <option name="closed" value="true" />
+      <created>1709298403676</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1709298403676</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -290,7 +292,8 @@
     <MESSAGE value="* YAML config works&#10;* ResNet18 works now&#10;* ImageNet is implemented&#10;- Clean up is necessary" />
     <MESSAGE value="* Working on implementing all quant layers&#10;- QuantReLU is working now" />
     <MESSAGE value="* Refactoring&#10;- Moving some files around&#10;* LeNet5 was implemented" />
-    <option name="LAST_COMMIT_MESSAGE" value="* Refactoring&#10;- Moving some files around&#10;* LeNet5 was implemented" />
+    <MESSAGE value="* Training and Validation is implemented&#10;- Basic features. &#10;* Upcoming next:&#10;- ResNet18 and ResNet50 support with kwargs" />
+    <option name="LAST_COMMIT_MESSAGE" value="* Training and Validation is implemented&#10;- Basic features. &#10;* Upcoming next:&#10;- ResNet18 and ResNet50 support with kwargs" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -319,6 +322,10 @@
           <url>file://$PROJECT_DIR$/main.py</url>
           <option name="timeStamp" value="58" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/models/model_builder.py</url>
+          <option name="timeStamp" value="59" />
+        </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
@@ -331,7 +338,7 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/SynapseLab$kwargs_example.coverage" NAME="kwargs_example Coverage Results" MODIFIED="1708890774386" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
-    <SUITE FILE_PATH="coverage/SynapseLab$main.coverage" NAME="main Coverage Results" MODIFIED="1709298075107" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/SynapseLab$main.coverage" NAME="main Coverage Results" MODIFIED="1709420752455" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/SynapseLab$trace_example.coverage" NAME="trace_example Coverage Results" MODIFIED="1708021827757" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
     <SUITE FILE_PATH="coverage/SynapseLab$reconfigurable_layer.coverage" NAME="reconfigurable_layer Coverage Results" MODIFIED="1708604183476" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
     <SUITE FILE_PATH="coverage/SynapseLab$parse_yaml.coverage" NAME="parse_yaml Coverage Results" MODIFIED="1708684698545" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />

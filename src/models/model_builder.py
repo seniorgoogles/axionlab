@@ -1,6 +1,7 @@
 from src.core.inject.enum import ModelTypes
 from src.models.resnet import ResNet
 from src.models.lenet import LeNet5
+from src.models.vgg import Vgg
 
 import yaml
 
@@ -17,7 +18,7 @@ class ModelBuilder:
         if model == ModelTypes.LENET:
             return LeNet5(config, preload_weights)
         elif model == ModelTypes.VGG:
-            raise NotImplementedError
+            return Vgg(config, preload_weights)
         elif model == ModelTypes.RESNET:
             return ResNet(config, preload_weights)
         else:

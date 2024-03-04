@@ -11,8 +11,8 @@ class LeNet5(nn.Module):
         self.build(config)
 
     def build(self, config):
-        layer_blocks = config["backbone"]
-        for layer_config in layer_blocks:
+        backbone = config["backbone"]
+        for layer_config in backbone:
             module_class = layer_config[2]
             module = Mapper.get_module(module_class)
             name = layer_config[3]
