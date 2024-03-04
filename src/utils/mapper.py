@@ -17,6 +17,10 @@ class Mapper:
         except yaml.YAMLError as exc:
             print(exc)
             return False
+
+    @staticmethod
+    def map_module_as_attr(module, obj, module_name):
+        setattr(obj, module_name, module)
     @staticmethod
     def map_config_as_attr(config, module, obj, attr_name):
         #print(config)
