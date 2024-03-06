@@ -78,7 +78,7 @@ class Trainer(object):
 
     def train_by_strategy(self, model, config, dataset, criterion, optimizer, strategy):
         """
-        Train the model by using the strateg, e.g. conquer and divide, by params, etc.
+        Train the model by using the strategy, e.g. conquer and divide, by params, etc.
         :param model:
         :param config:
         :param dataset:

@@ -176,12 +176,12 @@ if __name__ == "__main__":
     #resnet18 = models.resnet18(pretrained=True)
 
     dataset = DatasetBuilder.build(DatasetTypes.MNIST, "configs/lenet5/config.yaml")
-    dataset = DatasetBuilder.build(DatasetTypes.IMAGENET, "configs/vgg19/config.yaml")
+    #dataset = DatasetBuilder.build(DatasetTypes.IMAGENET, "configs/vgg19/config.yaml")
 
     model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/config.yaml", preload_weights=True)
     validator = Validator()
 
-    #validator.validate(model, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
+    validator.validate(model, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
 
     #trainer = Trainer()
     #trainer.train(model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(model.parameters(), lr=0.001))
@@ -241,8 +241,8 @@ if __name__ == "__main__":
     #compare_models(model, resnet18, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
     #validate_model(model, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
 
-    vgg19 = models.vgg19(pretrained=True)
-    resnet18 = models.resnet18(pretrained=True)
+    #vgg19 = models.vgg19(pretrained=True)
+    #resnet18 = models.resnet18(pretrained=True)
 
-    model = modelbuilder.build(ModelTypes.VGG, "configs/vgg19/config.yaml", preload_weights=True)
+    #model = modelbuilder.build(ModelTypes.VGG, "configs/vgg19/config.yaml", preload_weights=True)
     #validator.validate(vgg19, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
