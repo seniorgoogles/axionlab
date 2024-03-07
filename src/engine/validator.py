@@ -5,11 +5,14 @@ from src.utils.timer import timer
 from tqdm import tqdm
 class Validator(object):
 
-    def __init__(self):
+    def __init__(self, device=None):
         self.lr = 0.001
         self.optimizer = None
 
-        self.device = DeviceSelector.get_device()
+        if device is None:
+            self.device = DeviceSelector.get_device()
+        else:
+            self.device = torch.device(device)
 
     @timer
     def validate(self, model, config, dataset_loader, criterion):

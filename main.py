@@ -174,13 +174,18 @@ if __name__ == "__main__":
     modelbuilder = ModelBuilder()
     #model = modelbuilder.build(ModelTypes.RESNET, "quant_config.yaml", preload_weights=True)
     #resnet18 = models.resnet18(pretrained=True)
+    #vgg19 = models.vgg19(pretrained=True)
+    #print(vgg19)
+    #dataset = DatasetBuilder.build(DatasetTypes.MNIST, "configs/lenet5/config.yaml")
+    dataset = DatasetBuilder.build(DatasetTypes.IMAGENET, "configs/vgg19/config.yaml")
 
-    dataset = DatasetBuilder.build(DatasetTypes.MNIST, "configs/lenet5/config.yaml")
-    #dataset = DatasetBuilder.build(DatasetTypes.IMAGENET, "configs/vgg19/config.yaml")
-
-    model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/config.yaml", preload_weights=True)
+    #model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/config.yaml", preload_weights=True)
+    #model = modelbuilder.build(ModelTypes.VGG, "configs/vgg19/config.yaml", preload_weights=False)
     validator = Validator()
 
+    #validator.validate(vgg19, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
+
+    model = modelbuilder.build(ModelTypes.VGG, "configs/vgg19/config.yaml", preload_weights=True)
     validator.validate(model, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
 
     #trainer = Trainer()

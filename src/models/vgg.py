@@ -11,39 +11,36 @@ class Vgg(nn.Module):
 
         print(self)
 
-        #if preload_weights:
-        #    vgg = models.vgg19(pretrained=True)
-        #    self.load_state_dict(vgg.state_dict(), strict=False)
+        if preload_weights:
+            vgg = models.vgg19(pretrained=True)
+            self.load_state_dict(vgg.state_dict(), strict=True)
 
     def build(self, config):
+
         for layer_config in config:
 
             if isinstance(layer_config, list):
                 module_class = layer_config[2]
-                name = layer_config[3]
+                module_name = layer_config[3]
                 config = layer_config[4]
-                print(config)
-                Mapper.map_config_as_attr(config, Mapper.get_module(module_class), self, name)
+                Mapper.map_config_as_attr(config, Mapper.get_module(module_class), self, module_name)
 
             elif isinstance(layer_config, dict):
-                name = list(layer_config.keys())[0]
-                module_config = layer_config[name]
+                module_name = list(layer_config.keys())[0]
+                module_config = layer_config[module_name]
                 module = nn.Sequential()
 
                 for layer in module_config:
                     module_class = layer[2]
                     name = layer[3]
-                    kwargs = layer[4]
+                    config = layer[4]
+                    module.add_module(name, Mapper.get_module(module_class)(**config))
 
-                    #print(module_class)
-                    #print(kwargs)
-                    module.add_module(name, Mapper.get_module(module_class)(**kwargs))
-
-                Mapper.map_module_as_attr(module, self, name)
+                Mapper.map_module_as_attr(module, self, module_name)
 
     def forward(self, x):
         x = self.features(x)
-        #x = self.av
+        x = self.avgpool(x)
         x = x.view(x.size(0), -1)
         x = self.classifier(x)
         return x

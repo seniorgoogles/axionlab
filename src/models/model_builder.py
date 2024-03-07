@@ -6,20 +6,23 @@ from src.models.vgg import Vgg
 import yaml
 
 class ModelBuilder:
+
     @staticmethod
-    def build(model, config_path, preload_weights=False):
-        config = None
+    def build(modeltype, config_path, preload_weights=False):
 
         # Load config file
         with open(config_path) as f:
             config = yaml.load(f, Loader=yaml.FullLoader)
 
         # Build model
-        if model == ModelTypes.LENET:
-            return LeNet5(config, preload_weights)
-        elif model == ModelTypes.VGG:
-            return Vgg(config, preload_weights)
-        elif model == ModelTypes.RESNET:
-            return ResNet(config, preload_weights)
+        if modeltype == ModelTypes.LENET:
+            model = LeNet5(config, preload_weights)
+            return model
+        elif modeltype == ModelTypes.VGG:
+            model = Vgg(config, preload_weights)
+            return model
+        elif modeltype == ModelTypes.RESNET:
+            model = ResNet(config, preload_weights)
+            return model
         else:
-            raise Exception(f"{model} not implemented.")
+            raise Exception(f"{modeltype} not implemented.")
