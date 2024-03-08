@@ -2,6 +2,8 @@ import torch.nn as nn
 import brevitas.nn as qnn
 import torchvision.models as models
 from src.utils.mapper import Mapper
+import torch.nn.init as init
+
 class Vgg(nn.Module):
     def __init__(self, config, preload_weights=False):
         super(Vgg, self).__init__()
@@ -9,11 +11,9 @@ class Vgg(nn.Module):
         backbone = config["backbone"]
         self.build(backbone)
 
-        print(self)
-
         if preload_weights:
             vgg = models.vgg19(pretrained=True)
-            self.load_state_dict(vgg.state_dict(), strict=True)
+            self.load_state_dict(vgg.state_dict(), strict=False)
 
     def build(self, config):
 

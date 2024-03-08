@@ -9,7 +9,7 @@ class Trainer(object):
         self.optimizer = None
         self.criterion = None
 
-    def train(self, model, config, dataset, criterion, optimizer, update_step_count=200):
+    def train(self, model, config, dataset, criterion, optimizer, lr, update_step_count=200):
         """
         Basic training function
 
@@ -21,7 +21,7 @@ class Trainer(object):
         :param update_step_count:
         :return:
         """
-        self.lr = 0.01
+        self.lr = lr
         self.epochs = 10
         self.optimizer = optimizer
         self.criterion = criterion
@@ -53,10 +53,10 @@ class Trainer(object):
                 inputs = inputs.to(device)
                 targets = targets.to(device)
 
-                optimizer.zero_grad()
                 outputs = model(inputs)
                 loss = criterion(outputs, targets)
 
+                optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
 
@@ -65,10 +65,10 @@ class Trainer(object):
                 total += targets.size(0)
                 correct += (predicted == targets).sum().item()
 
-                if index % update_step_count == 0:
+                if index % int(update_step_count/100) == 0:
                     print(f"[{Fore.BLUE}{epoch + 1}/{self.epochs}{Fore.RESET} (Train)]\t{Fore.GREEN}loss:{Fore.RESET} "
                           f"{val_loss / total:.2f} {Fore.GREEN}accuracy:{Fore.RESET} {100.0 * correct / total:.2f}")
-
+                elif index % update_step_count == 0:
                     self.__eval__(model, test_loader, criterion, device, epoch, self.epochs)
                 index += 1
 
