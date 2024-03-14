@@ -5,13 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="abfc8f8c-a4b9-45cc-b20d-74f69ea3d489" name="Changes" comment="- Checkpoint">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/resnet50/config.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/resnet50/quant_config.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/vgg19/config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/vgg19/config.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/resnet18/config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/resnet18/config.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/resnet18/quant_config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/resnet18/quant_config.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/engine/validator.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/engine/validator.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/model_builder.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/model_builder.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/quant_config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/quant_config.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/models/lenet.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/lenet.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/models/resnet.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/resnet.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/models/vgg.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/vgg.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/mapper.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/mapper.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -34,12 +38,12 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="UPDATE_TYPE" value="REBASE" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "seniorgoogles"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;seniorgoogles&quot;
   }
-}]]></component>
+}</component>
   <component name="GithubPullRequestsUISettings">
     <option name="selectedUrlAndAccountId">
       <UrlAndAccount>
@@ -69,8 +73,8 @@
     "Python.trace_example.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "feature/impl__vgg",
-    "last_opened_file_path": "/Users/mmecik/repositories/SynapseLab/configs/vgg19",
+    "git-widget-placeholder": "fix/resnet18",
+    "last_opened_file_path": "/Users/mmecik/repositories/SynapseLab/configs",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -87,8 +91,8 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/configs/vgg19" />
       <recent name="$PROJECT_DIR$/configs" />
+      <recent name="$PROJECT_DIR$/configs/vgg19" />
       <recent name="$PROJECT_DIR$" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
@@ -260,6 +264,7 @@
       <workItem from="1709282426867" duration="14774000" />
       <workItem from="1709637305771" duration="1486000" />
       <workItem from="1709726473310" duration="5905000" />
+      <workItem from="1710433270109" duration="5815000" />
     </task>
     <task id="LOCAL-00001" summary="* YAML config works&#10;* ResNet18 works now&#10;* ImageNet is implemented&#10;- Clean up is necessary">
       <option name="closed" value="true" />
@@ -344,11 +349,6 @@
           <option name="timeStamp" value="47" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/main.py</url>
-          <line>34</line>
-          <option name="timeStamp" value="56" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/models/lenet.py</url>
           <line>27</line>
           <option name="timeStamp" value="57" />
@@ -380,7 +380,7 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/SynapseLab$kwargs_example.coverage" NAME="kwargs_example Coverage Results" MODIFIED="1708890774386" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
-    <SUITE FILE_PATH="coverage/SynapseLab$main.coverage" NAME="main Coverage Results" MODIFIED="1709855050488" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/SynapseLab$main.coverage" NAME="main Coverage Results" MODIFIED="1710454127456" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/SynapseLab$trace_example.coverage" NAME="trace_example Coverage Results" MODIFIED="1708021827757" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
     <SUITE FILE_PATH="coverage/SynapseLab$reconfigurable_layer.coverage" NAME="reconfigurable_layer Coverage Results" MODIFIED="1708604183476" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
     <SUITE FILE_PATH="coverage/SynapseLab$parse_yaml.coverage" NAME="parse_yaml Coverage Results" MODIFIED="1708684698545" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
