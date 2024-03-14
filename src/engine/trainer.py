@@ -9,7 +9,7 @@ class Trainer(object):
         self.optimizer = None
         self.criterion = None
 
-    def train(self, model, config, dataset, criterion, optimizer, lr, update_step_count=200):
+    def train(self, model, config, dataset, criterion, optimizer, lr, epochs, update_step_count=200):
         """
         Basic training function
 
@@ -22,7 +22,7 @@ class Trainer(object):
         :return:
         """
         self.lr = lr
-        self.epochs = 10
+        self.epochs = epochs
         self.optimizer = optimizer
         self.criterion = criterion
 
@@ -48,8 +48,7 @@ class Trainer(object):
             correct = 0
             val_loss = 0
 
-            for inputs, targets, in train_loader:
-
+            for inputs, targets in train_loader:
                 inputs = inputs.to(device)
                 targets = targets.to(device)
 
@@ -73,8 +72,8 @@ class Trainer(object):
                 index += 1
 
             # Do validation
-            self.__eval__(model, test_loader, criterion, device, None, None)
-            model.train()
+        #self.__eval__(model, test_loader, criterion, device, None, None)
+        #model.train()
 
     def train_by_strategy(self, model, config, dataset, criterion, optimizer, strategy):
         """
@@ -89,8 +88,7 @@ class Trainer(object):
         """
         pass
 
-
-    def train_teacher_student(self, teacher, student, config, dataset_loader, criterion, optimizer):
+    def train_teacher_student(self, teacher, student, config, dataset_loader, criterion, optimizer, epochs):
         """
         Training model by using teacher-student learning strategy
         :param teacher:
@@ -101,7 +99,9 @@ class Trainer(object):
         :param optimizer:
         :return:
         """
-        pass
+        self.train(teacher, config, dataset_loader, criterion, optimizer, 0.001, epochs)
+
+        #TODO STUDENT
 
     def __eval__(self, model, test_loader, criterion, device, epoch, epochs):
         """
