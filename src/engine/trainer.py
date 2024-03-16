@@ -119,14 +119,12 @@ class Trainer(object):
         print("\> Training Student")
         print("------------------------------------")
         print(f"{Fore.RESET}")
-
-        ####TODO CLEAN UP AND MAKE GOOD XXX
         
         device = DeviceSelector.get_device()
         student.to(device)
 
-        teacher.eval()  # Teacher set to evaluation mode
-        student.train() # Student to train mode
+        teacher.eval()
+        student.train()
         index = 1
 
         train_loader = dataset_loader.get_train_loader()
@@ -142,24 +140,18 @@ class Trainer(object):
             for inputs, targets in train_loader:
                 inputs, targets = inputs.to(device), targets.to(device)
 
-                # Forward pass with teacher model - do not save gradients
                 with torch.no_grad():
                     teacher_logits = teacher(inputs)
 
-                # Forward pass student model
                 outputs = student(inputs)
 
-                #Soften student logits by applying softmax first and log() second
+                #Soften student logits
                 soft_targets = torch.nn.functional.softmax(teacher_logits / T, dim=-1)
                 soft_prob = torch.nn.functional.log_softmax(outputs / T, dim=-1)
 
-                # Calculate soft targets loss. Scaled by T**2 as suggested by the authors of the paper "Distilling the knowledge in a neural network"
                 soft_targets_loss = -torch.sum(soft_targets * soft_prob) / soft_prob.size()[0] * (T**2)
 
-                # Calculate true label loss
                 label_loss = criterion(outputs, targets)
-
-                # Weighted sum of two losses
                 loss = soft_target_loss_weight * soft_targets_loss + ce_loss_weight * label_loss
 
                 optimizer.zero_grad()
@@ -177,6 +169,9 @@ class Trainer(object):
                 elif index % update_step_count == 0:
                     self.__eval__(student, test_loader, criterion, device, epoch, self.epochs)
                 index += 1
+
+    def train_dcq(self, teacher, student, config, dataset_loader, criterion, optimizer, epochs):
+        pass
 
     def __eval__(self, model, test_loader, criterion, device, epoch, epochs):
         """
