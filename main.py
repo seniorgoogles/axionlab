@@ -34,10 +34,16 @@ if __name__ == "__main__":
     dataset = DatasetBuilder.build(DatasetTypes.FASHION_MNIST, "configs/lenet5/student_config.yaml")
     kd_model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/student_config.yaml", preload_weights=True)
 
+    ### CHILD QUANT ###
+    dataset = DatasetBuilder.build(DatasetTypes.FASHION_MNIST, "configs/lenet5/quant_student_config.yaml")
+    quant_model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/quant_student_config.yaml", preload_weights=True)
+    total_params_quant = sum(p.numel() for p in student_model.parameters())
+
     ### TRAIN ###
     trainer.train(parent_model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(parent_model.parameters(), lr), lr, epochs)
     trainer.train(student_model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(student_model.parameters(), lr), lr, epochs)
     trainer.train_teacher_student(parent_model, kd_model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(kd_model.parameters(), lr), epochs, T=2, teacherIsPreTrained=True)
+    trainer.train(quant_model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(quant_model.parameters(), lr), lr, epochs)
     
     #Tuner.tune(quant_model, torch.optim.SGD, torch.nn.CrossEntropyLoss(), dataset, 5, 10, 10)
     
@@ -50,6 +56,9 @@ if __name__ == "__main__":
 
     print(f"{Fore.GREEN} \n------------------------------------\nValidate Child WITH KD\n------------------------------------{Fore.RESET}")
     validator.validate(kd_model, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
+
+    print(f"{Fore.GREEN} \n------------------------------------\nValidate Child QUANT\n------------------------------------{Fore.RESET}")
+    validator.validate(quant_model, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
 
     print(f"{Fore.GREEN} \n------------------------------------\nTotal Parameters of Teacher {total_params_teacher}\n------------------------------------{Fore.RESET}")
     print(f"{Fore.GREEN} \n------------------------------------\nTotal Parameters of Student {total_params_student}\n------------------------------------{Fore.RESET}")
