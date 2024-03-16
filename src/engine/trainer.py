@@ -88,7 +88,7 @@ class Trainer(object):
         """
         pass
 
-    def train_teacher_student(self, teacher, student, config, dataset_loader, criterion, optimizer, epochs, T):
+    def train_teacher_student(self, teacher, student, config, dataset_loader, criterion, optimizer, epochs, T, teacherIsPreTrained=False):
         """
         Training model by using teacher-student learning strategy
         :param teacher:
@@ -99,12 +99,20 @@ class Trainer(object):
         :param optimizer:
         :return:
         """
-        print(f"{Fore.GREEN}")
-        print("------------------------------------")
-        print("\> Training Teacher")
-        print("------------------------------------")
-        print(f"{Fore.RESET}")
-        self.train(teacher, config, dataset_loader, criterion, optimizer, 0.001, epochs)
+
+        if(teacherIsPreTrained == False):
+            print(f"{Fore.GREEN}")
+            print("------------------------------------")
+            print("\> Training Teacher")
+            print("------------------------------------")
+            print(f"{Fore.RESET}")
+            self.train(teacher, config, dataset_loader, criterion, optimizer, 0.001, epochs)
+        else: 
+            print(f"{Fore.GREEN}")
+            print("------------------------------------")
+            print("\> Teacher Already Trained")
+            print("------------------------------------")
+            print(f"{Fore.RESET}")
 
         print(f"{Fore.GREEN}")
         print("------------------------------------")
