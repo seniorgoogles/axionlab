@@ -18,7 +18,7 @@ if __name__ == "__main__":
     dataset = DatasetBuilder.build(DatasetTypes.IMAGENET, "configs/resnet50/config.yaml")
     validator = Validator()
 
-    resnet50 = models.resnet50(pretrained=True)
+    #resnet50 = models.resnet50(pretrained=True)
     #print(resnet50)
 
     ##quant_model = modelbuilder.build(ModelTypes.VGG, "configs/vgg19/quant_config.yaml", preload_weights=True)
@@ -30,11 +30,11 @@ if __name__ == "__main__":
     #trainer = Trainer()
     #trainer.train(quant_model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.SGD(quant_model.parameters()), 0.001)
 
-    validator.validate(resnet50, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
-    validator.validate(model, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
+    #validator.validate(resnet50, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
+    #validator.validate(model, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
 
     model = ModelBuilder.build(ModelTypes.RESNET, "configs/resnet18/config.yaml", preload_weights=True)
     validator.validate(model, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
 
-    resnet18 = models.resnet18(pretrained=True)
-    validator.validate(resnet18, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
+    #resnet18 = models.resnet18(pretrained=True)
+    #validator.validate(resnet18, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())

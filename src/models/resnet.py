@@ -37,8 +37,8 @@ class BasicBlock(nn.Module):
 
         # If it is ResNet50
         if hasattr(self, "conv3"):
-            out = self.relu(self.bn1(self.conv1(x)))
-            out = self.relu(self.bn2(self.conv2(out)))
+            out = self.relu1(self.bn1(self.conv1(x)))
+            out = self.relu2(self.bn2(self.conv2(out)))
             out = self.bn3(self.conv3(out))
 
             if hasattr(self, "downsample"):
@@ -48,7 +48,7 @@ class BasicBlock(nn.Module):
             self.relu(out)
         # Else it is ResNet18
         else:
-            out = self.relu(self.bn1(self.conv1(x)))
+            out = self.relu1(self.bn1(self.conv1(x)))
             out = self.bn2(self.conv2(out))
 
             if hasattr(self, "downsample"):
