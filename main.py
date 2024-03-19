@@ -39,8 +39,8 @@ if __name__ == "__main__":
     quant_model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/quant_student_config.yaml", preload_weights=True)
 
     ### DCQ QUANT ###
-    dataset = DatasetBuilder.build(DatasetTypes.FASHION_MNIST, "configs/lenet5/student_config.yaml")
-    dcq_model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/student_config.yaml", preload_weights=True)
+    dataset = DatasetBuilder.build(DatasetTypes.FASHION_MNIST, "configs/lenet5/quant_student_config.yaml")
+    dcq_model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/quant_student_config.yaml", preload_weights=True)
 
     ### TRAIN ###
     # trainer.train(parent_model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(parent_model.parameters(), lr), lr, epochs)

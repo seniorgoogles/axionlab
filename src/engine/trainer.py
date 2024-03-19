@@ -170,7 +170,7 @@ class Trainer(object):
                     self.__eval__(student, test_loader, criterion, device, epoch, self.epochs)
                 index += 1
 
-    def train_dcq(self, teacher, student, config, dataset_loader, criterion, optimizer, epochs, teacherIsPreTrained=False):
+    def train_dcq(self, teacher, student, config, dataset_loader, criterion, optimizer, epochs, teacherIsPreTrained=False, update_step_count = 200):
 
         if(teacherIsPreTrained == False):
             print(f"{Fore.GREEN}")
@@ -186,16 +186,6 @@ class Trainer(object):
             print("------------------------------------")
             print(f"{Fore.RESET}")
 
-        # freeze_layer_index = 3
-
-        # for index, layer in enumerate(student.layer):
-        #     if index == freeze_layer_index:
-        #         continue
-        #     for param in layer.parameters():
-        #         param.requires_grad = False
-
-        # optimizer_frozen = torch.optim.Adam(filter(lambda p: not p.requires_grad, student.parameters()), lr=0.01)
-        # optimizer_trainable = torch.optim.Adam(filter(lambda p: p.requires_grad, student.parameters()), lr=0.001)
         self.lr = 0.001
         self.epochs = epochs
         self.optimizer = optimizer
@@ -208,61 +198,51 @@ class Trainer(object):
         train_loader = dataset_loader.get_train_loader()
         test_loader = dataset_loader.get_test_loader()
         index = 1
-        update_step_count = 200
 
         student.train()
 
-        #all_layers = list(student.children())
+        #Freeze Layers
         i = 0
         for layer in student.children():
             i += 1
             if(i > 2):
                 for param in layer.parameters():
                     param.requires_grad = False
-                # if isinstance(layer, torch.nn.Conv2d):
-                #     layer.requires_grad_(False)
-            # if isinstance(layer, torch.nn.Sequential):
-            #     for sub_layer in layer:
-            #         #print(sub_layer)
-            #         sub_layer.requires_grad = False
-            # else:
-            #     layer.requires_grad = False
-            #     #print(layer)
         
+        #Only opt unfrozen layers
+        ###TODO: somehow use optimizer from method call
         optimizer_trainable = torch.optim.Adam(filter(lambda p: p.requires_grad_, student.parameters()), self.lr)
         if not optimizer_trainable.param_groups:
             print("optimizer is empty")
             return
-        
         optimizer = optimizer_trainable
         
         for epoch in range(epochs):
 
-                total = 0
-                correct = 0
-                val_loss = 0
+            total = 0
+            correct = 0
+            val_loss = 0
 
-                for inputs, targets in train_loader:
-                    inputs = inputs.to(device)
-                    targets = targets.to(device)
-                    outputs = student(inputs)
-                    loss = criterion(outputs, targets)
-                
-                    optimizer.zero_grad()
-                    loss.backward()
-                    optimizer.step()
-                    
-                    val_loss += loss.item() * inputs.size(0)
-                    _, predicted = torch.max(outputs, 1)
-                    total += targets.size(0)
-                    correct += (predicted == targets).sum().item()
-
-                    if index % int(update_step_count/100) == 0:
-                        print(f"[{Fore.BLUE}{epoch + 1}/{self.epochs}{Fore.RESET} (Train)]\t{Fore.GREEN}loss:{Fore.RESET} "
-                            f"{val_loss / total:.2f} {Fore.GREEN}accuracy:{Fore.RESET} {100.0 * correct / total:.2f}")
-                    elif index % update_step_count == 0:
-                        self.__eval__(student, test_loader, criterion, device, epoch, self.epochs)
-                    index += 1
+            for inputs, targets in train_loader:
+                inputs = inputs.to(device)
+                targets = targets.to(device)
+                outputs = student(inputs)
+                loss = criterion(outputs, targets)
+             
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+                 
+                val_loss += loss.item() * inputs.size(0)
+                _, predicted = torch.max(outputs, 1)
+                total += targets.size(0)
+                correct += (predicted == targets).sum().item()
+                if index % int(update_step_count/100) == 0:
+                    print(f"[{Fore.BLUE}{epoch + 1}/{self.epochs}{Fore.RESET} (Train)]\t{Fore.GREEN}loss:{Fore.RESET} "
+                        f"{val_loss / total:.2f} {Fore.GREEN}accuracy:{Fore.RESET} {100.0 * correct / total:.2f}")
+                elif index % update_step_count == 0:
+                    self.__eval__(student, test_loader, criterion, device, epoch, self.epochs)
+                index += 1
 
     def __eval__(self, model, test_loader, criterion, device, epoch, epochs):
         """
