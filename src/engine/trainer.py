@@ -69,6 +69,10 @@ class Trainer(object):
                           f"{val_loss / total:.2f} {Fore.GREEN}accuracy:{Fore.RESET} {100.0 * correct / total:.2f}")
                 elif index % update_step_count == 0:
                     self.__eval__(model, test_loader, criterion, device, epoch, self.epochs)
+
+                
+                layer_list = list(model.children())
+                print(f"{type(layer_list[0]).__name__} {layer_list[0].quant_weight().bit_width}")
                 index += 1
 
             # Do validation
@@ -173,18 +177,10 @@ class Trainer(object):
     #### NOTE: Uses KD as training for student this method basically only freezes/unfreezed layers
     def train_dcq(self, teacher, student, config, dataset_loader, criterion, optimizer, epochs, sections, teacherIsPreTrained=False, update_step_count = 200):
 
-        self.lr = 0.001
-        self.epochs = epochs
-        self.optimizer = optimizer
-        self.criterion = criterion
-
         device = DeviceSelector.get_device()
 
         student.to(device)
 
-        train_loader = dataset_loader.get_train_loader()
-        test_loader = dataset_loader.get_test_loader()
-        index = 1
         layer_count = sum(1 for _ in student.children())
         T = 2
 
@@ -199,6 +195,9 @@ class Trainer(object):
         i = 0
         #Loop over sections
         for section in range(sections):
+
+            ####TODO HOW TO QUANT/NOT QUANT ?!?!
+
             for layer in student.children():
                 i += 1
                 #Freeze Layers
