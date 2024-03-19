@@ -170,21 +170,8 @@ class Trainer(object):
                     self.__eval__(student, test_loader, criterion, device, epoch, self.epochs)
                 index += 1
 
-    def train_dcq(self, teacher, student, config, dataset_loader, criterion, optimizer, epochs, teacherIsPreTrained=False, update_step_count = 200):
-
-        if(teacherIsPreTrained == False):
-            print(f"{Fore.GREEN}")
-            print("------------------------------------")
-            print("\> Training Teacher")
-            print("------------------------------------")
-            print(f"{Fore.RESET}")
-            self.train(teacher, config, dataset_loader, criterion, optimizer, 0.001, epochs)
-        else: 
-            print(f"{Fore.GREEN}")
-            print("------------------------------------")
-            print("\> Teacher Already Trained")
-            print("------------------------------------")
-            print(f"{Fore.RESET}")
+    #### NOTE: Uses KD as training for student this method basically only freezes/unfreezed layers
+    def train_dcq(self, teacher, student, config, dataset_loader, criterion, optimizer, epochs, sections, teacherIsPreTrained=False, update_step_count = 200):
 
         self.lr = 0.001
         self.epochs = epochs
@@ -198,51 +185,43 @@ class Trainer(object):
         train_loader = dataset_loader.get_train_loader()
         test_loader = dataset_loader.get_test_loader()
         index = 1
+        layer_count = sum(1 for _ in student.children())
+        T = 2
+
+        if layer_count < sections: sections = layer_count
+        layers_per_sec = layer_count // sections
+        start_layer = 0
+        end_layer = layers_per_sec
 
         student.train()
+        teacher.eval()
 
-        #Freeze Layers
         i = 0
-        for layer in student.children():
-            i += 1
-            if(i > 2):
-                for param in layer.parameters():
-                    param.requires_grad = False
-        
-        #Only opt unfrozen layers
-        ###TODO: somehow use optimizer from method call
-        optimizer_trainable = torch.optim.Adam(filter(lambda p: p.requires_grad_, student.parameters()), self.lr)
-        if not optimizer_trainable.param_groups:
-            print("optimizer is empty")
-            return
-        optimizer = optimizer_trainable
-        
-        for epoch in range(epochs):
+        #Loop over sections
+        for section in range(sections):
+            for layer in student.children():
+                i += 1
+                #Freeze Layers
+                if(i > end_layer or i < start_layer):
+                    for param in layer.parameters():
+                        param.requires_grad = False
+                else:
+                    for param in layer.parameters():
+                        param.requires_grad = True
+            #set new section "markers"
+            start_layer = end_layer
+            end_layer += layers_per_sec
+            i = 0
 
-            total = 0
-            correct = 0
-            val_loss = 0
+            #Only opt unfrozen layers
+            ###TODO: somehow use optimizer from method call
+            optimizer_trainable = torch.optim.Adam(filter(lambda p: p.requires_grad_, student.parameters()), self.lr)
+            if not optimizer_trainable.param_groups:
+                print("optimizer is empty. Nothing todo.")
+                return
+            optimizer = optimizer_trainable
 
-            for inputs, targets in train_loader:
-                inputs = inputs.to(device)
-                targets = targets.to(device)
-                outputs = student(inputs)
-                loss = criterion(outputs, targets)
-             
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
-                 
-                val_loss += loss.item() * inputs.size(0)
-                _, predicted = torch.max(outputs, 1)
-                total += targets.size(0)
-                correct += (predicted == targets).sum().item()
-                if index % int(update_step_count/100) == 0:
-                    print(f"[{Fore.BLUE}{epoch + 1}/{self.epochs}{Fore.RESET} (Train)]\t{Fore.GREEN}loss:{Fore.RESET} "
-                        f"{val_loss / total:.2f} {Fore.GREEN}accuracy:{Fore.RESET} {100.0 * correct / total:.2f}")
-                elif index % update_step_count == 0:
-                    self.__eval__(student, test_loader, criterion, device, epoch, self.epochs)
-                index += 1
+            self.train_teacher_student(teacher, student, config, dataset_loader, criterion, optimizer, epochs, T, teacherIsPreTrained=teacherIsPreTrained)
 
     def __eval__(self, model, test_loader, criterion, device, epoch, epochs):
         """
