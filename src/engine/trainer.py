@@ -196,7 +196,11 @@ class Trainer(object):
 
         # optimizer_frozen = torch.optim.Adam(filter(lambda p: not p.requires_grad, student.parameters()), lr=0.01)
         # optimizer_trainable = torch.optim.Adam(filter(lambda p: p.requires_grad, student.parameters()), lr=0.001)
-        
+        self.lr = 0.001
+        self.epochs = epochs
+        self.optimizer = optimizer
+        self.criterion = criterion
+
         device = DeviceSelector.get_device()
 
         student.to(device)
@@ -206,23 +210,31 @@ class Trainer(object):
         index = 1
         update_step_count = 200
 
-        all_layers = list(student.children())
-        for layer in all_layers:
-            if isinstance(layer, torch.nn.Sequential):
-                for sub_layer in layer:
-                    #print(sub_layer)
-                    sub_layer.requires_grad = False
-            else:
-                layer.requires_grad = False
-                #print(layer)
+        student.train()
+
+        #all_layers = list(student.children())
+        i = 0
+        for layer in student.children():
+            i += 1
+            if(i > 2):
+                for param in layer.parameters():
+                    param.requires_grad = False
+                # if isinstance(layer, torch.nn.Conv2d):
+                #     layer.requires_grad_(False)
+            # if isinstance(layer, torch.nn.Sequential):
+            #     for sub_layer in layer:
+            #         #print(sub_layer)
+            #         sub_layer.requires_grad = False
+            # else:
+            #     layer.requires_grad = False
+            #     #print(layer)
         
-        optimizer_trainable = torch.optim.Adam(filter(lambda p: p.requires_grad, student.parameters()), lr=0.001)
+        optimizer_trainable = torch.optim.Adam(filter(lambda p: p.requires_grad_, student.parameters()), self.lr)
         if not optimizer_trainable.param_groups:
             print("optimizer is empty")
             return
         
         optimizer = optimizer_trainable
-        
         
         for epoch in range(epochs):
 
