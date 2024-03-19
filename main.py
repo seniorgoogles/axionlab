@@ -18,7 +18,7 @@ if __name__ == "__main__":
     validator = Validator()
     trainer = Trainer()
     lr = 0.001
-    epochs = 15
+    epochs = 3
 
     ### PARENT ###
     dataset = DatasetBuilder.build(DatasetTypes.FASHION_MNIST, "configs/lenet5/config.yaml")
@@ -39,25 +39,33 @@ if __name__ == "__main__":
     quant_model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/quant_student_config.yaml", preload_weights=True)
 
     ### TRAIN ###
-    trainer.train(parent_model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(parent_model.parameters(), lr), lr, epochs)
-    trainer.train(student_model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(student_model.parameters(), lr), lr, epochs)
-    trainer.train(quant_model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(quant_model.parameters(), lr), lr, epochs)
-    trainer.train_teacher_student(parent_model, qkd_model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(qkd_model.parameters(), lr), epochs, T=2, teacherIsPreTrained=True)
-    
-    #Tuner.tune(quant_model, torch.optim.SGD, torch.nn.CrossEntropyLoss(), dataset, 5, 10, 10)
-    
-    ### VALIDATE ###
-    print(f"{Fore.GREEN} \n------------------------------------\nValidate Parent\n------------------------------------{Fore.RESET}")
-    validator.validate(parent_model, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
+    # trainer.train(parent_model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(parent_model.parameters(), lr), lr, epochs)
+    dataset = DatasetBuilder.build(DatasetTypes.FASHION_MNIST, "configs/lenet5/quant_student_config.yaml")
+    refQuant = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/quant_student_config.yaml", preload_weights=True)
+    #trainer.train(refQuant, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(refQuant.parameters(), lr), lr, epochs)
 
-    print(f"{Fore.GREEN} \n------------------------------------\nValidate Child ONLY \n------------------------------------{Fore.RESET}")
-    validator.validate(student_model, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
+    trainer.train_dcq(parent_model, quant_model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(quant_model.parameters(), lr), epochs, teacherIsPreTrained=True)
+    # trainer.train(student_model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(student_model.parameters(), lr), lr, epochs)
+    # trainer.train(quant_model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(quant_model.parameters(), lr), lr, epochs)
+    # trainer.train_teacher_student(parent_model, qkd_model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(qkd_model.parameters(), lr), epochs, T=2, teacherIsPreTrained=True)
+    
+    # #Tuner.tune(quant_model, torch.optim.SGD, torch.nn.CrossEntropyLoss(), dataset, 5, 10, 10)
+    
+    # ### VALIDATE ###
+    # print(f"{Fore.GREEN} \n------------------------------------\nValidate Parent\n------------------------------------{Fore.RESET}")
+    # validator.validate(parent_model, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
 
-    print(f"{Fore.GREEN} \n------------------------------------\nValidate Child QUANT\n------------------------------------{Fore.RESET}")
-    validator.validate(quant_model, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
+    # print(f"{Fore.GREEN} \n------------------------------------\nValidate Child ONLY \n------------------------------------{Fore.RESET}")
+    # validator.validate(student_model, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
+
+    # print(f"{Fore.GREEN} \n------------------------------------\nValidate Child QUANT\n------------------------------------{Fore.RESET}")
+    # validator.validate(quant_model, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
+
+    #print(f"{Fore.GREEN} \n------------------------------------\nValidate REF QUANT\n------------------------------------{Fore.RESET}")
+    #validator.validate(refQuant, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
 
     print(f"{Fore.GREEN} \n------------------------------------\nValidate Child QUANT WITH KD\n------------------------------------{Fore.RESET}")
     validator.validate(qkd_model, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
 
-    print(f"{Fore.GREEN} \n------------------------------------\nTotal Parameters of Teacher {total_params_teacher}\n------------------------------------{Fore.RESET}")
-    print(f"{Fore.GREEN} \n------------------------------------\nTotal Parameters of Student {total_params_student}\n------------------------------------{Fore.RESET}")
+    # print(f"{Fore.GREEN} \n------------------------------------\nTotal Parameters of Teacher {total_params_teacher}\n------------------------------------{Fore.RESET}")
+    # print(f"{Fore.GREEN} \n------------------------------------\nTotal Parameters of Student {total_params_student}\n------------------------------------{Fore.RESET}")
