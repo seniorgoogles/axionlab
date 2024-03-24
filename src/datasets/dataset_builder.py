@@ -1,6 +1,7 @@
 from src.core.inject.enum import DatasetTypes
 from src.datasets.imagenet import ImageNet
 from src.datasets.mnist import Mnist
+from src.datasets.fashionMnist import FashionMnist
 from src.utils.mapper import Mapper
 import yaml
 
@@ -32,7 +33,7 @@ class DatasetBuilder:
         if dataset == DatasetTypes.MNIST:
             return Mnist(train_path, test_path, batch_size, distributed, num_workers)
         if dataset == DatasetTypes.FASHION_MNIST:
-            raise NotImplementedError
+            return FashionMnist(train_path, test_path, batch_size, distributed, num_workers)
         if dataset == DatasetTypes.CIFAR10:
             raise NotImplementedError
         if dataset == DatasetTypes.IMAGENET:
