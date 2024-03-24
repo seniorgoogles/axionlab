@@ -71,8 +71,8 @@ class Trainer(object):
                     self.__eval__(model, test_loader, criterion, device, epoch, self.epochs)
 
                 
-                layer_list = list(model.children())
-                print(f"{type(layer_list[0]).__name__} {layer_list[0].quant_weight().bit_width}")
+                # layer_list = list(model.children())
+                # print(f"{type(layer_list[0]).__name__} {layer_list[0].quant_weight().bit_width}")
                 index += 1
 
             # Do validation
@@ -173,6 +173,8 @@ class Trainer(object):
                 elif index % update_step_count == 0:
                     self.__eval__(student, test_loader, criterion, device, epoch, self.epochs)
                 index += 1
+                # layer_list = list(student.children())
+                # print(f"{type(layer_list[0]).__name__} {layer_list[0].quant_weight().bit_width}")
 
     #### NOTE: Uses KD as training for student this method basically only freezes/unfreezed layers
     def train_dcq(self, teacher, student, config, dataset_loader, criterion, optimizer, epochs, sections, teacherIsPreTrained=False, update_step_count = 200):
@@ -195,9 +197,6 @@ class Trainer(object):
         i = 0
         #Loop over sections
         for section in range(sections):
-
-            ####TODO HOW TO QUANT/NOT QUANT ?!?!
-
             for layer in student.children():
                 i += 1
                 #Freeze Layers
@@ -207,6 +206,8 @@ class Trainer(object):
                 else:
                     for param in layer.parameters():
                         param.requires_grad = True
+                        if hasattr(layer, 'quant_weight'):
+                            layer.quant_weight().bit_width.value = 4
             #set new section "markers"
             start_layer = end_layer
             end_layer += layers_per_sec
