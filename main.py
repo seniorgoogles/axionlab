@@ -28,35 +28,37 @@ if __name__ == "__main__":
     lr = 0.001
     epochs = 25
 
+    parent_model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/config_sparse_quant.yaml", preload_weights=True)
+    #print(parent_model)
     ### PARENT ###
-    dataset = DatasetBuilder.build(DatasetTypes.FASHION_MNIST, "configs/lenet5/config_custom_quant.yaml")
-    parent_model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/config_custom_quant.yaml", preload_weights=True)
-    total_params_teacher = sum(p.numel() for p in parent_model.parameters())
+    #dataset = DatasetBuilder.build(DatasetTypes.FASHION_MNIST, "configs/lenet5/config_custom_quant.yaml")
+    #parent_model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/config_custom_quant.yaml", preload_weights=True)
+    #total_params_teacher = sum(p.numel() for p in parent_model.parameters())
     
     ### CHILD ###
-    dataset = DatasetBuilder.build(DatasetTypes.FASHION_MNIST, "configs/lenet5/student_config.yaml")
-    student_model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/student_config.yaml", preload_weights=True)
-    total_params_student = sum(p.numel() for p in student_model.parameters())
+    #dataset = DatasetBuilder.build(DatasetTypes.FASHION_MNIST, "configs/lenet5/student_config.yaml")
+    #student_model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/student_config.yaml", preload_weights=True)
+    #total_params_student = sum(p.numel() for p in student_model.parameters())
 
     ### REF QUANT ###
-    dataset = DatasetBuilder.build(DatasetTypes.FASHION_MNIST, "configs/lenet5/quant_student_config.yaml")
-    refQuant = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/quant_student_config.yaml", preload_weights=True)
+    #dataset = DatasetBuilder.build(DatasetTypes.FASHION_MNIST, "configs/lenet5/quant_student_config.yaml")
+    #refQuant = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/quant_student_config.yaml", preload_weights=True)
 
     ### CHILD KD ###
-    dataset = DatasetBuilder.build(DatasetTypes.FASHION_MNIST, "configs/lenet5/quant_student_config.yaml")
-    qkd_model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/quant_student_config.yaml", preload_weights=True)
+    #dataset = DatasetBuilder.build(DatasetTypes.FASHION_MNIST, "configs/lenet5/quant_student_config.yaml")
+    #qkd_model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/quant_student_config.yaml", preload_weights=True)
 
     ### CHILD QUANT ###
-    dataset = DatasetBuilder.build(DatasetTypes.FASHION_MNIST, "configs/lenet5/quant_student_config.yaml")
-    quant_model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/quant_student_config.yaml", preload_weights=True)
+    #dataset = DatasetBuilder.build(DatasetTypes.FASHION_MNIST, "configs/lenet5/quant_student_config.yaml")
+    #quant_model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/quant_student_config.yaml", preload_weights=True)
 
     ### DCQ QUANT ###
-    dataset = DatasetBuilder.build(DatasetTypes.FASHION_MNIST, "configs/lenet5/config_custom_quant.yaml")
-    dcq_model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/config_custom_quant.yaml", preload_weights=True)
+    #dataset = DatasetBuilder.build(DatasetTypes.FASHION_MNIST, "configs/lenet5/config_custom_quant.yaml")
+    #dcq_model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/config_custom_quant.yaml", preload_weights=True)
 
     ### TRAIN ###
-    print(f"{Fore.MAGENTA} \n------------------------------------\nTraining Parent\n------------------------------------{Fore.RESET}")
-    trainer.train(parent_model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(parent_model.parameters(), lr), lr, epochs)
+    #print(f"{Fore.MAGENTA} \n------------------------------------\nTraining Parent\n------------------------------------{Fore.RESET}")
+    #trainer.train(parent_model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(parent_model.parameters(), lr), lr, epochs)
     #trainer.train(refQuant, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(refQuant.parameters(), lr), lr, epochs)
     # trainer.train(student_model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(student_model.parameters(), lr), lr, epochs)
     # trainer.train(quant_model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(quant_model.parameters(), lr), lr, epochs)

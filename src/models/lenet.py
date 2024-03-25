@@ -17,7 +17,7 @@ class LeNet5(nn.Module):
             module = Mapper.get_layer_by_name(module_class)
             name = layer_config[3]
             args = layer_config[4]
-            Mapper.add_layer_to_object(args, module, self, name)
+            Mapper.map_config_as_attr(args, module, self, name)
 
     def forward(self, x):
         x = self.relu1(self.bn1(self.conv1(x)))
