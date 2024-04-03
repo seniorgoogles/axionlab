@@ -23,18 +23,9 @@ if __name__ == "__main__":
     ### INITS ###
     modelbuilder = ModelBuilder()
     validator = Validator()
-<<<<<<< HEAD
-    # mobilenet = models.mobilenet_v3_large(pretrained=True)
-    # vgg = models.vgg19(pretrained=True)
-    # resnet18 = models.resnet18(pretrained=True)
-
-    # print(mobilenet)
-    # print(resnet18)
-=======
     trainer = Trainer()
     lr = 0.001
     epochs = 25
->>>>>>> origin/feature/sparse_quant
 
     parent_model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/config_sparse_quant.yaml", preload_weights=True)
     #print(parent_model)
@@ -49,15 +40,6 @@ if __name__ == "__main__":
     #student_model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/student_config.yaml", preload_weights=True)
     #total_params_student = sum(p.numel() for p in student_model.parameters())
 
-<<<<<<< HEAD
-    # Tuner.tune(quant_model, torch.optim.SGD, torch.nn.CrossEntropyLoss(), dataset, 5, 10, 10)
-
-    # trainer = Trainer()
-    # trainer.train(quant_model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.SGD(quant_model.parameters()),0.001)
-
-   # validator.validate(quant_model, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
-    validator.validate(model, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
-=======
     ### REF QUANT ###
     #dataset = DatasetBuilder.build(DatasetTypes.FASHION_MNIST, "configs/lenet5/quant_student_config.yaml")
     #refQuant = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/quant_student_config.yaml", preload_weights=True)
@@ -111,4 +93,3 @@ if __name__ == "__main__":
 
     #resnet18 = models.resnet18(pretrained=True)
     #validator.validate(resnet18, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
->>>>>>> origin/feature/sparse_quant
