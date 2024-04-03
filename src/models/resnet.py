@@ -2,7 +2,6 @@ import torch.nn as nn
 import brevitas.nn as qnn
 import torchvision.models as models
 from src.utils.mapper import Mapper
-
 class BasicBlock(nn.Module):
 
     def __init__(self, config):
@@ -10,63 +9,105 @@ class BasicBlock(nn.Module):
         self.build(config)
 
     def build(self, config):
-        layer_blocks = config["BasicBlock"]
-        for layer_config in layer_blocks:
 
-            # If config has downsample configuration
-            if isinstance(layer_config, dict):
-                for block_name, block_config in layer_config.items():
-                    block_layers = []
-                    for module_config in block_config:
-                        module_class = module_config[2]
-                        module = Mapper.get_module(module_class)
-                        args = module_config[4]
-                        block_layers.append(Mapper.map_config_to_module(args, module))
-                    Mapper.map_config_as_attr(nn.Sequential(*block_layers), nn.Sequential, self, block_name)
-            else:
+        for layer_config in config:
+            # Adding layer
+            if isinstance(layer_config, list):
                 module_class = layer_config[2]
-                module = get_module(module_class)
-                name = layer_config[3]
-                args = layer_config[4]
-                Mapper.map_config_as_attr(args, module, self, name)
+                module_name = layer_config[3]
+                config = layer_config[4]
+                Mapper.add_layer_to_object(config, Mapper.get_layer_by_name(module_class), self, module_name)
 
+            # Adding downsampling layer
+            elif isinstance(layer_config, dict):
+                module_name = list(layer_config.keys())[0]
+                module_config = layer_config[module_name]
+                module = nn.Sequential()
+
+                for layer in module_config:
+                    module_class = layer[2]
+                    name = layer[3]
+                    config = layer[4]
+                    module.add_module(name, Mapper.get_layer_by_name(module_class)(**config))
+
+                Mapper.add_model_to_object(module, self, module_name)
 
     def forward(self, x):
         identity = x
-        out = self.relu(self.bn1(self.conv1(x)))
-        out = self.bn2(self.conv2(out))
 
-        if hasattr(self, "downsample"):
-            identity = self.downsample(identity)
+        # If it is ResNet50
+        if hasattr(self, "conv3"):
+            out = self.relu1(self.bn1(self.conv1(x)))
+            out = self.relu2(self.bn2(self.conv2(out)))
+            out = self.bn3(self.conv3(out))
 
-        out += identity
-        self.relu(out)
+            if hasattr(self, "downsample"):
+                identity = self.downsample(identity)
+
+            out += identity
+            self.relu(out)
+        # Else it is ResNet18
+        else:
+            out = self.relu1(self.bn1(self.conv1(x)))
+            out = self.bn2(self.conv2(out))
+
+            if hasattr(self, "downsample"):
+                identity = self.downsample(identity)
+
+            out += identity
+            self.relu(out)
+
         return out
 
-class ResNet(nn.Sequential):
+
+class ResNet(nn.Module):
     def __init__(self, config, preload_weights=False):
         super(ResNet, self).__init__()
         self.build(config["backbone"])
 
+        # Load weights
         if preload_weights:
-            resnet18 = models.resnet18(pretrained=True)
-            self.load_state_dict(resnet18.state_dict(), strict=False)
+            resnet = None
+            if config["name"] == "resnet18":
+                resnet = models.resnet18(pretrained=True)
+            elif config["name"] == "resnet50":
+                resnet = models.resnet50(pretrained=True)
+            else:
+                raise ValueError(f"Invalid {config['name']} model name")
+
+            self.load_state_dict(resnet.state_dict(), strict=True)
+
     def build(self, config):
         for layer_config in config:
             if isinstance(layer_config, list):
-                module_class = layer_config[2]
-                module = get_module(module_class)
-                args = layer_config[4]
-                Mapper.map_config_as_attr(args, module, self, layer_config[3])
-            elif isinstance(layer_config, dict):
-                for block_name, block_config in layer_config.items():
-                    block_layers = []
-                    for module_config in block_config:
-                        block_layers.append(BasicBlock(module_config))
-                    setattr(self, block_name, nn.Sequential(*block_layers))
+                layer_class = layer_config[2]
+                layer_name = layer_config[3]
+                layer_args = layer_config[4]
 
-    def preload(self):
-        pass
+                Mapper.add_layer_to_object(layer_args, Mapper.get_layer_by_name(layer_class), self, layer_name)
+
+            elif isinstance(layer_config, dict):
+                layer_name = list(layer_config.keys())[0]
+                layer_config_basic_blocks = layer_config[layer_name]
+
+                basic_blocks = []
+                for basicblock in layer_config_basic_blocks:
+                    basic_block = None
+
+                    if "BasicBlock" in basicblock:
+                        basic_block_args = basicblock["BasicBlock"]
+                        basic_block = BasicBlock(basic_block_args)
+
+                    elif "Bottleneck" in basicblock:
+                        basic_block_args = basicblock["Bottleneck"]
+
+                        # Rename class
+                        setattr(BasicBlock, '__name__', 'Bottleneck')
+                        basic_block = BasicBlock(basic_block_args)
+
+                    basic_blocks.append(basic_block)
+
+                Mapper.add_model_to_object(nn.Sequential(*basic_blocks), self, layer_name)
 
     def forward(self, x):
         out = self.relu(self.bn1(self.conv1(x)))

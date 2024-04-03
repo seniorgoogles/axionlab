@@ -23,7 +23,7 @@ class Vgg(nn.Module):
                 module_class = layer_config[2]
                 module_name = layer_config[3]
                 config = layer_config[4]
-                Mapper.map_config_as_attr(config, Mapper.get_module(module_class), self, module_name)
+                Mapper.add_layer_to_object(config, Mapper.get_layer_by_name(module_class), self, module_name)
 
             elif isinstance(layer_config, dict):
                 module_name = list(layer_config.keys())[0]
@@ -34,9 +34,9 @@ class Vgg(nn.Module):
                     module_class = layer[2]
                     name = layer[3]
                     config = layer[4]
-                    module.add_module(name, Mapper.get_module(module_class)(**config))
+                    module.add_module(name, Mapper.get_layer_by_name(module_class)(**config))
 
-                Mapper.map_module_as_attr(module, self, module_name)
+                Mapper.add_model_to_object(module, self, module_name)
 
     def forward(self, x):
         x = self.features(x)

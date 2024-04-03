@@ -3,8 +3,8 @@ name: "resnet18"
 
 # Dataset Params
 dataset: "imagenet"
-train_path: "tmp/datasets/imagenet/train"
-test_path: "tmp/datasets/imagenet/val"
+train_path: "/Users/mmecik/datasets/imagenet/train"
+test_path: "/Users/mmecik/datasets/imagenet/val"
 num_workers: 16
 distributed: False
 batch_size: [128,5120] # train, test

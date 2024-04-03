@@ -4,10 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="abfc8f8c-a4b9-45cc-b20d-74f69ea3d489" name="Changes" comment="- added mobilenet_v3_large">
-      <change afterPath="$PROJECT_DIR$/configs/mobilenet_v3_large/quant_config.yaml" afterDir="false" />
+    <list default="true" id="abfc8f8c-a4b9-45cc-b20d-74f69ea3d489" name="Changes" comment="- Checkpoint">
+      <change afterPath="$PROJECT_DIR$/configs/resnet50/config.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/resnet50/quant_config.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/resnet18/config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/resnet18/config.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/resnet18/quant_config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/resnet18/quant_config.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/quant_config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/quant_config.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/models/lenet.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/lenet.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/models/resnet.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/resnet.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/models/vgg.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/vgg.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/mapper.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/mapper.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,25 +64,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python.kwargs_example.executor&quot;: &quot;Run&quot;,
-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
-    &quot;Python.parse_yaml.executor&quot;: &quot;Run&quot;,
-    &quot;Python.reconfigurable_layer.executor&quot;: &quot;Run&quot;,
-    &quot;Python.trace_example.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;feature/lenet__quant&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/mmecik/repositories/SynapseLab/configs/vgg19&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.keymap&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.kwargs_example.executor": "Run",
+    "Python.main.executor": "Run",
+    "Python.parse_yaml.executor": "Run",
+    "Python.reconfigurable_layer.executor": "Run",
+    "Python.trace_example.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "fix/resnet18",
+    "last_opened_file_path": "/Users/mmecik/repositories/SynapseLab/configs",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "vue.rearranger.settings.migration": "true"
   },
   &quot;keyToStringList&quot;: {
     &quot;com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File&quot;: [
@@ -84,8 +91,8 @@
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/configs/vgg19" />
       <recent name="$PROJECT_DIR$/configs" />
+      <recent name="$PROJECT_DIR$/configs/vgg19" />
       <recent name="$PROJECT_DIR$" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
@@ -252,12 +259,7 @@
       <workItem from="1709282426867" duration="14774000" />
       <workItem from="1709637305771" duration="1486000" />
       <workItem from="1709726473310" duration="5905000" />
-      <workItem from="1710604155183" duration="909000" />
-      <workItem from="1710605228738" duration="1725000" />
-      <workItem from="1710609888029" duration="1314000" />
-      <workItem from="1711037177304" duration="994000" />
-      <workItem from="1711038226002" duration="1480000" />
-      <workItem from="1711051490212" duration="7322000" />
+      <workItem from="1710433270109" duration="5815000" />
     </task>
     <task id="LOCAL-00001" summary="* YAML config works&#10;* ResNet18 works now&#10;* ImageNet is implemented&#10;- Clean up is necessary">
       <option name="closed" value="true" />
@@ -382,7 +384,7 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/SynapseLab$kwargs_example.coverage" NAME="kwargs_example Coverage Results" MODIFIED="1708890774386" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
-    <SUITE FILE_PATH="coverage/synapselab$main.coverage" NAME="main Coverage Results" MODIFIED="1711971891163" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/SynapseLab$main.coverage" NAME="main Coverage Results" MODIFIED="1710454127456" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/SynapseLab$trace_example.coverage" NAME="trace_example Coverage Results" MODIFIED="1708021827757" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
     <SUITE FILE_PATH="coverage/SynapseLab$parse_yaml.coverage" NAME="parse_yaml Coverage Results" MODIFIED="1708684698545" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
     <SUITE FILE_PATH="coverage/SynapseLab$reconfigurable_layer.coverage" NAME="reconfigurable_layer Coverage Results" MODIFIED="1708604183476" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
