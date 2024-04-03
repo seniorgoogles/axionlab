@@ -250,13 +250,13 @@ backbone:
   - AdaptiveAvgPool2d:
       - [-1, 1, AdaptiveAvgPool2d, "0", {'output_size': 1}]
   - Classifier:
-    - Linear:
+      - Linear:
         - [-1, 1, Linear, "0", {'in_features': 960, 'out_features': 1280, 'bias': True}]
-    - Hardswish:
+      - Hardswish:
         - [-1, 1, Hardswish, "0", {}]
-    - Dropout:
+      - Dropout:
         - [-1, 1, Dropout, "0", {'p': 0.2, 'inplace': False}]
-    - Linear:
+      - Linear:
         - [-1, 1, Linear, "0", {'in_features': 1280, 'out_features': 1000, 'bias': True}]
 
 
