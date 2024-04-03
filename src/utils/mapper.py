@@ -31,10 +31,8 @@ class Mapper:
     @staticmethod
     def get_quantizer(quantizer_class):
         if hasattr(brevitas.quant, quantizer_class):
-            print(f"Found {quantizer_class} in brevitas.quant")
             return getattr(brevitas.quant, quantizer_class)
         elif hasattr(quant, quantizer_class):
-            print(f"Found {quantizer_class} in brevitas.quant")
             return getattr(quant, quantizer_class)
         else:
             raise Exception(f"{quantizer_class} not found in brevitas.quant or quant module.")
@@ -58,10 +56,8 @@ class Mapper:
         _, quantizer_str = Mapper.get_quantizer_from_conf(layer_config, 'weight_quant')
 
         if quantizer_str != None:
-            print(f"Found quantizer {quantizer_str} in config")
             setattr(obj, attr_name, module(**layer_config, weight_quant=Mapper.get_quantizer(quantizer_str)))
         else: 
-            print(f"Found quantizer {quantizer_str} in config")
             setattr(obj, attr_name, module(**layer_config))
 
         """

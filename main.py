@@ -31,7 +31,8 @@ if __name__ == "__main__":
     parent_model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/config_sparse_quant.yaml", preload_weights=True)
     #print(parent_model)
     ### PARENT ###
-    #dataset = DatasetBuilder.build(DatasetTypes.FASHION_MNIST, "configs/lenet5/config_custom_quant.yaml")
+    dataset = DatasetBuilder.build(DatasetTypes.FASHION_MNIST, "configs/lenet5/config_custom_quant.yaml")
+    trainer.train(parent_model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(parent_model.parameters(), lr), lr, epochs)
     #parent_model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/config_custom_quant.yaml", preload_weights=True)
     #total_params_teacher = sum(p.numel() for p in parent_model.parameters())
     
