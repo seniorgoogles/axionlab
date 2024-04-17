@@ -1,0 +1,21 @@
+# This is a configuration file for the jsc_2l model
+name: "jsc_2l"
+
+# Dataset Params
+dataset: "jsc"
+train_path: None
+test_path: None
+num_workers: 16
+distributed: False
+batch_size: [128,5120] # train, test
+
+# Training Params
+epochs: 80
+nc: 10 # number of classes
+
+backbone:
+  # [from, repeats, module, args]
+- [ -1, 1, Linear, "dense1", { 'in_features': 16, 'out_features': 64, 'bias': True } ]
+- [ -1, 1, ReLU, "relu1", { 'inplace': True } ]
+- [ -1, 1, Linear, "dense2", { 'in_features': 64, 'out_features': 5, 'bias': True } ]
+- [ -1, 1, Softmax, "softmax", { 'dim': 1 } ]
