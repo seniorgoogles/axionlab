@@ -83,6 +83,14 @@ class Jsc(nn.Module):
             x = self.truncate(self.dense5(x), lsb)
             x = self.softmax(x)
             return x
+        if self.name == "hdr-5l":
+            x = self.relu1(self.truncate(self.dense1(x), lsb))
+            x = self.relu2(self.truncate(self.dense2(x), lsb))
+            x = self.relu3(self.truncate(self.dense3(x), lsb))
+            x = self.relu4(self.truncate(self.dense4(x), lsb))
+            x = self.truncate(self.dense5(x), lsb)
+            x = self.softmax(x)
+            return x
         return x
 
 
