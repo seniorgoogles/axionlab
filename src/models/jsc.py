@@ -47,7 +47,6 @@ class Jsc(nn.Module):
             x = self.relu2(self.truncate((self.dense2(x)), lsb))
             x = self.truncate(self.dense3(x), lsb)
             x = self.softmax(x)
-            return x
         if self.name == "jsc_xl":
             x = self.relu1(self.truncate(self.dense1(x), lsb))
             x = self.relu2(self.truncate(self.dense2(x), lsb))
@@ -55,13 +54,11 @@ class Jsc(nn.Module):
             x = self.relu4(self.truncate(self.dense4(x), lsb))
             x = self.truncate(self.dense5(x), lsb)
             x = self.softmax(x)
-            return x
         if self.name == "jsc_m_lite_floating_point":
             x = self.relu1(self.dense1(x.type(torch.float)))
             x = self.relu2(self.dense2(x.type(torch.float)))
             x = self.dense3(x.type(torch.float))
             x = self.softmax(x)
-            return x
         if self.name == "jsc_xl_floating_point":
             x = self.relu1(self.dense1(x.type(torch.float)))
             x = self.relu2(self.dense2(x.type(torch.float)))
@@ -69,12 +66,10 @@ class Jsc(nn.Module):
             x = self.relu4(self.dense4(x.type(torch.float)))
             x = self.dense5(x.type(torch.float))
             x = self.softmax(x)
-            return x
         if self.name == "jsc-2l":
             x = self.relu1(self.truncate(self.dense1(x), lsb))
             x = self.truncate(self.dense2(x), lsb)
             x = self.softmax(x)
-            return x
         if self.name == "jsc-5l":
             x = self.relu1(self.truncate(self.dense1(x), lsb))
             x = self.relu2(self.truncate(self.dense2(x), lsb))
@@ -82,7 +77,6 @@ class Jsc(nn.Module):
             x = self.relu4(self.truncate(self.dense4(x), lsb))
             x = self.truncate(self.dense5(x), lsb)
             x = self.softmax(x)
-            return x
         if self.name == "hdr-5l":
             x = self.relu1(self.truncate(self.dense1(x), lsb))
             x = self.relu2(self.truncate(self.dense2(x), lsb))
@@ -90,8 +84,8 @@ class Jsc(nn.Module):
             x = self.relu4(self.truncate(self.dense4(x), lsb))
             x = self.truncate(self.dense5(x), lsb)
             x = self.softmax(x)
-            return x
         return x
+
 
 
 " Nur eine Idee "
