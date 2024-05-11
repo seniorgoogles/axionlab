@@ -1,7 +1,7 @@
 import brevitas
 import torch.nn as nn
 import brevitas.nn as qnn
-from brevitas.quant import Int8WeightPerTensorFixedPoint, Int8WeightPerTensorFixedPointSparse
+from brevitas.quant import Int8WeightPerTensorFixedPoint
 
 import src.quantizer as quant
 
@@ -26,7 +26,7 @@ class Mapper:
         elif hasattr(qnn, layer_name):
             return getattr(qnn, layer_name)
         else:
-            raise Exception(f"{module_class} not found in nn or qnn module.")
+            raise Exception(f"{layer_name} not found in nn or qnn module.")
         
     @staticmethod
     def get_quantizer(quantizer_class):

@@ -26,9 +26,8 @@ class Trainer(object):
         self.optimizer = optimizer
         self.criterion = criterion
 
-        device = DeviceSelector.get_device()
-
-        model.to(device)
+        #device = DeviceSelector.get_device()
+        #model.to(device)
 
         train_loader = dataset.get_train_loader()
         test_loader = dataset.get_test_loader()
@@ -49,9 +48,17 @@ class Trainer(object):
             val_loss = 0
 
             for inputs, targets in train_loader:
-                inputs = inputs.to(device)
-                targets = targets.to(device)
+                #inputs = inputs.to(device)
+                #targets = targets.to(device)
 
+                inputs = inputs.to(torch.double())
+
+                print("Input", inputs)
+                print("Target", targets)
+
+                print(inputs)
+                print("type = ", type(inputs.float()))
+                print("dtype = ", inputs.float().dtype)
                 outputs = model(inputs)
                 loss = criterion(outputs, targets)
 

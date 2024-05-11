@@ -16,9 +16,9 @@ nc: 10 # number of classes
 
 backbone:
   # [from, repeats, module, args]
-  - [ -1, 1, QuantLinear, "dense1", { 'in_features': 16, 'out_features': 64, 'bias': False } ]
+  - [ -1, 1, Linear, "dense1", { 'in_features': 16, 'out_features': 64, 'bias': False } ]
   - [ -1, 1, ReLU, "relu1", { 'inplace': True } ]
-  - [ -1, 1, QuantLinear, "dense2", { 'in_features': 64, 'out_features': 32, 'bias': False } ]
+  - [ -1, 1, Linear, "dense2", { 'in_features': 64, 'out_features': 32, 'bias': False } ]
   - [ -1, 1, ReLU, "relu2", { 'inplace': True } ]
-  - [ -1, 1, QuantLinear, "dense3", { 'in_features': 32, 'out_features': 5, 'bias': False } ]
+  - [ -1, 1, Linear, "dense3", { 'in_features': 32, 'out_features': 5, 'bias': False } ]
   - [ -1, 1, Softmax, "softmax", { 'dim': 1 } ]

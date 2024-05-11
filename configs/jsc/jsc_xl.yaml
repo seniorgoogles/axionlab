@@ -15,13 +15,13 @@ nc: 10 # number of classes
 
 backbone:
   # [from, repeats, module, args]
-  - [-1, 1, QuantLinear, "dense1", {'in_features': 16, 'out_features': 128, 'bias': False}]
+  - [-1, 1, Linear, "dense1", {'in_features': 16, 'out_features': 128, 'bias': False}]
   - [-1, 1, ReLU, "relu1", {'inplace': True}]
-  - [-1, 1, QuantLinear, "dense2", {'in_features': 128, 'out_features': 64, 'bias': False}]
+  - [-1, 1, Linear, "dense2", {'in_features': 128, 'out_features': 64, 'bias': False}]
   - [-1, 1, ReLU, "relu2", {'inplace': True}]
-  - [-1, 1, QuantLinear, "dense3", {'in_features': 64, 'out_features': 64, 'bias': False}]
+  - [-1, 1, Linear, "dense3", {'in_features': 64, 'out_features': 64, 'bias': False}]
   - [-1, 1, ReLU, "relu3", {'inplace': True}]
-  - [-1, 1, QuantLinear, "dense4", {'in_features': 64, 'out_features': 64, 'bias': False}]
+  - [-1, 1, Linear, "dense4", {'in_features': 64, 'out_features': 64, 'bias': False}]
   - [-1, 1, ReLU, "relu4", {'inplace': True}]
-  - [-1, 1, QuantLinear, "dense5", {'in_features': 64, 'out_features': 5, 'bias': False}]
+  - [-1, 1, Linear, "dense5", {'in_features': 64, 'out_features': 5, 'bias': False}]
   - [-1, 1, Softmax, "softmax", {'dim': 1}]

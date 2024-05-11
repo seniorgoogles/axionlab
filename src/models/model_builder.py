@@ -1,7 +1,9 @@
+import src.models.jsc
 from src.core.inject.enum import ModelTypes
 from src.models.resnet import ResNet
 from src.models.lenet import LeNet5
 from src.models.vgg import Vgg
+from src.models.jsc import Jsc
 
 import yaml
 
@@ -23,6 +25,13 @@ class ModelBuilder:
             return model
         elif modeltype == ModelTypes.RESNET:
             model = ResNet(config, preload_weights)
+            return model
+        elif modeltype == ModelTypes.JSC:
+            model = Jsc(config, preload_weights)
+            return model
+        elif modeltype == ModelTypes.HDR:
+            #model = Hdr(config, preload_weights)
+            model = None
             return model
         else:
             raise Exception(f"{modeltype} not implemented.")

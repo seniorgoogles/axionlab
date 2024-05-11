@@ -6,6 +6,8 @@ class ModelTypes:
     LENET = auto()
     VGG = auto()
     RESNET = auto()
+    JSC = auto()
+    HDR = auto()
 
 class DatasetTypes:
     MNIST = auto()
@@ -13,3 +15,4 @@ class DatasetTypes:
     CIFAR10 = auto()
     IMAGENET = auto()
     COCO = auto()
+    JSC = auto()

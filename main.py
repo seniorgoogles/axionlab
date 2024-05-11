@@ -27,11 +27,11 @@ if __name__ == "__main__":
     lr = 0.001
     epochs = 25
 
-    parent_model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/config_sparse_quant.yaml", preload_weights=True)
+    #parent_model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/config_sparse_quant.yaml", preload_weights=True)
     #print(parent_model)
     ### PARENT ###
-    dataset = DatasetBuilder.build(DatasetTypes.FASHION_MNIST, "configs/lenet5/config_custom_quant.yaml")
-    trainer.train(parent_model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(parent_model.parameters(), lr), lr, epochs)
+    #dataset = DatasetBuilder.build(DatasetTypes.FASHION_MNIST, "configs/lenet5/config_custom_quant.yaml")
+    #trainer.train(parent_model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(parent_model.parameters(), lr), lr, epochs)
     #parent_model = modelbuilder.build(ModelTypes.LENET, "configs/lenet5/config_custom_quant.yaml", preload_weights=True)
     #total_params_teacher = sum(p.numel() for p in parent_model.parameters())
     
@@ -93,3 +93,7 @@ if __name__ == "__main__":
 
     #resnet18 = models.resnet18(pretrained=True)
     #validator.validate(resnet18, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
+    dataset = DatasetBuilder.build(DatasetTypes.JSC, "configs/jsc/jsc_xl.yaml")
+    model = modelbuilder.build(ModelTypes.JSC, "configs/jsc/jsc_xl.yaml", preload_weights=True)
+    print(model)
+    trainer.train(model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(model.parameters(), lr), lr, epochs)

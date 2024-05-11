@@ -37,6 +37,8 @@ class Jsc(nn.Module):
             name = layer_config[3]
             args = layer_config[4]
             Mapper.map_config_as_attr(args, module, self, name)
+
+        print("Model built")
     def truncate(self, x, lsb):
         return Truncate.apply(x, lsb)
 

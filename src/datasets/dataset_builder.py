@@ -1,5 +1,9 @@
+import os
+
 from src.core.inject.enum import DatasetTypes
 from src.datasets.imagenet import ImageNet
+from src.datasets.jetSubstructure import settings
+from src.datasets.jetSubstructure.dataloader import JetSubstructureDataset
 from src.datasets.mnist import Mnist
 from src.datasets.fashionMnist import FashionMnist
 from src.utils.mapper import Mapper
@@ -40,5 +44,13 @@ class DatasetBuilder:
             return ImageNet(train_path, test_path, batch_size, distributed, num_workers)
         if dataset == DatasetTypes.COCO:
             raise NotImplementedError
+        if dataset == DatasetTypes.JSC:
+            abs_dataset_path = os.path.join(os.path.dirname(__file__), settings.DATASET_ROOT_PATH)
+            print("abs_dataset_path: ", abs_dataset_path)
+            dataset_path = os.path.join(abs_dataset_path,
+                                        "processed-pythia82-lhc13-all-pt1-50k-r1_h022_e0175_t220_nonu_truth.z")
+            print("dataset_path: ", dataset_path)
+            return JetSubstructureDataset(dataset_path, batch_size, distributed, num_workers)
+
         else:
             raise Exception(f"{dataset} not implemented.")
