@@ -4,6 +4,7 @@ from src.models.resnet import ResNet
 from src.models.lenet import LeNet5
 from src.models.vgg import Vgg
 from src.models.jsc import Jsc
+from src.models.hdr import Hdr
 
 import yaml
 
@@ -30,8 +31,7 @@ class ModelBuilder:
             model = Jsc(config, preload_weights)
             return model
         elif modeltype == ModelTypes.HDR:
-            #model = Hdr(config, preload_weights)
-            model = None
+            model = Hdr(config, preload_weights)
             return model
         else:
             raise Exception(f"{modeltype} not implemented.")

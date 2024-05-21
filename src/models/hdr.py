@@ -20,6 +20,7 @@ class Hdr(nn.Module):
             Mapper.map_config_as_attr(args, module, self, name)
 
     def forward(self, x):
+        x = x.view(x.size(0), -1)
         x = self.relu1(self.dense1(x))
         x = self.relu2(self.dense2(x))
         x = self.relu3(self.dense3(x))

@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 from colorama import Fore
 from src.utils.device_selector import DeviceSelector
@@ -30,6 +31,7 @@ class Trainer(object):
         #model.to(device)
 
         train_loader = dataset.get_train_loader()
+
         test_loader = dataset.get_test_loader()
 
         model.train()
@@ -48,18 +50,21 @@ class Trainer(object):
             val_loss = 0
 
             for inputs, targets in train_loader:
-                #inputs = inputs.to(device)
-                #targets = targets.to(device)
+               #inputs = inputs.to(device)
+               #targets = targets.to(device)
 
-                inputs = inputs.to(torch.double())
 
-                print("Input", inputs)
-                print("Target", targets)
+                if type(dataset).__name__ == "JetSubstructureDataset":
+                    targets = np.argmax(targets, axis=1)
 
-                print(inputs)
-                print("type = ", type(inputs.float()))
-                print("dtype = ", inputs.float().dtype)
+
+
+                print("Typpeeeeeeeeeeeeeeeeeeeeeeeeeeee", (inputs.to(torch.float32)).dtype)
+                inputs = inputs.to(torch.float32)
+
+
                 outputs = model(inputs)
+                print("outputs", outputs)
                 loss = criterion(outputs, targets)
 
                 optimizer.zero_grad()
@@ -69,6 +74,10 @@ class Trainer(object):
                 val_loss += loss.item() * inputs.size(0)
                 _, predicted = torch.max(outputs, 1)
                 total += targets.size(0)
+
+                print(predicted.shape)
+                print(targets.shape)
+                print(" Predicted",predicted)
                 correct += (predicted == targets).sum().item()
 
                 if index % int(update_step_count/100) == 0:
@@ -79,7 +88,7 @@ class Trainer(object):
 
                 
                 layer_list = list(model.children())
-                print(f"{type(layer_list[0]).__name__} {layer_list[0].quant_weight().bit_width}")
+               # print(f"{type(layer_list[0]).__name__} {layer_list[0].quant_weight().bit_width}")
                 index += 1
 
             # Do validation

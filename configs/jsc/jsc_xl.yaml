@@ -11,7 +11,7 @@ batch_size: [128,5120] # train, test
 
 # Training Params
 epochs: 80
-nc: 10 # number of classes
+nc: 5 # number of classes
 
 backbone:
   # [from, repeats, module, args]
