@@ -59,7 +59,6 @@ class Trainer(object):
 
 
 
-                print("Typpeeeeeeeeeeeeeeeeeeeeeeeeeeee", (inputs.to(torch.float32)).dtype)
                 inputs = inputs.to(torch.float32)
 
 
@@ -75,8 +74,6 @@ class Trainer(object):
                 _, predicted = torch.max(outputs, 1)
                 total += targets.size(0)
 
-                print(predicted.shape)
-                print(targets.shape)
                 print(" Predicted",predicted)
                 correct += (predicted == targets).sum().item()
 
