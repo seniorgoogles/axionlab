@@ -63,7 +63,7 @@ class Trainer(object):
 
 
                 outputs = model(inputs)
-                print("outputs", outputs)
+                #print("outputs", outputs)
                 loss = criterion(outputs, targets)
 
                 optimizer.zero_grad()
@@ -74,7 +74,7 @@ class Trainer(object):
                 _, predicted = torch.max(outputs, 1)
                 total += targets.size(0)
 
-                print(" Predicted",predicted)
+                #print(" Predicted",predicted)
                 correct += (predicted == targets).sum().item()
 
                 if index % int(update_step_count/100) == 0:

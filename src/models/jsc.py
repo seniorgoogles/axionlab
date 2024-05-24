@@ -12,7 +12,7 @@ class Truncate(Function):
     @staticmethod
     def forward(ctx: Function, input: Tensor, lsb: int):
         lsb = abs(lsb)
-        truncated_input = (input * (2 ** lsb)).int().double()
+        truncated_input = (input * (2 ** lsb)).int().float()
         return truncated_input / (2 ** lsb)
 
     @staticmethod
@@ -56,7 +56,7 @@ class Jsc(nn.Module):
             x = self.relu4(self.dense4(x))
             x = self.dense5(x)
             x = self.softmax(x)
-            print("X: ", x)
+            #print("X: ", x)
         if self.name == "jsc_m_lite_floating_point":
             x = self.relu1(self.dense1(x))
             x = self.relu2(self.dense2(x))
