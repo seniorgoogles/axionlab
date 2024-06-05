@@ -7,7 +7,13 @@ train_path: None
 test_path: None
 num_workers: 16
 distributed: False
-batch_size: [128,5120] # train, test
+batch_size: [1024,1024] # train, test
+dataset_root_path: "jetSubstructure/JSC_Dataset"
+bitwidth: 3
+msb: 1
+lsb: -1
+lsb_in: -8
+lsb_out: -8
 
 # Training Params
 epochs: 80

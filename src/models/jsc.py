@@ -30,6 +30,15 @@ class Jsc(nn.Module):
         backbone = config["backbone"]
 
         self.name = config["name"]
+        lsb_out = config["lsb_out"]
+
+
+        if isinstance(lsb_out, int):
+            self.lsb_out = [lsb_out] * 5 # 5 is the number of layers. To be adjusted to the correct value
+        elif isinstance(self.lsb_out, list):
+            self.lsb_out = lsb_out
+        else:
+            raise TypeError(f"lsb_out must be int or list[int], not {type(lsb_out)}")
 
         for layer_config in backbone:
             module_class = layer_config[2]
@@ -43,52 +52,50 @@ class Jsc(nn.Module):
         return Truncate.apply(x, lsb)
 
     def forward(self, x):
-        lsb = 3 # to be adjusted to the correct value
+
         if self.name == "jsc_lite":
-            x = self.relu1(self.truncate((self.dense1(x)), lsb))
-            x = self.relu2(self.truncate((self.dense2(x)), lsb))
-            x = self.truncate(self.dense3(x), lsb)
+            x = self.relu1(self.truncate((self.dense1(x)), self.lsb_out[0]))
+            x = self.relu2(self.truncate((self.dense2(x)), self.lsb_out[1]))
+            x = self.truncate(self.dense3(x), self.lsb_out[2])
             x = self.softmax(x)
         if self.name == "jsc_xl":
-            x = self.relu1(self.dense1(x))
-            x = self.relu2(self.dense2(x))
-            x = self.relu3(self.dense3(x))
-            x = self.relu4(self.dense4(x))
-            x = self.dense5(x)
+            x = self.relu1(self.truncate(self.dense1(x), self.lsb_out[0]))
+            x = self.relu2(self.truncate(self.dense2(x), self.lsb_out[1]))
+            x = self.relu3(self.truncate(self.dense3(x), self.lsb_out[2]))
+            x = self.relu4(self.truncate(self.dense4(x), self.lsb_out[3]))
+            x = self.truncate(self.dense5(x), self.lsb_out[4])
             x = self.softmax(x)
-            #print("X: ", x)
         if self.name == "jsc_m_lite_floating_point":
-            x = self.relu1(self.dense1(x))
-            x = self.relu2(self.dense2(x))
-            x = self.dense3(x)
+            x = self.relu1(self.dense1(x.type(torch.float)))
+            x = self.relu2(self.dense2(x.type(torch.float)))
+            x = self.dense3(x.type(torch.float))
             x = self.softmax(x)
         if self.name == "jsc_xl_floating_point":
-            x = self.relu1(self.dense1(x))
-            x = self.relu2(self.dense2(x))
-            x = self.relu3(self.dense3(x))
-            x = self.relu4(self.dense4(x))
-            x = self.dense5(x)
+            x = self.relu1(self.dense1(x.type(torch.float)))
+            x = self.relu2(self.dense2(x.type(torch.float)))
+            x = self.relu3(self.dense3(x.type(torch.float)))
+            x = self.relu4(self.dense4(x.type(torch.float)))
+            x = self.dense5(x.type(torch.float))
             x = self.softmax(x)
         if self.name == "jsc-2l":
-            x = self.relu1(self.dense1(x))
-            x = self.dense2(x)
+            x = self.relu1(self.truncate(self.dense1(x), self.lsb_out[2]))
+            x = self.truncate(self.dense2(x), self.lsb_out[1])
             x = self.softmax(x)
         if self.name == "jsc-5l":
-            x = self.relu1(self.dense1(x))
-            x = self.relu2(self.dense2(x))
-            x = self.relu3(self.dense3(x))
-            x = self.relu4(self.dense4(x))
-            x = self.dense5(x)
+            x = self.relu1(self.truncate(self.dense1(x), self.lsb_out[0]))
+            x = self.relu2(self.truncate(self.dense2(x), self.lsb_out[1]))
+            x = self.relu3(self.truncate(self.dense3(x), self.lsb_out[2]))
+            x = self.relu4(self.truncate(self.dense4(x), self.lsb_out[3]))
+            x = self.truncate(self.dense5(x), self.lsb_out[4])
             x = self.softmax(x)
         if self.name == "hdr-5l":
-            x = self.relu1(self.dense1(x))
-            x = self.relu2(self.dense2(x))
-            x = self.relu3(self.dense3(x))
-            x = self.relu4(self.dense4(x))
-            x = self.dense5(x)
+            x = self.relu1(self.truncate(self.dense1(x), self.lsb_out[0]))
+            x = self.relu2(self.truncate(self.dense2(x), self.lsb_out[1]))
+            x = self.relu3(self.truncate(self.dense3(x), self.lsb_out[2]))
+            x = self.relu4(self.truncate(self.dense4(x), self.lsb_out[3]))
+            x = self.truncate(self.dense5(x), self.lsb_out[4])
             x = self.softmax(x)
         return x
-
 
 
 " Nur eine Idee "

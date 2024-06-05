@@ -3,9 +3,7 @@ import math
 import numpy as np
 from torch.utils.data import DataLoader
 
-from rp.datasets.dataloader import CustomDataset
-from rp.settings import BATCH_SIZE
-
+from scr.jetSubstructure.dataloader import CustomDataset
 
 def calculate_data_bitwidth(dataset: CustomDataset):
     features = dataset.features
@@ -49,7 +47,7 @@ def calculate_data_lsb(features: np.ndarray):
 def get_dataloader(dataset: CustomDataset):
     train_set, test_set = dataset.split()
 
-    training_loader = DataLoader(train_set, batch_size=BATCH_SIZE, shuffle=True)
-    test_loader = DataLoader(test_set, batch_size=BATCH_SIZE, shuffle=False)
+    training_loader = DataLoader(train_set, batch_size=1024, shuffle=True)
+    test_loader = DataLoader(test_set, batch_size=1024, shuffle=False)
 
     return training_loader, test_loader
