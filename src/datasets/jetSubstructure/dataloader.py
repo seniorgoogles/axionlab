@@ -81,6 +81,9 @@ class JetSubstructureDataset(CustomDataset):
         self.num_workers = num_workers
 
         self.train_dataset, self.test_dataset = self.split()
+        self.train_dataset.targets = np.argmax(self.train_dataset.targets, axis=1)
+        self.test_dataset.targets = np.argmax(self.test_dataset.targets, axis=1)
+
 
         if self.distributed_training:
             self.train_sampler = distributed.DistributedSampler(self.train_dataset)

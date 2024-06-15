@@ -12,6 +12,7 @@ class Hdr(nn.Module):
 
     def build(self, config):
         backbone = config["backbone"]
+
         for layer_config in backbone:
             module_class = layer_config[2]
             module = Mapper.get_layer_by_name(module_class)

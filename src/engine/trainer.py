@@ -50,20 +50,11 @@ class Trainer(object):
             val_loss = 0
 
             for inputs, targets in train_loader:
-               #inputs = inputs.to(device)
-               #targets = targets.to(device)
-
-
-                if type(dataset).__name__ == "JetSubstructureDataset":
-                    targets = np.argmax(targets, axis=1)
-
-
 
                 inputs = inputs.to(torch.float32)
 
 
                 outputs = model(inputs)
-                #print("outputs", outputs)
                 loss = criterion(outputs, targets)
 
                 optimizer.zero_grad()

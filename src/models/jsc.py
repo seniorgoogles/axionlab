@@ -97,15 +97,3 @@ class Jsc(nn.Module):
             x = self.softmax(x)
         return x
 
-
-" Nur eine Idee "
-
-
-class JscModelFactory:
-
-    @staticmethod
-    def create(name, config):
-        if name == "jsc":
-            return Jsc(config)
-        else:
-            raise Exception("Model not available")
