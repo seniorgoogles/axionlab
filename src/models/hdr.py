@@ -28,4 +28,5 @@ class Hdr(nn.Module):
         x = self.relu4(self.dense4(x))
         x = self.dense5(x)
         x = self.softmax(x)
+
         return x

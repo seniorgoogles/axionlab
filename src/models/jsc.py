@@ -32,10 +32,12 @@ class Jsc(nn.Module):
         self.name = config["name"]
         lsb_out = config["lsb_out"]
 
+        print("type: ", type(lsb_out))
+
 
         if isinstance(lsb_out, int):
             self.lsb_out = [lsb_out] * 5 # 5 is the number of layers. To be adjusted to the correct value
-        elif isinstance(self.lsb_out, list):
+        elif isinstance(lsb_out, list):
             self.lsb_out = lsb_out
         else:
             raise TypeError(f"lsb_out must be int or list[int], not {type(lsb_out)}")
@@ -82,13 +84,6 @@ class Jsc(nn.Module):
             x = self.truncate(self.dense2(x), self.lsb_out[1])
             x = self.softmax(x)
         if self.name == "jsc-5l":
-            x = self.relu1(self.truncate(self.dense1(x), self.lsb_out[0]))
-            x = self.relu2(self.truncate(self.dense2(x), self.lsb_out[1]))
-            x = self.relu3(self.truncate(self.dense3(x), self.lsb_out[2]))
-            x = self.relu4(self.truncate(self.dense4(x), self.lsb_out[3]))
-            x = self.truncate(self.dense5(x), self.lsb_out[4])
-            x = self.softmax(x)
-        if self.name == "hdr-5l":
             x = self.relu1(self.truncate(self.dense1(x), self.lsb_out[0]))
             x = self.relu2(self.truncate(self.dense2(x), self.lsb_out[1]))
             x = self.relu3(self.truncate(self.dense3(x), self.lsb_out[2]))
