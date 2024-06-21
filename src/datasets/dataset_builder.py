@@ -46,10 +46,14 @@ class DatasetBuilder:
         if dataset == DatasetTypes.COCO:
             raise NotImplementedError
         if dataset == DatasetTypes.JSC:
-            dataset_root_path = config["dataset_root_path"]
-            abs_dataset_path = os.path.join(os.path.dirname(__file__), dataset_root_path)
-            dataset_path = os.path.join(abs_dataset_path,
-                                        "processed-pythia82-lhc13-all-pt1-50k-r1_h022_e0175_t220_nonu_truth.z")
+            dataset_path = config["dataset_root_path"]
+            project_root = os.getenv("PROJECT_ROOT")
+
+            if project_root is not None:
+                # If dataset path has a leading slash, remove it
+                dataset_path = dataset_path[1:] if dataset_path.startswith("/") else dataset_path
+                dataset_path = os.path.join(project_root, dataset_path)
+
             return JetSubstructureDataset(dataset_path, batch_size, distributed, num_workers)
 
         else:

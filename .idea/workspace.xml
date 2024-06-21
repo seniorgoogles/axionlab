@@ -4,18 +4,21 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="abfc8f8c-a4b9-45cc-b20d-74f69ea3d489" name="Changes" comment="- Checkpoint">
-      <change afterPath="$PROJECT_DIR$/configs/resnet50/config.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/configs/resnet50/quant_config.yaml" afterDir="false" />
+    <list default="true" id="457e5b0f-0c6d-4dc0-be32-e444517fdec3" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/examples/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/examples/jsc_example.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/SynapseLab.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/SynapseLab.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/resnet18/config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/resnet18/config.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/resnet18/quant_config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/resnet18/quant_config.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/quant_config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/quant_config.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/lenet.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/lenet.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/resnet.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/resnet.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/vgg.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/vgg.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils/mapper.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/mapper.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/jsc/jsc-2l.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/jsc/jsc-2l.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/jsc/jsc-5l.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/jsc/jsc-5l.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/jsc/jsc_lite.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/jsc/jsc_lite.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/jsc/jsc_m_lite_floating_point.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/jsc/jsc_m_lite_floating_point.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/jsc/jsc_xl.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/jsc/jsc_xl.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/jsc/jsc_xl_floating_point.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/jsc/jsc_xl_floating_point.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/datasets/dataset_builder.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/datasets/dataset_builder.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/datasets/jetSubstructure/dataloader.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/datasets/jetSubstructure/dataloader.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/engine/trainer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/engine/trainer.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,13 +33,7 @@
     </option>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_BRANCH_BY_REPOSITORY">
-      <map>
-        <entry key="$PROJECT_DIR$" value="develop" />
-      </map>
-    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-    <option name="UPDATE_TYPE" value="REBASE" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -44,37 +41,27 @@
     &quot;assignee&quot;: &quot;seniorgoogles&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">
-    <option name="selectedUrlAndAccountId">
-      <UrlAndAccount>
-        <option name="accountId" value="95beb885-93b2-49d7-8cf1-febe51a5c98a" />
-        <option name="url" value="https://github.com/seniorgoogles/synapselab.git" />
-      </UrlAndAccount>
-    </option>
-  </component>
-  <component name="MarkdownSettingsMigration">
-    <option name="stateVersion" value="1" />
-  </component>
-  <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 1
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/seniorgoogles/synapselab.git&quot;,
+    &quot;accountId&quot;: &quot;95beb885-93b2-49d7-8cf1-febe51a5c98a&quot;
+  }
 }</component>
-  <component name="ProjectId" id="2bu8M4S0HAGT44azGeizY7wtYlV" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 3
+}</component>
+  <component name="ProjectId" id="2i8SiegNuC39tCOZlti3LVuQBcj" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "Python.kwargs_example.executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.parse_yaml.executor": "Run",
-    "Python.reconfigurable_layer.executor": "Run",
-    "Python.trace_example.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "Python.jsc_example.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "fix/resnet18",
-    "last_opened_file_path": "/Users/mmecik/repositories/SynapseLab/configs",
+    "git-widget-placeholder": "feature/add__examples",
+    "last_opened_file_path": "/Users/mmecik/repositories/SynapseLab/src/engine",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -82,42 +69,29 @@
     "nodejs_package_manager_path": "npm",
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
     "vue.rearranger.settings.migration": "true"
-  },
-  &quot;keyToStringList&quot;: {
-    &quot;com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File&quot;: [
-      &quot;TEXT&quot;
-    ]
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/configs" />
-      <recent name="$PROJECT_DIR$/configs/vgg19" />
-      <recent name="$PROJECT_DIR$" />
-    </key>
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/configs/mobilenet_v3_large" />
-      <recent name="$PROJECT_DIR$/configs/resnet18" />
-      <recent name="$PROJECT_DIR$/src/models" />
-      <recent name="$PROJECT_DIR$/src/datasets" />
-      <recent name="$PROJECT_DIR$/src" />
+      <recent name="$PROJECT_DIR$/src/engine" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.main">
-    <configuration name="kwargs_example" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager">
+    <configuration name="jsc_example" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SynapseLab" />
+      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$APPLICATION_CONFIG_DIR$/scratches" />
-      <option name="IS_MODULE_SDK" value="false" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/examples" />
+      <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$APPLICATION_CONFIG_DIR$/scratches/kwargs_example.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/examples/jsc_example.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -126,198 +100,32 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
-      <module name="SynapseLab" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="parse_yaml" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="SynapseLab" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$APPLICATION_CONFIG_DIR$/scratches" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$APPLICATION_CONFIG_DIR$/scratches/parse_yaml.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="reconfigurable_layer" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="SynapseLab" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$APPLICATION_CONFIG_DIR$/scratches" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$APPLICATION_CONFIG_DIR$/scratches/reconfigurable_layer.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="trace_example" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="SynapseLab" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$APPLICATION_CONFIG_DIR$/scratches" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$APPLICATION_CONFIG_DIR$/scratches/trace_example.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <list>
-      <item itemvalue="Python.main" />
-      <item itemvalue="Python.kwargs_example" />
-      <item itemvalue="Python.parse_yaml" />
-      <item itemvalue="Python.reconfigurable_layer" />
-      <item itemvalue="Python.trace_example" />
-    </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.kwargs_example" />
-        <item itemvalue="Python.parse_yaml" />
-        <item itemvalue="Python.reconfigurable_layer" />
-        <item itemvalue="Python.trace_example" />
+        <item itemvalue="Python.jsc_example" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-67fca87a943a-c986f194a52a-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-233.11799.259" />
+        <option value="bundled-js-predefined-1d06a55b98c1-0b3e54e931b4-JavaScript-PY-241.17890.14" />
+        <option value="bundled-python-sdk-5b207ade9991-7e9c3bbb6e34-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-241.17890.14" />
       </set>
     </attachedChunks>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="abfc8f8c-a4b9-45cc-b20d-74f69ea3d489" name="Changes" comment="" />
-      <created>1707053551460</created>
+      <changelist id="457e5b0f-0c6d-4dc0-be32-e444517fdec3" name="Changes" comment="" />
+      <created>1718870840087</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1707053551460</updated>
-      <workItem from="1707053562004" duration="2796000" />
-      <workItem from="1707345754058" duration="659000" />
-      <workItem from="1707389557056" duration="599000" />
-      <workItem from="1707599171847" duration="3571000" />
-      <workItem from="1708020274116" duration="2926000" />
-      <workItem from="1708035171291" duration="30663000" />
-      <workItem from="1708543255711" duration="50026000" />
-      <workItem from="1708846903539" duration="17517000" />
-      <workItem from="1708981893641" duration="660000" />
-      <workItem from="1709129157698" duration="603000" />
-      <workItem from="1709240507906" duration="5195000" />
-      <workItem from="1709282426867" duration="14774000" />
-      <workItem from="1709637305771" duration="1486000" />
-      <workItem from="1709726473310" duration="5905000" />
-      <workItem from="1710433270109" duration="5815000" />
+      <updated>1718870840087</updated>
+      <workItem from="1718870841175" duration="1630000" />
+      <workItem from="1718875731530" duration="9390000" />
+      <workItem from="1719001317847" duration="2479000" />
     </task>
-    <task id="LOCAL-00001" summary="* YAML config works&#10;* ResNet18 works now&#10;* ImageNet is implemented&#10;- Clean up is necessary">
-      <option name="closed" value="true" />
-      <created>1708816735604</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1708816735604</updated>
-    </task>
-    <task id="LOCAL-00002" summary="* Working on implementing all quant layers&#10;- QuantReLU is working now">
-      <option name="closed" value="true" />
-      <created>1708867150062</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1708867150062</updated>
-    </task>
-    <task id="LOCAL-00003" summary="* Refactoring&#10;- Moving some files around&#10;* LeNet5 was implemented">
-      <option name="closed" value="true" />
-      <created>1708981955681</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1708981955681</updated>
-    </task>
-    <task id="LOCAL-00004" summary="* Training and Validation is implemented&#10;- Basic features. &#10;* Upcoming next:&#10;- ResNet18 and ResNet50 support with kwargs">
-      <option name="closed" value="true" />
-      <created>1709298403676</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1709298403676</updated>
-    </task>
-    <task id="LOCAL-00005" summary="- Minor changes&#10;- Checkpoint&#10;- Working at adding VGG">
-      <option name="closed" value="true" />
-      <created>1709566436440</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1709566436440</updated>
-    </task>
-    <task id="LOCAL-00006" summary="- Checkpoint">
-      <option name="closed" value="true" />
-      <created>1709727273125</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1709727273125</updated>
-    </task>
-    <task id="LOCAL-00007" summary="- added mobilenet_v3_large">
-      <option name="closed" value="true" />
-      <created>1711971766388</created>
-      <option name="number" value="00007" />
-      <option name="presentableId" value="LOCAL-00007" />
-      <option name="project" value="LOCAL" />
-      <updated>1711971766388</updated>
-    </task>
-    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -334,60 +142,7 @@
       </map>
     </option>
   </component>
-  <component name="VcsManagerConfiguration">
-    <MESSAGE value="* YAML config works&#10;* ResNet18 works now&#10;* ImageNet is implemented&#10;- Clean up is necessary" />
-    <MESSAGE value="* Working on implementing all quant layers&#10;- QuantReLU is working now" />
-    <MESSAGE value="* Refactoring&#10;- Moving some files around&#10;* LeNet5 was implemented" />
-    <MESSAGE value="* Training and Validation is implemented&#10;- Basic features. &#10;* Upcoming next:&#10;- ResNet18 and ResNet50 support with kwargs" />
-    <MESSAGE value="- Minor changes&#10;- Checkpoint&#10;- Working at adding VGG" />
-    <MESSAGE value="- Checkpoint" />
-    <MESSAGE value="- added mobilenet_v3_large" />
-    <option name="LAST_COMMIT_MESSAGE" value="- added mobilenet_v3_large" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$APPLICATION_CONFIG_DIR$/scratches/parse_yaml.py</url>
-          <line>44</line>
-          <option name="timeStamp" value="47" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/models/lenet.py</url>
-          <line>27</line>
-          <option name="timeStamp" value="57" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/models/vgg.py</url>
-          <line>25</line>
-          <option name="timeStamp" value="60" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/models/vgg.py</url>
-          <line>29</line>
-          <option name="timeStamp" value="65" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/models/vgg.py</url>
-          <line>38</line>
-          <option name="timeStamp" value="66" />
-        </line-breakpoint>
-      </breakpoints>
-      <default-breakpoints>
-        <breakpoint type="python-exception">
-          <properties notifyOnTerminate="true" exception="BaseException">
-            <option name="notifyOnTerminate" value="true" />
-          </properties>
-        </breakpoint>
-      </default-breakpoints>
-    </breakpoint-manager>
-  </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/SynapseLab$kwargs_example.coverage" NAME="kwargs_example Coverage Results" MODIFIED="1708890774386" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
-    <SUITE FILE_PATH="coverage/SynapseLab$main.coverage" NAME="main Coverage Results" MODIFIED="1710454127456" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/SynapseLab$trace_example.coverage" NAME="trace_example Coverage Results" MODIFIED="1708021827757" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
-    <SUITE FILE_PATH="coverage/SynapseLab$parse_yaml.coverage" NAME="parse_yaml Coverage Results" MODIFIED="1708684698545" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
-    <SUITE FILE_PATH="coverage/SynapseLab$reconfigurable_layer.coverage" NAME="reconfigurable_layer Coverage Results" MODIFIED="1708604183476" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
-    <SUITE FILE_PATH="coverage/SynapseLab$main.coverage" NAME="main Coverage Results" MODIFIED="1709298075107" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/SynapseLab$jsc_example.coverage" NAME="jsc_example Coverage Results" MODIFIED="1719003355186" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples" />
   </component>
 </project>

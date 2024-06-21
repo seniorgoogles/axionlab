@@ -1,6 +1,9 @@
+import os
+
 import h5py
 import numpy as np
 import pandas as pd
+import requests
 from torch import Tensor
 from torch.utils.data import Dataset, DataLoader, distributed
 from typing import Union, List
@@ -21,7 +24,8 @@ class CustomDataset(Dataset):
         if isinstance(idx, Tensor):
             idx = idx.tolist()
 
-        inputs = self.features[idx]
+        # Convert the features to float32
+        inputs = self.features[idx].astype('float32')
         labels = self.targets[idx]
 
         return inputs, labels
@@ -68,6 +72,13 @@ class JetSubstructureDataset(CustomDataset):
     __TARGETS = ["j_g", "j_q", "j_w", "j_z", "j_t"]
 
     def __init__(self, dataset_path: str, batch_size, distributed_training: bool, num_workers):
+
+        # If dataset_path does not exist, download the file from the URL
+        if not os.path.exists(dataset_path):
+            print("Dataset does not exists, downloading it now...")
+            url = "https://cernbox.cern.ch/remote.php/dav/public-files/AgzB93y3ac0yuId/processed-pythia82-lhc13-all-pt1-50k-r1_h022_e0175_t220_nonu_truth.z"
+            self.__download_file__(url, dataset_path)
+
         with h5py.File(dataset_path) as dataset:
             dataframe = pd.DataFrame(dataset["t_allpar_new"][:])  # type: ignore
             features = normalize(dataframe[self.__FEATURES].to_numpy())
@@ -98,3 +109,29 @@ class JetSubstructureDataset(CustomDataset):
         return DataLoader(self.test_dataset, batch_size=self.batch_size_test, shuffle=False,
                           num_workers=self.num_workers, pin_memory=True,
                           sampler=self.train_sampler if self.distributed_training else None)
+
+    def __download_file__(self, url, dataset_path):
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+
+        try:
+            # Send a GET request to the URL with headers
+            response = requests.get(url, headers=headers, stream=True)
+            response.raise_for_status()  # Check for request errors
+
+            # If the file already exists, remove it
+            if os.path.exists(dataset_path):
+                os.remove(dataset_path)
+
+            # Recreate the folder
+            os.makedirs(os.path.dirname(dataset_path), exist_ok=True)
+
+            # Write the content to a file
+            with open(dataset_path, 'wb') as file:
+                for chunk in response.iter_content(chunk_size=8192):
+                    file.write(chunk)
+
+            print(f"File downloaded successfully as {dataset_path}")
+        except requests.exceptions.RequestException as e:
+            print(f"Error downloading file: {e}")
