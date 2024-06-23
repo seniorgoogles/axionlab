@@ -13,10 +13,8 @@ bitwidth: 5
 msb: 1
 lsb: -3
 lsb_in: -8
-lsb_out: -8 # this can be set to type int or list of int
-
-
-
+lsb_out: -8 # this can be set to type int or list of int and the size of the list must match the number of layers
+num_layers: 5
 
 # Training Params
 epochs: 80

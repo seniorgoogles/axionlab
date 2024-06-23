@@ -11,6 +11,7 @@ batch_size: [1024,1024] # train, test
 dataset_root_path: "jetSubstructure/JSC_Dataset"
 lsb_in: -8
 lsb_out: -8
+num_layers: 5
 
 
 # Training Params
