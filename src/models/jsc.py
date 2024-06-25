@@ -23,6 +23,7 @@ class Jsc(nn.Module):
 
     def __init__(self, config, preload_weights=False):
         super(Jsc, self).__init__()
+        self.num_layers = None
         self.name = None
         self.build(config)
 
@@ -31,12 +32,13 @@ class Jsc(nn.Module):
 
         self.name = config["name"]
         lsb_out = config["lsb_out"]
+        self.num_layers = config["num_layers"]
 
         print("type: ", type(lsb_out))
 
 
         if isinstance(lsb_out, int):
-            self.lsb_out = [lsb_out] * 5 # 5 is the number of layers. To be adjusted to the correct value
+            self.lsb_out = [lsb_out] * self.num_layers
         elif isinstance(lsb_out, list):
             self.lsb_out = lsb_out
         else:
@@ -79,11 +81,18 @@ class Jsc(nn.Module):
             x = self.relu4(self.dense4(x.type(torch.float)))
             x = self.dense5(x.type(torch.float))
             x = self.softmax(x)
-        if self.name == "jsc-2l":
+        if self.name == "jsc_2l":
             x = self.relu1(self.truncate(self.dense1(x), self.lsb_out[0]))
             x = self.truncate(self.dense2(x), self.lsb_out[1])
             x = self.softmax(x)
-        if self.name == "jsc-5l":
+        if self.name == "jsc_5l":
+            x = self.relu1(self.truncate(self.dense1(x), self.lsb_out[0]))
+            x = self.relu2(self.truncate(self.dense2(x), self.lsb_out[1]))
+            x = self.relu3(self.truncate(self.dense3(x), self.lsb_out[2]))
+            x = self.relu4(self.truncate(self.dense4(x), self.lsb_out[3]))
+            x = self.truncate(self.dense5(x), self.lsb_out[4])
+            x = self.softmax(x)
+        if self.name == "jsc_m":
             x = self.relu1(self.truncate(self.dense1(x), self.lsb_out[0]))
             x = self.relu2(self.truncate(self.dense2(x), self.lsb_out[1]))
             x = self.relu3(self.truncate(self.dense3(x), self.lsb_out[2]))

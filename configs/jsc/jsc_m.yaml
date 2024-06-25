@@ -1,5 +1,5 @@
 # This is a configuration file for the jsc_m_lite_floating_point model
-name: "jsc_m_lite_floating_point"
+name: "jsc_m"
 
 # Dataset Params
 dataset: "jsc"
@@ -8,10 +8,10 @@ test_path: None
 num_workers: 16
 distributed: False
 batch_size: [1024,1024] # train, test
-dataset_root_path: "/tmp/datasets/jsc/processed-pythia82-lhc13-all-pt1-50k-r1_h022_e0175_t220_nonu_truth.z"
+dataset_root_path: "jetSubstructure/JSC_Dataset"
 lsb_in: -8
-lsb_out: -8
-num_layers: 3
+lsb_out: -4
+num_layers: 5
 
 # Training Params
 epochs: 80
@@ -23,5 +23,9 @@ backbone:
     - [ -1, 1, ReLU, "relu1", { 'inplace': True } ]
     - [ -1, 1, Linear, "dense2", { 'in_features': 64, 'out_features': 32, 'bias': True } ]
     - [ -1, 1, ReLU, "relu2", { 'inplace': True } ]
-    - [ -1, 1, Linear, "dense3", { 'in_features': 32, 'out_features': 5, 'bias': True } ]
+    - [ -1, 1, Linear, "dense3", { 'in_features': 32, 'out_features': 32, 'bias': True } ]
+    - [ -1, 1, ReLU, "relu3", { 'inplace': True } ]
+    - [ -1, 1, Linear, "dense4", { 'in_features': 32, 'out_features': 32, 'bias': True } ]
+    - [ -1, 1, ReLU, "relu4", { 'inplace': True } ]
+    - [ -1, 1, Linear, "dense5", { 'in_features': 32, 'out_features': 5, 'bias': True } ]
     - [ -1, 1, Softmax, "softmax", { 'dim': 1 } ]
