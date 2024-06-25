@@ -38,7 +38,7 @@ class Jsc(nn.Module):
 
 
         if isinstance(lsb_out, int):
-            self.lsb_out = [lsb_out] * self.num_layers # 5 is the number of layers. To be adjusted to the correct value
+            self.lsb_out = [lsb_out] * self.num_layers
         elif isinstance(lsb_out, list):
             self.lsb_out = lsb_out
         else:

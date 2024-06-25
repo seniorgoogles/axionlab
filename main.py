@@ -94,9 +94,9 @@ if __name__ == "__main__":
 
     #resnet18 = models.resnet18(pretrained=True)
     #validator.validate(resnet18, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
-    dataset = DatasetBuilder.build(DatasetTypes.JSC, "configs/jsc/jsc_xl.yaml")
+    dataset = DatasetBuilder.build(DatasetTypes.JSC, "configs/jsc/jsc_m_lite_floating_point.yaml")
     #dataset_mnist = DatasetBuilder.build(DatasetTypes.MNIST, "configs/hdr/hdr_5l.yaml")
-    model = modelbuilder.build(ModelTypes.JSC, "configs/jsc/jsc_xl.yaml", preload_weights=True)
+    model = modelbuilder.build(ModelTypes.JSC, "configs/jsc/jsc_m_lite_floating_point.yaml", preload_weights=True)
     #model_hrd = modelbuilder.build(ModelTypes.HDR, "configs/hdr/hdr_5l.yaml", preload_weights=True)
     print(model)
     trainer.train(model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(model.parameters(), lr), lr, epochs)
