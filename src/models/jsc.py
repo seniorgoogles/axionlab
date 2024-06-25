@@ -80,7 +80,7 @@ class Jsc(nn.Module):
             x = self.dense5(x.type(torch.float))
             x = self.softmax(x)
         if self.name == "jsc-2l":
-            x = self.relu1(self.truncate(self.dense1(x), self.lsb_out[2]))
+            x = self.relu1(self.truncate(self.dense1(x), self.lsb_out[0]))
             x = self.truncate(self.dense2(x), self.lsb_out[1])
             x = self.softmax(x)
         if self.name == "jsc-5l":

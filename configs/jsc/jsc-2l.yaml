@@ -14,7 +14,7 @@ lsb_out: -8
 
 # Training Params
 epochs: 80
-nc: 10 # number of classes
+nc: 5 # number of classes
 
 backbone:
   # [from, repeats, module, args]
