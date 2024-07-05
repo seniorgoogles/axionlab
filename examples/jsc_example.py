@@ -13,16 +13,59 @@ import torch
 from pathlib import Path
 import yaml
 
-def sparse_weights(model, test_loader, eps_steps=0.01, criterion=torch.nn.CrossEntropyLoss(), device=torch.device("cuda"), allowed_acc_drop=10.0):
+
+
+def prune_weights(weights, eps):
+    weights[abs(weights) < eps] = 0
+    return weights
+
+def sparse_weights(model, validator, test_loader, eps_steps=0.01, criterion=torch.nn.CrossEntropyLoss(), device=torch.device("cuda"), target_acc=10.0, eps_step=0.000001):
     # Get all layers
     layers = model.named_children()
 
+    acc = 100.0
+    eps = eps_step
+
+    target_zero_percentage = 30.0
+    current_zeros_percentage = 0.0
+
+    # While acc is higher than the target acc
+    #while(acc > target_acc):
+
     for l in layers:
+        # Get the layer name and the layer itself
         layer_name = l[0]
         layer = l[1]
+        min_weight = 0.0
+        max_weight = 0.0
+        iteration = 0
 
+        # Prune only dense layers
         if "dense" in layer_name:
-            print("Yo")
+            # Create a deep copy of the weights
+            while current_zeros_percentage < target_zero_percentage:
+                weights_bak = deepcopy(layer.weight.data.cpu().numpy())
+                weights = deepcopy(weights_bak)
+
+                # Get Min and Max values of the weights
+                min_weight = weights_bak.min()
+                max_weight = weights_bak.max()
+
+                # Print the percentage of weight that are zero
+                current_zeros_percentage = 100 * (weights_bak == 0).sum() / weights_bak.size
+                #print(f"{layer_name} Zeros: {current_zeros_percentage}% {min_weight=} {max_weight=}")
+
+                # Prune every weight below the epsilon
+                weights[abs(weights) < eps] = 0
+
+                # Write weights back to layer1
+                layer.weight.data = torch.tensor(weights)
+                eps += eps_steps
+                iteration += 1
+
+            print(f"{layer_name} {iteration=} Zeros: {current_zeros_percentage}% {min_weight=} {max_weight=}")
+            eps = eps_step
+            current_zeros_percentage = 0.0
 
 
 if __name__ == "__main__":
@@ -33,7 +76,7 @@ if __name__ == "__main__":
     validator = Validator()
     trainer = Trainer()
     lr = 0.0005332
-    epochs = 200
+    epochs = 50
 
     dataset = DatasetBuilder.build(DatasetTypes.JSC, "../configs/jsc/jsc_xl.yaml")
 
@@ -83,11 +126,15 @@ if __name__ == "__main__":
 
     # Sparse weights per layer
     model = modelbuilder.build(ModelTypes.JSC, "../configs/jsc/jsc_xl.yaml", preload_weights=True)
+    trainer.train(model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(model.parameters(), lr), lr, epochs)
 
-    # Load checkpoint .pth file
-    model.load_state_dict(torch.load("train/jsc_xl/run_13/best_weights.pth"))
+    try:
+        # Load checkpoint .pth file
+        model.load_state_dict(torch.load("train/jsc_xl/run_13/best_weights.pth"))
+    except Exception as ex:
+        print(ex)
 
-    sparse_weights(model, dataset.get_test_loader())
+    sparse_weights(model, validator, dataset.get_test_loader())
     '''
     #trainer.eval(model, dataset.get_test_loader(), torch.device("cuda"), None, None)
     base_acc, _ = validator.validate(model, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
