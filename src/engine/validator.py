@@ -15,7 +15,7 @@ class Validator(object):
             self.device = torch.device(device)
 
     @timer
-    def validate(self, model, config, dataset_loader, criterion):
+    def validate(self, model, config, dataset_loader, criterion, debug=False):
         #self.lr = config["lr"]
         #self.optimizer = config["optimizer"]
         #self.criterion = config["criterion"]
@@ -59,11 +59,10 @@ class Validator(object):
                         "Progress: {:d}/{:d}, accuracy: {:.4f}%, validation loss: {:.4f}".format(index, num_batches,
                                                                                                  accuracy, val_loss))
                     index += 1
-
-            avg_val_loss = val_loss / total
             accuracy = 100.0 * correct / total
-
-            print(f'Validation Loss: {avg_val_loss:.4f} {accuracy:.4f}')
+            if debug:
+                print(f"Accuracy: {accuracy:.2f}% Validation Loss: {val_loss:.4f}")
+            return accuracy, val_loss
     @timer
     def compare_models(self, model_a, model_b, config, dataset):
         pass

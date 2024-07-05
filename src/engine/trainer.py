@@ -35,7 +35,7 @@ class Trainer:
 
         for epoch in range(self.epochs):
             self._train_one_epoch(model, train_loader, epoch, device, update_step_count)
-            accuracy = self._eval(model, test_loader, device, epoch, self.epochs)
+            accuracy,_ = self.eval(model, test_loader, device, epoch, self.epochs)
 
             # Save the last weights
             self._save_model_weights(model, 'last_weights.pth')
@@ -75,7 +75,7 @@ class Trainer:
 
         for epoch in range(epochs):
             self._train_student_one_epoch(teacher, student, train_loader, criterion, optimizer, T, epoch, device)
-            accuracy = self._eval(student, test_loader, device, epoch, epochs)
+            accuracy,_ = self.eval(student, test_loader, device, epoch, epochs)
 
             # Save the last weights
             self._save_model_weights(student, 'last_weights.pth')
@@ -197,7 +197,9 @@ class Trainer:
         optimizer = torch.optim.Adam(trainable_params, lr=lr)
         return optimizer if optimizer.param_groups else None
 
-    def _eval(self, model, test_loader, device, epoch, epochs):
+    def eval(self, model, test_loader, device, epoch=None, epochs=None):
+
+        model = model.to(device)
         model.eval()
         val_loss = 0
         correct = 0
@@ -215,12 +217,17 @@ class Trainer:
                 correct += (predicted == targets).sum().item()
 
         accuracy = 100.0 * correct / total
+
+        if epoch is not None and epochs is not None:
+            print(f"[{Fore.BLUE}{epoch + 1}/{epochs}{Fore.RESET} (Test)]\t", end='')
+
         print(
-            f"[{Fore.BLUE}{epoch + 1 if epoch is not None else 'Final'}/{epochs if epochs is not None else ''}{Fore.RESET} (Valid)]\t"
             f"{Fore.GREEN}loss:{Fore.RESET} {val_loss / total:.2f} "
             f"{Fore.GREEN}accuracy:{Fore.RESET} {accuracy:.2f}")
 
-        return accuracy
+        loss = (val_loss/total)
+
+        return accuracy, loss
 
     def _save_model_weights(self, model, filename):
         if self.save_dir is not None:
