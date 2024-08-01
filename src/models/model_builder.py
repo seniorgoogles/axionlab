@@ -11,11 +11,12 @@ import yaml
 class ModelBuilder:
 
     @staticmethod
-    def build(modeltype, config_path, preload_weights=False):
+    def build(modeltype, config_path=None, config=None, preload_weights=False):
 
-        # Load config file
-        with open(config_path) as f:
-            config = yaml.load(f, Loader=yaml.FullLoader)
+        if config is None:
+            # Load config file
+            with open(config_path) as f:
+                config = yaml.load(f, Loader=yaml.FullLoader)
 
         # Build model
         if modeltype == ModelTypes.LENET:

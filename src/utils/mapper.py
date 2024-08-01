@@ -1,8 +1,6 @@
 import brevitas
 import torch.nn as nn
 import brevitas.nn as qnn
-from brevitas.quant import Int8WeightPerTensorFixedPoint
-
 import src.quantizer as quant
 
 class Mapper:
@@ -32,6 +30,10 @@ class Mapper:
     def get_quantizer(quantizer_class):
         if hasattr(brevitas.quant, quantizer_class):
             return getattr(brevitas.quant, quantizer_class)
+        # Fixed point quantizer
+        elif hasattr(brevitas.quant.fixed_point, quantizer_class):
+            return getattr(brevitas.quant.fixed_point, quantizer_class)
+        # Own quantizer
         elif hasattr(quant, quantizer_class):
             return getattr(quant, quantizer_class)
         else:

@@ -10,28 +10,27 @@ import yaml
 
 class DatasetBuilder:
     @staticmethod
-    def build(dataset, config_path):
-        config = None
+    def build(dataset, config_path=None, config=None):
         batch_size = [0,0]
         num_workers = 0
         distributed = False
         train_path = ""
         test_path = ""
-        dataset_root_path = ""
+        
+        if config is None:
+            # Load config file
+            with open(config_path) as f:
+                config = yaml.load(f, Loader=yaml.FullLoader)
 
-        # Load config file
-        with open(config_path) as f:
-            config = yaml.load(f, Loader=yaml.FullLoader)
+        train_path = config["train_path"]
+        test_path = config["test_path"]
 
-            train_path = config["train_path"]
-            test_path = config["test_path"]
+        if Mapper.has_key(config, "val_path") is True:
+            val_path = config["val_path"]
 
-            if Mapper.has_key(config, "val_path") is True:
-                val_path = config["val_path"]
-
-            batch_size = config["batch_size"]
-            num_workers = config["num_workers"]
-            distributed = config["distributed"]
+        batch_size = config["batch_size"]
+        num_workers = config["num_workers"]
+        distributed = config["distributed"]
 
 
         # Build model
