@@ -6,6 +6,7 @@ import logging
 import random
 import traceback
 import matplotlib.pyplot as plt
+from torchviz import make_dot
 
 from colorama import init, Fore, Style
 
@@ -379,18 +380,47 @@ if __name__ == '__main__':
     model.load_state_dict(torch.load(best_weight_path,  weights_only=False), strict=False)
     acc, _ = validator.validate(model, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
 
-    model_quant = model_builder.build(ModelTypes.JSC, config_path="configs/jsc/quant_jsc_xl.yaml", preload_weights=False)
-    model_quant.load_state_dict(torch.load(best_weight_path,  weights_only=True), strict=False)
-    acc_quant, _ = validator.validate(model_quant, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
+    model = model_builder.build(ModelTypes.JSC, config_path="configs/jsc/quant_jsc_xl.yaml", preload_weights=False)
+    model.load_state_dict(torch.load(best_weight_path,  weights_only=False), strict=False)
+    quant_acc, _ = validator.validate(model, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
 
-    print(f"Results {acc=} {acc_quant=}")
+
+    # Plot the graph
+    #make_dot(model(torch.randn(1, 1, 5, 5)), params=dict(model.named_parameters())).render("model_graph", format="pdf")
+
+    # Get the format of the input data from dataset
+    dummy_input = dataset.get_test_loader().dataset[0][0]
+    dummy_input = torch.tensor(dummy_input).unsqueeze(0)    
+    print(f"{dummy_input.shape=}")  
     
-    lr = 0.0013
+    #print(f"{acc=} {quant_acc=}")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
-    try: 
-        trainer.train(model_quant, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(model.parameters(), lr), lr,epochs)
+    dummy_input = torch.randn(1, 16).to(device)  # Beispiel für ein Bild mit 3 Kanälen und 224x224 Pixeln
+
+    # Pass the input through the model
+    output = model(dummy_input)
+
+    # Check if output is detached
+    #print("Is output detached?", not output.requires_grad)
+
+    # Visualize the model
+    make_dot(output, params=dict(model.named_parameters())).render("model_visualization", format="png")
+    print(f"{acc=} {quant_acc=}")
+    
+    #print(model)
+    '''
+    #model_quant.load_state_dict(torch.load(best_weight_path,  weights_only=True), strict=False)
+    #acc_quant, _ = validator.validate(model_quant, None, dataset.get_test_loader(), torch.nn.CrossEntropyLoss())
+
+    #print(f"Results {acc=} {acc_quant=}")
+    '''
+    lr = 0.000233
+    
+    try:
+        trainer.train(model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(model.parameters(), lr), lr,epochs)
     except Exception as e:
         traceback.print_exc()
         print(e)
 
-    print(f"Results {acc=} {acc_quant=}")
+    #print(f"Results {acc=} {acc_quant=}")

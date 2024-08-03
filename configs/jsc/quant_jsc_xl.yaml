@@ -22,13 +22,13 @@ nc: 5 # number of classes
 
 backbone:
   # [from, repeats, module, args]
-  - [-1, 1, QuantLinear, "dense1", {'in_features': 16, 'out_features': 128, 'bias': False, 'weight_bit_width': 8, 'weight_quant': Int8WeightPerTensorFixedPointSparse, 'weight_sparse_eps': 0.1, 'return_quant_tensor': True, 'output_bit_width': 3}]
+  - [-1, 1, QuantLinear, "dense1", {'in_features': 16, 'out_features': 128, 'bias': False, 'weight_bit_width': 16, 'weight_quant': Int8WeightPerTensorFixedPointSparse, 'weight_sparse_eps': 0.0, 'output_quant': Int8ActPerTensorFloat, 'return_quant_tensor': False, 'output_bit_width': 16}]
   - [-1, 1, QuantReLU, "relu1", {'inplace': True}]
-  - [-1, 1, QuantLinear, "dense2", {'in_features': 128, 'out_features': 64, 'bias': False, 'weight_bit_width': 8, 'weight_quant': Int8WeightPerTensorFixedPointSparse, 'weight_sparse_eps': 0.6, 'return_quant_tensor': True, 'output_bit_width': 3}]
+  - [-1, 1, QuantLinear, "dense2", {'in_features': 128, 'out_features': 64, 'bias': False, 'weight_bit_width': 16, 'weight_quant': Int8WeightPerTensorFixedPointSparse, 'weight_sparse_eps': 0.0, 'output_quant': Int8ActPerTensorFloat, 'return_quant_tensor': False, 'output_bit_width': 16}]
   - [-1, 1, ReLU, "relu2", {'inplace': True}]
-  - [-1, 1, QuantLinear, "dense3", {'in_features': 64, 'out_features': 64, 'bias': False, 'weight_bit_width': 8, 'weight_quant': Int8WeightPerTensorFixedPointSparse, 'weight_sparse_eps': 0.6, 'return_quant_tensor': True, 'output_bit_width': 3}]
+  - [-1, 1, QuantLinear, "dense3", {'in_features': 64, 'out_features': 64, 'bias': False, 'weight_bit_width': 16, 'weight_quant': Int8WeightPerTensorFixedPointSparse, 'weight_sparse_eps': 0.0, 'output_quant': Int8ActPerTensorFloat, 'return_quant_tensor': False, 'output_bit_width': 16}]
   - [-1, 1, ReLU, "relu3", {'inplace': True}]
-  - [-1, 1, QuantLinear, "dense4", {'in_features': 64, 'out_features': 64, 'bias': False, 'weight_bit_width': 8, 'weight_quant': Int8WeightPerTensorFixedPointSparse, 'weight_sparse_eps': 0.6, 'return_quant_tensor': True, 'output_bit_width': 3}]
+  - [-1, 1, QuantLinear, "dense4", {'in_features': 64, 'out_features': 64, 'bias': False, 'weight_bit_width': 16, 'weight_quant': Int8WeightPerTensorFixedPointSparse, 'weight_sparse_eps': 0.0, 'output_quant': Int8ActPerTensorFloat, 'return_quant_tensor': False, 'output_bit_width': 16}]
   - [-1, 1, ReLU, "relu4", {'inplace': True}]
-  - [-1, 1, QuantLinear, "dense5", {'in_features': 64, 'out_features': 5, 'bias': False, 'weight_bit_width': 8, 'weight_quant': Int8WeightPerTensorFixedPointSparse, 'weight_sparse_eps': 0.1, 'return_quant_tensor': True, 'output_bit_width': 3}]
+  - [-1, 1, QuantLinear, "dense5", {'in_features': 64, 'out_features': 5, 'bias': False, 'weight_bit_width': 16, 'weight_quant': Int8WeightPerTensorFixedPointSparse, 'weight_sparse_eps': 0.0, 'output_quant': Int8ActPerTensorFloat, 'return_quant_tensor': False, 'output_bit_width': 16}]
   - [-1, 1, Softmax, "softmax", {'dim': 1}]
