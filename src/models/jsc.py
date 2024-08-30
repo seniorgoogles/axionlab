@@ -8,19 +8,9 @@ from src.utils.mapper import Mapper
 from torch import Tensor
 from torch.autograd.function import Function
 
-class Truncate(Function):
-    @staticmethod
-    def forward(ctx: Function, input: Tensor, lsb: int):
-        lsb = abs(lsb)
-        truncated_input = (input * (2 ** lsb)).int().float()
-        return truncated_input / (2 ** lsb)
-
-    @staticmethod
-    def backward(ctx: Function, grad_output: Tensor):
-        return grad_output, None
 
 class Jsc(nn.Module):
-
+    
     def __init__(self, config, preload_weights=False):
         super(Jsc, self).__init__()
         self.num_layers = None
@@ -53,7 +43,10 @@ class Jsc(nn.Module):
 
         print("Model built")
     def truncate(self, x, lsb):
-        return Truncate.apply(x, lsb)
+        lsb = abs(lsb)
+        truncated_input = (x * (2 ** lsb))
+        truncated_input /= (2 ** lsb)
+        return truncated_input
 
     def forward(self, x):
 
