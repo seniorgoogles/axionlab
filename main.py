@@ -1,9 +1,16 @@
+from functools import partial
+
+from ray.tune.schedulers import ASHAScheduler
+from skorch import NeuralNetClassifier
+
 from src.models.model_builder import ModelBuilder
 from src.datasets.dataset_builder import DatasetBuilder
 from src.core.inject.enum import ModelTypes, DatasetTypes
 from src.engine.validator import Validator
 from src.engine.trainer import Trainer
+from ray import tune
 from src.engine.tuner import Tuner
+from src.engine.trainer_2 import train_model
 from src.quantizer.learned_bitwidth_quantizer import LearnedBitWidthQuantizer
 
 from brevitas.nn import QuantLinear
@@ -68,7 +75,7 @@ if __name__ == "__main__":
     
     # print(f"{Fore.MAGENTA} \n------------------------------------\nTraining DCQ\n------------------------------------{Fore.RESET}")
     # trainer.train_dcq(parent_model, dcq_model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(dcq_model.parameters(), lr), epochs, 2,teacherIsPreTrained=True)
-    # #Tuner.tune(quant_model, torch.optim.SGD, torch.nn.CrossEntropyLoss(), dataset, 5, 10, 10)
+    ## Tuner.tune(quant_model, torch.optim.SGD, torch.nn.CrossEntropyLoss(), dataset, 5, 10, 10)
     
     # ### VALIDATE ###
     # print(f"{Fore.GREEN} \n------------------------------------\nValidate Parent\n------------------------------------{Fore.RESET}")
@@ -98,5 +105,35 @@ if __name__ == "__main__":
     #dataset_mnist = DatasetBuilder.build(DatasetTypes.MNIST, "configs/hdr/hdr_5l.yaml")
     model = modelbuilder.build(ModelTypes.JSC, "configs/jsc/jsc_m_lite_floating_point.yaml", preload_weights=True)
     #model_hrd = modelbuilder.build(ModelTypes.HDR, "configs/hdr/hdr_5l.yaml", preload_weights=True)
-    print(model)
-    trainer.train(model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(model.parameters(), lr), lr, epochs)
+    # print(model)
+    #trainer.train(model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(model.parameters(), lr), lr, epochs)
+    # Tuner.tune(model, torch.optim.SGD, torch.nn.CrossEntropyLoss(), dataset, 5, 10, 10)
+    config = {
+        "model":model,
+        "dataset":dataset,
+        "criterion": torch.nn.CrossEntropyLoss(),
+        "epochs": tune.choice([5, 10, 15, 20, 25]),
+        "lr": tune.loguniform(1e-4, 1e-1),
+        "batch_size": tune.choice([2, 4, 8, 16])
+    }
+
+    scheduler = ASHAScheduler(
+        metric="loss",
+        mode="min",
+        max_t=4,
+        grace_period=1,
+        reduction_factor=2,
+    )
+    result = tune.run(
+        partial(train_model),
+        resources_per_trial={"cpu": 2, "gpu": 0},
+        config=config,
+        num_samples=4,
+        scheduler=scheduler,
+    )
+
+    best_trial = result.get_best_trial("loss", "min", "last")
+    print(f"Best trial config: {best_trial.config}")
+    print(f"Best trial final validation loss: {best_trial.last_result['loss']}")
+    print(f"Best trial final validation accuracy: {best_trial.last_result['accuracy']}")
+
