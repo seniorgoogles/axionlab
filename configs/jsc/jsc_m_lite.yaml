@@ -9,9 +9,6 @@ num_workers: 16
 distributed: False
 batch_size: [1024,1024] # train, test
 dataset_root_path: "/tmp/datasets/jsc/processed-pythia82-lhc13-all-pt1-50k-r1_h022_e0175_t220_nonu_truth.z"
-lsb_in: -8
-lsb_out: -8
-num_layers: 3
 
 # Training Params
 epochs: 80

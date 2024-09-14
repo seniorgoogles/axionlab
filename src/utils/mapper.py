@@ -4,63 +4,78 @@ import brevitas.nn as qnn
 import src.quantizer as quant
 
 class Mapper:
+    
+    @staticmethod
+    def config_has_key(config_dict, key):
+        """
+        Checks if the given key exists in the configuration dictionary.
+        """
+        if key in config_dict.keys():
+            return True
+        else:
+            return False
 
     @staticmethod 
-    def get_quantizer_from_conf(input_dict, key):
+    def get_quantizer_name_from_conf(config, key):
         """
-        @todo haesslich
+        Retrieves and removes the quantizer configuration from config using the specified key.
+        Returns the corresponding quantizer.
         """
-        value = None
-        if key in input_dict: 
-            #print(f"{input_dict} {type(input_dict)=}")
-            value = input_dict.pop(key)
-        
-        return key, value
-
+        quantizer_class = config.pop(key, None)
+        return Mapper.get_quantizer(quantizer_class)
+    
     @staticmethod
     def get_layer_by_name(layer_name):
-        if hasattr(nn, layer_name):
-            return getattr(nn, layer_name)
-        elif hasattr(qnn, layer_name):
-            return getattr(qnn, layer_name)
-        else:
-            raise Exception(f"{layer_name} not found in nn or qnn module.")
+        """
+        Retrieves the layer class by name from nn or qnn modules.
+        """
+        if layer := getattr(nn, layer_name, None):
+            return layer
+        if layer := getattr(qnn, layer_name, None):
+            return layer
+        raise ValueError(f"{layer_name} not found in nn or qnn module.")
         
     @staticmethod
     def get_quantizer(quantizer_class):
-        if hasattr(brevitas.quant, quantizer_class):
-            return getattr(brevitas.quant, quantizer_class)
-        # Fixed point quantizer
-        elif hasattr(brevitas.quant.fixed_point, quantizer_class):
-            return getattr(brevitas.quant.fixed_point, quantizer_class)
-        # Own quantizer
-        elif hasattr(quant, quantizer_class):
-            return getattr(quant, quantizer_class)
-        else:
-            raise Exception(f"{quantizer_class} not found in brevitas.quant or quant module.")
-
-    @staticmethod
-    def has_key(yaml, key):
-        try:
-            return True if key in yaml else False
-        except yaml.YAMLError as exc:
-            print(exc)
-            return False
+        """
+        Retrieves the quantizer class from brevitas or custom quant modules.
+        """
+        if quantizer_class in (None, 'None'):
+            return None
+        
+        for module in [brevitas.quant, brevitas.quant.fixed_point, quant]:
+            if hasattr(module, quantizer_class):
+                return getattr(module, quantizer_class)
+        
+        raise ValueError(f"{quantizer_class} not found in brevitas.quant or quant module.")
 
     @staticmethod
     def add_model_to_object(model, obj, model_name):
-        #@todo change order of inputs
+        """
+        Adds the model as an attribute to the given object.
+        """
         setattr(obj, model_name, model)
+        
     @staticmethod
     def map_config_as_attr(config, module, obj, attr_name):
+        """
+        Maps the configuration to a module and sets it as an attribute of the object.
+        Handles optional weight and output quantizers.
+        """
         layer_config = dict(config)
-        #{'in_channels': 1, 'out_channels': 4, 'kernel_size': 5, 'stride': 1, 'padding': 0, 'bias': False, 'output_bit_width': 4, 'weight_quant': 'Int8WeightPerTensorFloat'}
-        _, quantizer_str = Mapper.get_quantizer_from_conf(layer_config, 'weight_quant')
-        _, out_quantizer_str = Mapper.get_quantizer_from_conf(layer_config, 'output_quant')
+        
+        weight_quant = Mapper.config_has_key(layer_config, 'weight_quant')
+        output_quant = Mapper.config_has_key(layer_config, 'output_quant')
 
-        if quantizer_str != None and out_quantizer_str != None:
-            setattr(obj, attr_name, module(**layer_config, weight_quant=Mapper.get_quantizer(quantizer_str), output_quant=Mapper.get_quantizer(out_quantizer_str)))
-        elif quantizer_str != None:
-            setattr(obj, attr_name, module(**layer_config, weight_quant=Mapper.get_quantizer(quantizer_str)))
-        else: 
+        # Pops also the keys if they exist
+        weight_quantizer = Mapper.get_quantizer_name_from_conf(layer_config, 'weight_quant') if 'weight_quant' in layer_config else None
+        output_quantizer = Mapper.get_quantizer_name_from_conf(layer_config, 'output_quant') if 'output_quant' in layer_config else None
+        
+        if weight_quant:
+            setattr(obj, attr_name, module(**layer_config, weight_quant=weight_quantizer))
+        elif output_quant:
+            setattr(obj, attr_name, module(**layer_config, output_quant=output_quantizer))
+        elif weight_quant and output_quant:
+            setattr(obj, attr_name, module(**layer_config, weight_quant=weight_quantizer, output_quant=output_quantizer))
+        else:
             setattr(obj, attr_name, module(**layer_config))

@@ -1,6 +1,7 @@
 import os
 import torch
 from colorama import Fore
+from tqdm import tqdm
 from src.utils.device_selector import DeviceSelector
 
 
@@ -12,7 +13,7 @@ class Trainer:
         self.criterion = None
         self.save_dir = None
 
-    def train(self, model, config, dataset, criterion, optimizer, lr, epochs, update_step_count=200):
+    def train(self, model, config, dataset, criterion, optimizer, lr, epochs, update_step_count=200, scheduler=None):
         self.lr = lr
         self.epochs = epochs
         self.optimizer = optimizer
@@ -28,14 +29,14 @@ class Trainer:
 
         model.train()
         print(f"{Fore.GREEN}------------------------------------")
-        print("\> Training starts")
+        print("> Training starts")
         print(f"------------------------------------{Fore.RESET}")
 
         best_accuracy = 0.0
 
         for epoch in range(self.epochs):
             self._train_one_epoch(model, train_loader, epoch, device, update_step_count)
-            accuracy,_ = self.eval(model, test_loader, device, epoch, self.epochs)
+            accuracy,_ = self.eval(model, test_loader, device, epoch, self.epochs, scheduler=scheduler)
 
             # Save the last weights
             self._save_model_weights(model, 'last_weights.pth')
@@ -45,33 +46,40 @@ class Trainer:
                 best_accuracy = accuracy
                 self._save_model_weights(model, 'best_weights.pth')
 
+    """
     def train_by_strategy(self, model, dataset, criterion, optimizer, strategy):
         pass
 
     def train_teacher_student(self, teacher, student, dataset_loader, criterion, optimizer, epochs, T,
                               teacher_is_pretrained=False):
+        
+        self.criterion = criterion
+        
         if not teacher_is_pretrained:
             print(f"{Fore.GREEN}------------------------------------")
-            print("\> Training Teacher")
+            print("> Training Teacher")
             print(f"------------------------------------{Fore.RESET}")
             self.train(teacher, dataset_loader, criterion, optimizer, self.lr, epochs)
         else:
             print(f"{Fore.GREEN}------------------------------------")
-            print("\> Teacher Already Trained")
+            print("> Teacher Already Trained")
             print(f"------------------------------------{Fore.RESET}")
 
         print(f"{Fore.GREEN}------------------------------------")
-        print("\> Training Student")
+        print("> Training Student")
         print(f"------------------------------------{Fore.RESET}")
 
         device = DeviceSelector.get_device()
         student.to(device)
+        teacher.to(device)
 
         teacher.eval()
         student.train()
 
         train_loader = dataset_loader.get_train_loader()
         test_loader = dataset_loader.get_test_loader()
+
+        best_accuracy = 0.0
 
         for epoch in range(epochs):
             self._train_student_one_epoch(teacher, student, train_loader, criterion, optimizer, T, epoch, device)
@@ -106,7 +114,7 @@ class Trainer:
 
             self.train_teacher_student(teacher, student, dataset_loader, criterion, optimizer, epochs, T=2,
                                        teacher_is_pretrained=teacher_is_pretrained)
-
+    """
     def _setup_save_directory(self, model):
         if not os.path.exists('train'):
             os.makedirs('train')
@@ -123,18 +131,21 @@ class Trainer:
 
         self.save_dir = os.path.join(model_dir, f'run_{run_index}')
         os.makedirs(self.save_dir)
-
+    """
+    """
     def _train_one_epoch(self, model, train_loader, epoch, device, update_step_count):
         total = 0
         correct = 0
         val_loss = 0
+        
+        progress_bar = tqdm(total=len(train_loader), bar_format="{l_bar}{bar}{r_bar}", dynamic_ncols=True)
 
         for index, (inputs, targets) in enumerate(train_loader, start=1):
 
             inputs, targets = inputs.to(device), targets.to(device)
             outputs = model(inputs)
             loss = self.criterion(outputs, targets)
-
+            
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
@@ -144,11 +155,16 @@ class Trainer:
             total += targets.size(0)
             correct += (predicted == targets).sum().item()
 
-            if index % int(update_step_count / 100) == 0 or index % update_step_count == 0:
-                print(f"[{Fore.BLUE}{epoch + 1}/{self.epochs}{Fore.RESET} (Train)]\t"
-                      f"{Fore.GREEN}loss:{Fore.RESET} {val_loss / total:.2f} "
-                      f"{Fore.GREEN}accuracy:{Fore.RESET} {100.0 * correct / total:.2f}")
+         
+            # Update the tqdm progress bar with the current status
+            progress_bar.set_description(f"[{Fore.BLUE}{epoch + 1}/{self.epochs}{Fore.RESET} (Train)]")
+            progress_bar.set_postfix_str(f"{Fore.GREEN}loss:{Fore.RESET} {val_loss / total:.2f} "
+                                        f"{Fore.GREEN}accuracy:{Fore.RESET} {100.0 * correct / total:.2f}")
+            progress_bar.update(1) 
+                
+        progress_bar.close()
 
+    """
     def _train_student_one_epoch(self, teacher, student, train_loader, criterion, optimizer, T, epoch, device, update_step_count=200):
         total = 0
         correct = 0
@@ -196,8 +212,8 @@ class Trainer:
         trainable_params = filter(lambda p: p.requires_grad, model.parameters())
         optimizer = torch.optim.Adam(trainable_params, lr=lr)
         return optimizer if optimizer.param_groups else None
-
-    def eval(self, model, test_loader, device, epoch=None, epochs=None):
+    """
+    def eval(self, model, test_loader, device, epoch=None, epochs=None, scheduler=None):
 
         model = model.to(device)
         model.eval()
@@ -226,6 +242,9 @@ class Trainer:
             f"{Fore.GREEN}accuracy:{Fore.RESET} {accuracy:.2f}")
 
         loss = (val_loss/total)
+        
+        if scheduler is not None:
+            scheduler.step(loss)
 
         return accuracy, loss
 

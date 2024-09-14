@@ -3,11 +3,13 @@ import torch
 from src.utils.device_selector import DeviceSelector
 from src.utils.timer import timer
 from tqdm import tqdm
+
 class Validator(object):
 
-    def __init__(self, device=None):
-        self.lr = 0.001
-        self.optimizer = None
+    def __init__(self, criterion=None, dataset_loader=None, device=None):
+
+        self.criterion = criterion
+        self.dataset_loader = dataset_loader
 
         if device is None:
             self.device = DeviceSelector.get_device()
@@ -15,26 +17,21 @@ class Validator(object):
             self.device = torch.device(device)
 
     @timer
-    def validate(self, model, config, dataset_loader, criterion, debug=False):
-        #self.lr = config["lr"]
-        #self.optimizer = config["optimizer"]
-        #self.criterion = config["criterion"]
-        self.criterion = criterion
+    def validate(self, model, num_batches=-1, debug=False):
 
         val_loss = 0.0
         correct = 0
         total = 0
         index = 0
 
-
         model.eval()  # Set the model to evaluation mode
         model.to(self.device)
 
-        num_batches = len(dataset_loader)
+        num_batches = len(self.dataset_loader)
 
         with torch.no_grad():  # Disable gradient calculation during validation
             with tqdm(total=num_batches, desc="Progress", unit="iteration") as pbar:
-                for inputs, targets in dataset_loader:
+                for inputs, targets in self.dataset_loader:
                     inputs = inputs.to(self.device)
                     targets = targets.to(self.device)
 
@@ -63,6 +60,3 @@ class Validator(object):
             if debug:
                 print(f"Accuracy: {accuracy:.2f}% Validation Loss: {val_loss:.4f}")
             return accuracy, val_loss
-    @timer
-    def compare_models(self, model_a, model_b, config, dataset):
-        pass

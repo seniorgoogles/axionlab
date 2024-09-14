@@ -4,3 +4,5 @@ tmp/*
 .idea/*
 *.pth
 launch.json
+.weights/*
+result_lr_acc.txt
