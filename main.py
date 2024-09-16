@@ -3,13 +3,20 @@ from functools import partial
 from ray.tune.schedulers import ASHAScheduler
 from skorch import NeuralNetClassifier
 
+from functools import partial
+
+from ray.tune.schedulers import ASHAScheduler
+from skorch import NeuralNetClassifier
+
 from src.models.model_builder import ModelBuilder
 from src.datasets.dataset_builder import DatasetBuilder
 from src.core.inject.enum import ModelTypes, DatasetTypes
 from src.engine.validator import Validator
 from src.engine.trainer import Trainer
 from ray import tune
+from ray import tune
 from src.engine.tuner import Tuner
+from src.engine.trainer_2 import train_model
 from src.engine.trainer_2 import train_model
 from src.quantizer.learned_bitwidth_quantizer import LearnedBitWidthQuantizer
 
@@ -76,6 +83,7 @@ if __name__ == "__main__":
     # print(f"{Fore.MAGENTA} \n------------------------------------\nTraining DCQ\n------------------------------------{Fore.RESET}")
     # trainer.train_dcq(parent_model, dcq_model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(dcq_model.parameters(), lr), epochs, 2,teacherIsPreTrained=True)
     ## Tuner.tune(quant_model, torch.optim.SGD, torch.nn.CrossEntropyLoss(), dataset, 5, 10, 10)
+    ## Tuner.tune(quant_model, torch.optim.SGD, torch.nn.CrossEntropyLoss(), dataset, 5, 10, 10)
     
     # ### VALIDATE ###
     # print(f"{Fore.GREEN} \n------------------------------------\nValidate Parent\n------------------------------------{Fore.RESET}")
@@ -109,8 +117,8 @@ if __name__ == "__main__":
     #trainer.train(model, None, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(model.parameters(), lr), lr, epochs)
     # Tuner.tune(model, torch.optim.SGD, torch.nn.CrossEntropyLoss(), dataset, 5, 10, 10)
     config = {
-        "model":model,
-        "dataset":dataset,
+        "model": model,
+        "dataset": dataset,
         "criterion": torch.nn.CrossEntropyLoss(),
         "epochs": tune.choice([5, 10, 15, 20, 25]),
         "lr": tune.loguniform(1e-4, 1e-1),
@@ -120,7 +128,7 @@ if __name__ == "__main__":
     scheduler = ASHAScheduler(
         metric="loss",
         mode="min",
-        max_t=4,
+        max_t=10,
         grace_period=1,
         reduction_factor=2,
     )
@@ -128,7 +136,7 @@ if __name__ == "__main__":
         partial(train_model),
         resources_per_trial={"cpu": 2, "gpu": 0},
         config=config,
-        num_samples=4,
+        num_samples=10,
         scheduler=scheduler,
     )
 
