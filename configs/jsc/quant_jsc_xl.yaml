@@ -1,4 +1,4 @@
-# This is a configuration file for the jsc_xl model
+# This is a configuration file for the quant_jsc_xl model
 name: "quant_jsc_xl"
 
 # Dataset Params
@@ -7,16 +7,16 @@ train_path: None
 test_path: None
 num_workers: 16
 distributed: False
-batch_size: [4196,4196] # train, test
+batch_size: [4196, 4196]  # train, test
 dataset_root_path: "/tmp/datasets/jsc/processed-pythia82-lhc13-all-pt1-50k-r1_h022_e0175_t220_nonu_truth.z"
 
 # Training Params
 epochs: 80
-nc: 5 # number of classes
+nc: 5  # number of classes
 
 backbone:
-  # [from, repeats, module, args]
-  - [-1, 1, QuantLinear, "dense1", {'in_features': 16, 'out_features': 128, 'bias': True, 'weight_bit_width': 16, 'weight_quant': Int8WeightPerTensorFixedPointSparse, 'weight_sparse_eps': 0.0}]
+  # [from, repeats, module, name, args]
+  - [-1, 1, QuantLinear, "dense1", {'in_features': 16, 'out_features': 128, 'bias': True, 'weight_bit_width': 16, 'weight_quant': Int8WeightPerTensorFixedPointSparse, 'weight_sparse_eps': 0.3}]
   - [-1, 1, ReLU, "relu1", {'inplace': True}]
   - [-1, 1, QuantLinear, "dense2", {'in_features': 128, 'out_features': 64, 'bias': True, 'weight_bit_width': 16, 'weight_quant': Int8WeightPerTensorFixedPointSparse, 'weight_sparse_eps': 0.0}]
   - [-1, 1, ReLU, "relu2", {'inplace': True}]
