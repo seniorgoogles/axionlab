@@ -16,8 +16,7 @@ from src.engine.trainer import Trainer
 from ray import tune
 from ray import tune
 from src.engine.tuner import Tuner
-from src.engine.trainer_2 import train_model
-from src.engine.trainer_2 import train_model
+from src.engine.trainer2 import train_model
 from src.quantizer.learned_bitwidth_quantizer import LearnedBitWidthQuantizer
 
 from brevitas.nn import QuantLinear
