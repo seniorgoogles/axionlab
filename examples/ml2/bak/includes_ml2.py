@@ -27,7 +27,7 @@ from src.engine.config_manager import ConfigurationManager
 from src.quantizer.learned_bitwidth_quantizer import LearnedBitWidthQuantizer
 
 
-from helpers import *
+from examples.ml2.helpers import *
 
 model_configurations = [
     #"configs/jsc/jsc_2l.yaml",

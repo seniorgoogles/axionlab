@@ -29,6 +29,8 @@
         - epochs
         - lr
         - hyperparams_exploration
+        - retrain
+        - best_weights
 
     model:
         - name: "..."

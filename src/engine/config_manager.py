@@ -6,14 +6,25 @@ class ConfigurationManager(object):
     Args:
         object (_type_): _description_
     """
-    def __init__(self, config_file):
-        """_summary_
+    def __init__(self, config):
+        """ Initializes the ConfigurationManager with a config file.
 
         Args:
-            config_file (_type_): _description_
+            config_file_path (str): config file path
         """
-        self.config_file = config_file
-        self.config = None
+        
+        if isinstance(config, str):
+            self.config_file_path = config
+            with open(config, 'r') as stream:
+                try:
+                    self.config = yaml.safe_load(stream)
+                except yaml.YAMLError as exc:
+                    self.config = None
+                    print(exc)
+        elif isinstance(config, dict):
+            self.config = config
+        else:
+            raise ValueError("Invalid config type. Must be a file path or a dictionary.")
         
     def read(self, file_path):
         """_summary_
@@ -42,7 +53,7 @@ class ConfigurationManager(object):
                         for value in self.config[key]:
                             stream.write(f" - {value}\n")
                     else:   
-                        stream.write(f"{key} = {self.config[key]}\n")
+                        stream.write(f"{key}: {self.config[key]}\n")
                         
             except yaml.YAMLError as exc:
                 print(exc)
@@ -83,6 +94,8 @@ class ConfigurationManager(object):
                 if isinstance(layer[-1], dict) and key in layer[-1]:
                     layer[-1][key] = value
                     break
+                else:
+                    raise ValueError(f"Key {key} not found in layer {layer_name}.")
             else:
                 raise ValueError(f"Layer {layer_name} not found in model configuration.")
             

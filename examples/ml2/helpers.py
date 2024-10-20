@@ -37,7 +37,7 @@ def set_config_value(model_config, config, layer_str, key, value, logger):
 
     return model_config
 
-def get_zero_params_per_layer(model, logger):
+def get_zero_params_per_layer(model, logger=None):
     layers = []
     zero_params = []
     params = dict()
@@ -53,12 +53,13 @@ def get_zero_params_per_layer(model, logger):
         layers.append(layer_name)
         zero_params.append(torch.sum(param == 0).item())
 
-    logger.debug(f"Layers: {layers}")
-    logger.debug(f"Zero params: {zero_params}")
+    if logger is not None:
+        logger.debug(f"Layers: {layers}")
+        logger.debug(f"Zero params: {zero_params}")
 
     return layers, zero_params
 
-def get_params_count_per_layer(model, logger):
+def get_params_count_per_layer(model, logger=None):
     layers = []
     params_count = []
     params = dict()
@@ -74,8 +75,9 @@ def get_params_count_per_layer(model, logger):
         layers.append(layer_name)
         params_count.append(len(param))
 
-    logger.debug(f"Layers: {layers}")
-    logger.debug(f"Params: {params_count}")
+    if logger is not None:
+        logger.debug(f"Layers: {layers}")
+        logger.debug(f"Params: {params_count}")
 
     return layers, params_count
 
@@ -189,7 +191,6 @@ def train_student_teacher(dataset, trainer, validator, teacher, student, lr, epo
 def set_config_value(model_config, layer_str, key, value):
     layers = None
     
-    
     if isinstance(model_config, str):
         model_config = load_config(model_config)
         layers = model_config['backbone']
@@ -209,8 +210,38 @@ def set_config_value(model_config, layer_str, key, value):
 
                 print(f"Setting {key} to {value} for {layer_name}")
                 layer[-1][key] = value
+            else:
+                print(f"Layer {layer_name} does not have a {key} key")
 
     return model_config
+
+def get_config_value(model_config, layer_str, key):
+    
+    layers = None
+    ret_val = None
+    
+    if isinstance(model_config, str):
+        model_config = load_config(model_config)
+        layers = model_config['backbone']
+
+    # If a model configuration is provided, use the provided configuration
+    else:
+        layers = model_config['backbone']
+
+    # Go through all layers and check if the layer is a dense layer
+    for index, layer in enumerate(layers):
+        layer_name = layer[3]
+
+        # Go through all layers and check if the layer is a dense layer
+        if layer_str in layer_name:
+            # Set the value of the key to the new value
+            if isinstance(layer[-1], dict) and key in layer[-1]:
+                ret_val = layer[-1][key]
+                print(f"Getting {key} to {ret_val} for {layer_name}")
+            else:
+                print(f"Layer {layer_name} does not have a {key} key")
+
+    return ret_val
 
 def load_config(config_path):
     with open(config_path, 'r') as f:
@@ -247,8 +278,12 @@ def get_sparsity_overview(model, layer_str_list):
         
     sparsity_overview["total"] = {"num_weights": sum_weights, "num_zero_weights": sum_zero_weights, "zero_weight_percentage": sum_zero_weights / sum_weights * 100}
 
-    json_str = json.dumps(sparsity_overview, indent=4, sort_keys=True)    
-    return json_str
+    return sparsity_overview
+
+def get_model_sparsity(model, layer_str_list):
+    sparsity_overview = get_sparsity_overview(model, layer_str_list)
+    
+    return sparsity_overview["total"]["zero_weight_percentage"]
 
 
 def sort_layers_by_param_num(model, layer_str_list):
@@ -260,10 +295,10 @@ def sort_layers_by_param_num(model, layer_str_list):
         layer = getattr(model, layer_str)
         params_count.append(layer.quant_weight().tensor.numel())
 
-    
-    for layer_str, params in zip(layer_str_list, params_count):
-        print(f"Layer: {layer_str} {params_count=}")
     # Sort the layers by the number of parameters
     sorted_layers = [x for _, x in sorted(zip(params_count, layer_str_list), key=lambda pair: pair[0], reverse=True)]
     
-    return sorted_layers
+    # Get the number of parameters for each layer to list
+    sorted_params_count = [x for x in sorted(params_count, reverse=True)]
+        
+    return sorted_layers, sorted_params_count

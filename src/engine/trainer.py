@@ -13,7 +13,7 @@ class Trainer:
         self.criterion = None
         self.save_dir = None
 
-    def train(self, model, config, dataset, criterion, optimizer, lr, epochs, update_step_count=200, scheduler=None):
+    def train(self, model, config, dataset, criterion, optimizer, lr, epochs, update_step_count=200, scheduler=None, save_dir=None):
         self.lr = lr
         self.epochs = epochs
         self.optimizer = optimizer
@@ -39,7 +39,7 @@ class Trainer:
             accuracy,_ = self.eval(model, test_loader, device, epoch, self.epochs, scheduler=scheduler)
 
             # Save the last weights
-            self._save_model_weights(model, 'last_weights.pth')
+            self._save_model_weights(model, 'last_weights.pth', save_dir)
 
             # Save the best weights
             if accuracy > best_accuracy:
@@ -213,7 +213,7 @@ class Trainer:
         optimizer = torch.optim.Adam(trainable_params, lr=lr)
         return optimizer if optimizer.param_groups else None
     """
-    def eval(self, model, test_loader, device, epoch=None, epochs=None, scheduler=None):
+    def eval(self, model, test_loader, device, epoch=None, epochs=None, scheduler=None, save_dir=None):
 
         model = model.to(device)
         model.eval()
@@ -248,7 +248,11 @@ class Trainer:
 
         return accuracy, loss
 
-    def _save_model_weights(self, model, filename):
+    def _save_model_weights(self, model, filename, save_dir=None):
+        
+        if save_dir is not None:
+            self.save_dir = save_dir
+            
         if self.save_dir is not None:
             save_path = os.path.join(self.save_dir, filename)
             torch.save(model.state_dict(), save_path)

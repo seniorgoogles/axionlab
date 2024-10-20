@@ -6,3 +6,4 @@ tmp/*
 launch.json
 .weights/*
 result_lr_acc.txt
+tmp_data*

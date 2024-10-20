@@ -212,8 +212,9 @@ if __name__ == "__main__":
         shutil.rmtree("tmp_data")
         
     os.mkdir("tmp_data")
+    os.makedirs(f"tmp_data/configs/jsc")
     
-    for max_allowed_acc_drop in np.arange(0.1, 5.0, 0.1):
+    for max_allowed_acc_drop in np.arange(0.0, 50.25, 0.25):
         
         # round to two decimal places
         max_allowed_acc_drop = round(max_allowed_acc_drop, 2)
@@ -229,15 +230,16 @@ if __name__ == "__main__":
         y_data.append(acc)
         allowed_acc_drop.append(max_allowed_acc_drop)
         
-        # If max_allowed_acc_drop == 1.5, write the model config to a file
-        if max_allowed_acc_drop == 1.5:
-            path = "configs/jsc/quant_jsc_xl_pruned.yaml"
-            with open(path, "w") as f:
-                yaml.dump(model_config, f)
+        # Write model_config to file
+        ConfigurationManager(model_config).write(f"tmp_data/configs/jsc/quant_jsc_xl_acc_drop_{max_allowed_acc_drop}.yaml")
         
     print(f"{x_data=}")
     print(f"{y_data=}")
     print(f"{allowed_acc_drop=}")
+    
+    # Write to file 
+    with open("tmp_data/acc_vs_sparsity_jsc_xl.json", "w") as f:
+        json.dump({"sparsity": x_data, "accuracy": y_data, "allowed_acc_drop": allowed_acc_drop}, f)
     
     plot_acc_vs_sparsity(x_data, allowed_acc_drop, "Acc vs Sparsity", "Sparsity Level", "Accuracy", "tmp_data/acc_vs_sparsity_jsc_xl.png")
 
