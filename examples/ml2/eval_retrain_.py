@@ -7,82 +7,22 @@ from includes_ml2 import *
 from tqdm import tqdm
 import time 
 
-class ModelEvaluators:
-    @staticmethod
-    def evaluate_max_acc_drop_by_key_layerwise(model_config, weights_path, layer_str_list, key, max_acc_drop, save_dir, config_path=None):
-        
-        """
-        # Initialize dataset, validator and model
-        dataset = DatasetBuilder.build(DatasetTypes.JSC, config=model_config)
-        validator = Validator(torch.nn.CrossEntropyLoss(), dataset.get_test_loader())
-        
-        if config_path is not None:
-            model_config = ConfigurationManager(config_path).config
-        
-        model = ModelBuilder().build(ModelTypes.JSC, config=model_config, weights_path=weights_path)
-        
-        # Get baseline accuracy
-        baseline_acc, _ = validator.validate(model)
-        
-        # Get baseline sparsity
-        baseline_sparsity = get_sparsity_overview(model, layer_str_list)
-
-        # Go through all layers
-        for layer_str in layer_str_list:
-            reload_index = 0
-            
-            for index, val in enumerate(value_range):
-                
-                # Set new value and rebuild model
-                model_config = set_config_value(model_config, layer_str, key, val)
-                model = ModelBuilder().build(ModelTypes.JSC, config=model_config, weights_path=weights_path)
-                
-                # Validate model
-                acc, _ = validator.validate(model)
-                
-                print(f"{baseline_acc=} {acc=} {max_acc_drop=}")
-                
-                # If accuracy drop is too high, reload previous model configuration
-                if baseline_acc - acc > max_acc_drop:
-                    reload_index = index - 1
-                    print(f"Reload index: {reload_index}")
-                    break
-                else:
-                    reload_index = index
-
-            logger.debug(f"Layer: {layer_str} - {key} - {value_range[reload_index]}")
-            # Set back to previous "good" model configuration 
-            model_config = set_config_value(model_config, layer_str, key, value_range[reload_index])   
-            model = ModelBuilder().build(ModelTypes.JSC, config=model_config, weights_path=weights_path)
-            acc, _ = validator.validate(model) 
-        
-        
-        model = ModelBuilder().build(ModelTypes.JSC, config=model_config, weights_path=weights_path)
-        acc, loss = validator.validate(model)         
-        curr_model_sparsity = get_model_sparsity(model, layer_str_list)
-        
-        save_config_path = f"{save_dir}/config.yaml"
-        
-        logging.info(f"Saving configuration to {save_config_path}")
-        
-        manager = ConfigurationManager(model_config)
-        manager.write(save_config_path)
-        
-        return acc, loss, curr_model_sparsity
-        """
 
 class Report:
     
     def __init__(self) -> None:
         self.result = dict()
         
-    def add_result_by_metric(self, optimization_scheme, metric, value, configuration):
-        if optimization_scheme not in self.result:
-            self.result[optimization_scheme] = dict()
-        if metric not in self.result[optimization_scheme]:
-            self.result[optimization_scheme][metric] = dict()
-        self.result[optimization_scheme][metric][value] = configuration
+    def add_result_by_metric(self, pipeline_step, exp_name, model_info):
         
+        # If key pipleline_step does not exist, create it
+        if pipeline_step not in self.result:
+            self.result[pipeline_step] = dict()
+            self.result[pipeline_step]["experiments"] = dict()
+            
+        # Append the result to the experiments list
+        self.result[pipeline_step]["experiments"][exp_name] = model_info
+
     def set_baseline_acc(self, baseline_acc):
         self.result["baseline_acc"] = baseline_acc
     
@@ -179,156 +119,132 @@ class Pipeline:
         print("Validating model...")
         
     def evaluate(self, *args, **kwargs):
+                
         print("====================================")
         print("Evaluating model...")
         print("====================================")
 
-        eval_type = kwargs["eval_type"]
-
-        if eval_type == "quantization":
-            print("Quantization evaluation...")
-            weight_bitwidth_range = kwargs["weights_range"]
-            allowed_acc_drop = kwargs["allowed_acc_drop"]
-            layer_str_list = kwargs["layers"]
-            save_dir = kwargs["save_dir"]
-            use_basemodel = False
-            models_config_list = []
-            
-            if not isinstance(allowed_acc_drop, list):
-                allowed_acc_drop_list = [allowed_acc_drop]
-            else:
-                allowed_acc_drop_list = allowed_acc_drop
-
-            # Check if basemodel is used
-            if "use_basemodel" in kwargs:
-                use_basemodel = kwargs["use_basemodel"]
-                models_config_list = [self.pipeline_configuration.model_config_path]
-            
-            for model_config in models_config_list:
-                # Reload index
-                reload_index = 0
+        step_name = kwargs["step_name"]
+        eval_key = kwargs["eval_key"]
+        eval_range = kwargs["eval_range"]
+        weight_prune_first = kwargs["weight_prune_first"]
+        use_basemodel = kwargs["use_basemodel"]
+        allowed_acc_drop = kwargs["allowed_acc_drop"]
+        layers = kwargs["layers"]
+        models_dir = kwargs["models_dir"]
+        save_dir = kwargs["save_dir"]
                 
-                baseline_acc = self.pipeline_configuration.validator.validate(ModelBuilder().build(ModelTypes.JSC, 
-                                                                                                config=model_config, 
-                                                                                                weights_path=self.pipeline_configuration.weights_config_path))[0]
-
-                for allowed_acc_drop in allowed_acc_drop_list:
-                    # Enable quantization
-                    base_model_config = set_config_value(self.pipeline_configuration.model_config_path, "dense", "weight_disable_quant", False)
-                    eval_model_config = set_config_value(self.pipeline_configuration.model_config_path, "dense", "weight_disable_quant", False)
-                    
-                    for layer in layer_str_list:
-                        
-                        for index, weight in enumerate(weight_bitwidth_range):
-                            print(f"Layer: {layer} - Weight: {weight}")
-                            
-                            eval_model_config = set_config_value(base_model_config, layer, "weight_bit_width", weight)
-                            
-                            model = ModelBuilder().build(ModelTypes.JSC, config=eval_model_config, weights_path=self.pipeline_configuration.weights_config_path)
-                            acc =  self.pipeline_configuration.validator.validate(model)[0]
-
-                        
-                            # If accuracy drop is too high, reload previous model configuration
-                            if baseline_acc - acc > allowed_acc_drop:
-                                
-                                if index > 0: 
-                                    reload_index = index - 1
-                                    
-                                print(f"Reload index: {reload_index} - Acc: {acc}")
-                                break
-                            else:
-                                reload_index = index
-                        
-                        print(f"{reload_index=}")
-                        eval_model_config = set_config_value(base_model_config, layer, "weight_bit_width", weight_bitwidth_range[reload_index])
-                    
-                    # Create dir for saving data
-                    os.makedirs(f"{save_dir}/allowed_acc_{allowed_acc_drop}", exist_ok=True)
-                    
-                    manager = ConfigurationManager(eval_model_config)
-                    manager.write(f"{save_dir}/allowed_acc_{allowed_acc_drop}/config.yaml")
-        ############################################################################################################
-        # Sparse evaluation
-        ############################################################################################################
-        elif eval_type == "sparsity":
-            print("Quantization evaluation...")
-            sparsity_range = kwargs["sparsity_range"]
-            allowed_acc_drop = kwargs["allowed_acc_drop"]
-            layer_str_list = kwargs["layers"]
-            save_dir = kwargs["save_dir"]
-            use_basemodel = False
-            models_config_list = []
-            
-            if not isinstance(allowed_acc_drop, list):
-                allowed_acc_drop_list = [allowed_acc_drop]
-            else:
-                allowed_acc_drop_list = allowed_acc_drop
-
-            # Check if basemodel is used
-            if "use_basemodel" in kwargs:
-                use_basemodel = kwargs["use_basemodel"]
-                models_config_list = [self.pipeline_configuration.model_config_path]
-            else:
-                models_dir = kwargs["models_dir"]
-                models_config_list = os.listdir(models_dir)
-                print(models_config_list)
-            
-            for model_config in models_config_list:
-                # Reload index
-                reload_index = 0
-                
-                baseline_acc = self.pipeline_configuration.validator.validate(ModelBuilder().build(ModelTypes.JSC, 
-                                                                                                config=model_config, 
-                                                                                                weights_path=self.pipeline_configuration.weights_config_path))[0]
-
-                for allowed_acc_drop in allowed_acc_drop_list:
-                    
-                    # Enable quantization
-                    base_model_config = set_config_value(self.pipeline_configuration.model_config_path, "dense", "weight_disable_sparse", False)
-                    eval_model_config = set_config_value(self.pipeline_configuration.model_config_path, "dense", "weight_disable_sparse", False)
-                    
-                    for layer in layer_str_list:
-                        
-                        for index, sparse_eps in enumerate(sparsity_range):
-                            print(f"Layer: {layer} - Weight: {sparse_eps}")
-                            
-                            eval_model_config = set_config_value(base_model_config, layer, "weight_sparse_eps", sparse_eps)
-                            
-                            model = ModelBuilder().build(ModelTypes.JSC, config=eval_model_config, weights_path=self.pipeline_configuration.weights_config_path)
-                            acc =  self.pipeline_configuration.validator.validate(model)[0]
-
-                        
-                            # If accuracy drop is too high, reload previous model configuration
-                            if baseline_acc - acc > allowed_acc_drop:
-                                
-                                if index > 0: 
-                                    reload_index = index - 1
-                                    
-                                print(f"Reload index: {reload_index} - Acc: {acc}")
-                                break
-                            else:
-                                reload_index = index
-                        
-                        print(f"{reload_index=}")
-                        eval_model_config = set_config_value(base_model_config, layer, "weight_sparse_eps", sparsity_range[reload_index])
-                    
-                    # Create dir for saving data
-                    os.makedirs(f"{save_dir}/allowed_acc_{allowed_acc_drop}", exist_ok=True)
-                    
-                    manager = ConfigurationManager(eval_model_config)
-                    manager.write(f"{save_dir}/allowed_acc_{allowed_acc_drop}/config.yaml")
+        # Convert allowed_acc_drop to list if it is not
+        if not isinstance(allowed_acc_drop, list):
+            allowed_acc_drop_list = [allowed_acc_drop]
         else:
-            raise ValueError("Invalid evaluation type")
+            allowed_acc_drop_list = allowed_acc_drop
+            
+        # Check if basemodel is used, if not use models from models_dir
+        if use_basemodel:
+            models_config_list = [self.pipeline_configuration.model_config_path]
+            model_weights_list = [self.pipeline_configuration.weights_config_path]
+        else:
+            models_config_list = [os.path.join(models_dir, model_dir, "config.yaml") for model_dir in os.listdir(models_dir)]
+            model_weights_list = [os.path.join(models_dir, model_dir, "best_weights.pth") for model_dir in os.listdir(models_dir)]
+        
+        exp_index = 0
+        
+        # Iiterate over all models
+        for model_config, model_weights in zip(models_config_list, model_weights_list):
+            # Reload index
+            reload_index = 0
+            
+            # Get baseline accuracy
+            baseline_acc = self.pipeline_configuration.validator.validate(ModelBuilder().build(ModelTypes.JSC, 
+                                                                                            config=model_config, 
+                                                                                            weights_path=model_weights))[0]
+        
+            # Iterate over all allowed_acc_drop values
+            for allowed_acc_drop in allowed_acc_drop_list:
+                
+                # Load base model configuration
+                eval_model_config = ConfigurationManager(model_config).config          
+                bitwidth_weights_list = []
+                
+                # Iterate over all layers
+                for layer in layers:
+                    # Iterate over all values in the range
+                    
+                    # Setup model configuration
+                    eval_model_config = set_config_value(eval_model_config, layer, "weight_prune_first", weight_prune_first)
+                    
+                    # If weight_sparse_eps is set, enable pruning, else if weight_bit_width is set, enable quantization
+                    if eval_key == "weight_sparse_eps":
+                        eval_model_config = set_config_value(eval_model_config, layer, "weight_disable_sparse", False)
+                    elif eval_key == "weight_bit_width":
+                        eval_model_config = set_config_value(eval_model_config, layer, "weight_disable_quant", False)
+                    else:
+                        raise ValueError("Invalid eval_key")
+                                        
+                    for index, val in enumerate(eval_range):
+                        print(f"Layer: {layer} - {eval_key}: {val}")
+
+                        
+                        eval_model_config = set_config_value(eval_model_config, layer, eval_key, val)
+                        
+                        model = ModelBuilder().build(ModelTypes.JSC, config=eval_model_config, weights_path=model_weights)
+                        acc =  self.pipeline_configuration.validator.validate(model)[0]
+                        
+                        # If accuracy drop is too high, reload previous model configuration
+                        if baseline_acc - acc > allowed_acc_drop:
+                            if index > 0: 
+                                reload_index = index - 1
+                            break
+                        else:
+                            reload_index = index
+                    
+                    # Set back to previous "good" model configuration 
+                    eval_model_config = set_config_value(eval_model_config, layer, eval_key, eval_range[reload_index])   
+                    bitwidth_weights_list.append(get_config_value(eval_model_config, layer, "weight_bit_width"))
+
+                layer_params_list = [get_weights_per_layer(model, layer) for layer in layers]
+                layer_params_zero_value_list = [get_weights_zero_value_per_layer(model, layer) for layer in layers]
+                layer_usagage_kb_max_list = [(params * 32) / 8 / 1024 for params in layer_params_list]
+                layer_usage_kb_curr_list = [(params * bitwidth) / 8 / 1024 for params, bitwidth in zip(layer_params_list, bitwidth_weights_list)]
+                
+                dict_layers = dict()
+                for layer, params, zero_params, max_usage, curr_usage, bitwidth_weights in zip(layers, layer_params_list, layer_params_zero_value_list, layer_usagage_kb_max_list, layer_usage_kb_curr_list, bitwidth_weights_list):
+                    dict_layers[layer] = {
+                        "params": params,
+                        "zero_params": zero_params,
+                        "max_usage_kb": max_usage,
+                        "curr_usage_kb": curr_usage,
+                        "bitwidth": bitwidth_weights
+                    }
+                    
+                # Write report to file
+                self.report.add_result_by_metric(step_name, f"exp_{exp_index}", {
+                    "allowed_accuracy_drop": allowed_acc_drop,
+                    "accuracy": acc,
+                    "layers": dict_layers
+                })
+                # Create dir for saving data
+                os.makedirs(f"{save_dir}/allowed_acc_{allowed_acc_drop}", exist_ok=True)
+                self.report.write(self.report_path)
+                
+                manager = ConfigurationManager(eval_model_config)
+                manager.write(f"{save_dir}/allowed_acc_{allowed_acc_drop}/config.yaml")
+
+                exp_index += 1
                         
     def retrain(self, *args, **kwargs):
         print("Retraining model...")        
         lr = kwargs["lr"]
         epochs = kwargs["epochs"]
         models_dir = kwargs["models_dir"]
+        step_name = kwargs["step_name"]
         
         # List models folder 
         model_dir_list = os.listdir(models_dir)
         model_dir_list = [os.path.join(models_dir, model_dir) for model_dir in model_dir_list]
+        
+        exp_index = 0
         
         for model_dir in model_dir_list:
             model_config = ConfigurationManager(os.path.join(model_dir, "config.yaml"))
@@ -340,7 +256,16 @@ class Pipeline:
             trainer = Trainer(model, self.pipeline_configuration.dataset)
             trainer.train(model, None, self.pipeline_configuration.dataset, torch.nn.CrossEntropyLoss(), optimizer, lr, epochs, 200, scheduler, model_dir)
             
-        
+            acc, _ = self.pipeline_configuration.validator.validate(model)
+            
+            # Write report to file
+            self.report.add_result_by_metric(step_name, f"exp_{exp_index}", {
+                "accuracy": acc,
+            })
+            
+            self.report.write(self.report_path)
+                                             
+            exp_index += 1
     def train(self, *args, **kwargs):
         print("Training model...")
     
@@ -398,14 +323,27 @@ if __name__ == "__main__":
         "evaluate",
         "retrain"
     ]
+    
+    '''
+        step_name = kwargs["step_name"]
+        eval_key = kwargs["eval_key"]
+        eval_range = kwargs["eval_range"]
+        use_basemodel = kwargs["use_basemodel"]
+        allowed_acc_drop = kwargs["allowed_acc_drop"]
+        layers = kwargs["layers"]
+        models_dir = kwargs["models_dir"]
+        save_dir = kwargs["save_dir"]
+    '''
     step_params_list = [
         {   
             "step_name": "0_evaluate_quantization",
-            "eval_type": "quantization",     
+            "eval_key": "weight_bit_width",
+            "eval_range": [i for i in range(16, 10, -1)],
+            "weight_prune_first": False,
             "use_basemodel": True,
-            "weights_range": [i for i in range(16, 15, -1)],
-            "allowed_acc_drop": [0.25, 0.5, 1.0],
+            "allowed_acc_drop": np.arange(0.0, 10.0, 2.5).tolist(),
             "layers": processing_sequence,
+            "models_dir": None,
             "save_dir": f"{base_dir}/{0}_quantization",
         }, 
         {    
@@ -415,20 +353,21 @@ if __name__ == "__main__":
             "models_dir": f"{base_dir}/{0}_quantization",
         }, 
         {   
-            "step_name": "2_evaluate_sparsity",
+            "step_name": "2_evaluate_pruning",
+            "eval_key": "weight_sparse_eps",
+            "eval_range": np.arange(0.0, 1.0, 0.5),
+            "weight_prune_first": False,
             "use_basemodel": False,
-            "sparsity_range": np.arange(0.0, 1.0, 0.05),
-            "eval_type": "sparsity",
-            "allowed_acc_drop": [0.25, 0.5, 1.0],
+            "allowed_acc_drop": np.arange(0.0, 10.0, 2.5).tolist(),
             "layers": processing_sequence,
             "models_dir": f"{base_dir}/{0}_quantization",
-            "save_dir": f"{base_dir}/{1}_sparsity",
+            "save_dir": f"{base_dir}/{1}_pruning",
         }, 
         {    
-            "step_name": "1_retrain_after_quantization",
+            "step_name": "3_retrain_after_pruning",
             "lr": 0.00009349,
             "epochs": 1,
-            "models_dir": f"{base_dir}/{1}_sparsity"
+            "models_dir": f"{base_dir}/{1}_pruning"
         }, 
     ]  # You can add actual parameters as needed
 

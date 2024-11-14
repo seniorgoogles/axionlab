@@ -81,6 +81,20 @@ def get_params_count_per_layer(model, logger=None):
 
     return layers, params_count
 
+def get_weights_per_layer(model, layer_str):
+    
+    layer = getattr(model, layer_str)
+    num_weights = layer.quant_weight().tensor.numel()            
+            
+    return num_weights 
+
+def get_weights_zero_value_per_layer(model, layer_str):
+
+    layer = getattr(model, layer_str)
+    num_zero_weights = torch.sum(layer.quant_weight().tensor == 0).item()
+            
+    return num_zero_weights
+
 def plot_model(model, logger, input):
 
     y = model(input)
@@ -132,7 +146,10 @@ def train_model(dataset, trainer, validator, weights_path, model, lr, epochs, re
             previous_acc = current_acc
             
         optimizer = torch.optim.Adam(model.parameters(), lr)
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=15, verbose=True)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=10, verbose=True)
+        #scheduler = torch.optim.lr_scheduler.StepLR(optimizer, gamma=0.1, step_size=14)
+        
+        
         
         trainer.train(model, None, dataset, torch.nn.CrossEntropyLoss(), optimizer, lr, epochs, 200, scheduler)
         

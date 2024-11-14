@@ -58,16 +58,74 @@ class ConfigurationManager(object):
             except yaml.YAMLError as exc:
                 print(exc)
                 
-    def generate_model_py(self, file_path):
-        """_summary_
+    def generate_pytorch_model(self, name=None, output_path=None):
+        
+        
+        if name is None:
+            # Extract the model name from the config, using it as the class name
+            model_name = self.config.get("name", "GeneratedModel")  # Default to "GeneratedModel" if "name" is not provided
+        else:
+            model_name = name
+            
+        # Begin defining the model string with dynamic class name
+        model_str = "import torch\n"
+        model_str += "import torch.nn as nn\n\n\n"
+        model_str += f"class {model_name}(nn.Module):\n"
+        model_str += f"\tdef __init__(self):\n"
+        model_str += f"\t\tsuper({model_name}, self).__init__()\n"
 
-        Args:
-            file_path (_type_): _description_
+        # Function to parse and add layers from the configuration to the model string
+        def add_layers(section):
+            layer_defs = ""
+            for layer_def in section:
+                _, _, layer_type, layer_name, layer_args = layer_def
+                layer_args_str = ", ".join(f"{k}={repr(v)}" for k, v in layer_args.items())
+                layer_defs += f"\t\tself.{layer_name} = nn.{layer_type}({layer_args_str})\n"
+                
+            layer_defs += "\n"
+            
+            return layer_defs
 
-        Raises:
-            NotImplementedError: _description_
-        """
-        raise NotImplementedError("This method is not implemented yet.")
+        # Add backbone, neck, and head layers if they exist in the config
+        model_str += add_layers(self.config["backbone"])
+        if "neck" in self.config:
+            model_str += add_layers(self.config["neck"])
+        if "head" in self.config:
+            model_str += add_layers(self.config["head"])
+
+        # Define the forward function with each layer called sequentially
+        model_str += "\tdef forward(self, x):\n"
+
+        # Add each layer to the forward pass
+        for layer_def in self.config.get("backbone", []):
+            _, _, _, layer_name, _ = layer_def
+            model_str += f"\t\tx = self.{layer_name}(x)\n"
+        if "neck" in self.config:
+            for layer_def in self.config["neck"]:
+                _, _, _, layer_name, _ = layer_def
+                model_str += f"\t\tx = self.{layer_name}(x)\n"
+        if "head" in self.config:
+            for layer_def in self.config["head"]:
+                _, _, _, layer_name, _ = layer_def
+                model_str += f"\t\tx = self.{layer_name}(x)\n"
+
+        # End of forward method
+        model_str += "\n\t\treturn x\n\n"
+        
+        # Add load weights function
+        model_str += "\tdef load_weights(self, weights_path):\n"
+        model_str += "\t\tself.load_state_dict(torch.load(weights_path))\n"
+
+        # Write the generated model to a Python file with the model name
+        if output_path:
+            filename = output_path
+        else:
+            filename = f"{model_name.lower()}.py"
+            
+        with open(filename, "w") as f:
+            f.write(model_str)
+
+        print(f"Model written to {filename}")
     
     def set_layer_param(self, model_part, layer_name, key, value):
         """_summary_
