@@ -1,0 +1,6 @@
+Step 1/4 - evaluate - Time: 00:00:20 - Result: None
+Step 1/4 - evaluate - Time: 00:00:21 - Result: None
+Step 1/4 - evaluate - Time: 00:00:23 - Result: None
+Error in step retrain: train() got an unexpected keyword argument 'eval_interval'
+Step 3/4 - evaluate - Time: 00:00:00 - Result: None
+Error in step retrain: [Errno 2] No such file or directory: 'tmp_data/experiment_quant_first/1_pruning'

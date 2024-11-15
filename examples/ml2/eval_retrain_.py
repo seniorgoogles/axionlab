@@ -7,7 +7,6 @@ from includes_ml2 import *
 from tqdm import tqdm
 import time 
 
-
 class Report:
     
     def __init__(self) -> None:
@@ -35,7 +34,7 @@ class Report:
             
             self.result["layers"][layer] = {
                 "params": params,
-                "memory_usage_kb": str(mem_usage_kb)
+                "memory_usage_kb": mem_usage_kb
             }
             
         self.result["processing_sequence"] = model_layers
@@ -44,6 +43,7 @@ class Report:
     def write(self, file_path):
         with open(file_path, "w") as f:
             json.dump(self.result, f, indent=4, sort_keys=True)
+            
             
 class PipelineManager:
     
@@ -181,11 +181,13 @@ class Pipeline:
                         eval_model_config = set_config_value(eval_model_config, layer, "weight_disable_quant", False)
                     else:
                         raise ValueError("Invalid eval_key")
-                                        
+                      
+                    # Evaluation loop                  
                     for index, val in enumerate(eval_range):
+                        
+                    
                         print(f"Layer: {layer} - {eval_key}: {val}")
 
-                        
                         eval_model_config = set_config_value(eval_model_config, layer, eval_key, val)
                         
                         model = ModelBuilder().build(ModelTypes.JSC, config=eval_model_config, weights_path=model_weights)
@@ -195,6 +197,7 @@ class Pipeline:
                         if baseline_acc - acc > allowed_acc_drop:
                             if index > 0: 
                                 reload_index = index - 1
+
                             break
                         else:
                             reload_index = index
@@ -202,6 +205,8 @@ class Pipeline:
                     # Set back to previous "good" model configuration 
                     eval_model_config = set_config_value(eval_model_config, layer, eval_key, eval_range[reload_index])   
                     bitwidth_weights_list.append(get_config_value(eval_model_config, layer, "weight_bit_width"))
+                    acc =  self.pipeline_configuration.validator.validate(model)[0]
+                                        
 
                 layer_params_list = [get_weights_per_layer(model, layer) for layer in layers]
                 layer_params_zero_value_list = [get_weights_zero_value_per_layer(model, layer) for layer in layers]
@@ -291,8 +296,8 @@ if __name__ == "__main__":
     if os.path.exists(base_dir):
         shutil.rmtree(base_dir)    
         
-    base_model_config = f"{parent_directory}/configs/jsc/quant_jsc_xl_updated_quant.yaml"
-    float_model_weight_path = f"/home/mmecik/repositories/synapselab/train/jsc_xl_floating_point/run_331/best_weights.pth"
+    base_model_config = f"{parent_directory}/configs/jsc/quant_jsc_xl_weight_bias_quant.yaml"
+    float_model_weight_path = f"weights/jsc/jsc_xl_weights.pth"
     
     processing_sequence = ["dense2", "dense3", "dense4", "dense1", "dense5"]
     
@@ -338,27 +343,27 @@ if __name__ == "__main__":
         {   
             "step_name": "0_evaluate_quantization",
             "eval_key": "weight_bit_width",
-            "eval_range": [i for i in range(16, 10, -1)],
+            "eval_range": [i for i in range(16, 2, -1)],
             "weight_prune_first": False,
             "use_basemodel": True,
-            "allowed_acc_drop": np.arange(0.0, 10.0, 2.5).tolist(),
+            "allowed_acc_drop": [60.0], #np.arange(0.0, 1.0, 1.0).tolist(),
             "layers": processing_sequence,
             "models_dir": None,
             "save_dir": f"{base_dir}/{0}_quantization",
         }, 
         {    
             "step_name": "1_retrain_after_quantization",
-            "lr": 0.00009349,
-            "epochs": 1,
+            "lr": 0.00019349,
+            "epochs": 40,
             "models_dir": f"{base_dir}/{0}_quantization",
         }, 
         {   
             "step_name": "2_evaluate_pruning",
             "eval_key": "weight_sparse_eps",
-            "eval_range": np.arange(0.0, 1.0, 0.5),
+            "eval_range": np.arange(0.0, 1.0, 0.01),
             "weight_prune_first": False,
             "use_basemodel": False,
-            "allowed_acc_drop": np.arange(0.0, 10.0, 2.5).tolist(),
+            "allowed_acc_drop": [4.0], #np.arange(0.0, 1.0, 1.0).tolist(),
             "layers": processing_sequence,
             "models_dir": f"{base_dir}/{0}_quantization",
             "save_dir": f"{base_dir}/{1}_pruning",
@@ -366,7 +371,7 @@ if __name__ == "__main__":
         {    
             "step_name": "3_retrain_after_pruning",
             "lr": 0.00009349,
-            "epochs": 1,
+            "epochs": 45,
             "models_dir": f"{base_dir}/{1}_pruning"
         }, 
     ]  # You can add actual parameters as needed
@@ -374,310 +379,3 @@ if __name__ == "__main__":
     # Run the pipeline
     pipeline.run(steps, step_params_list)
     
-
-
-
-"""
-def retrain(config_dir, weights_path, lr, epochs): 
-    
-    config = os.path.join(config_dir, "config.yaml")
-    # Initialize the configuration manager
-    config_manager = ConfigurationManager(config)
-    
-    # Load the model
-    model = ModelBuilder().build(ModelTypes.JSC, config=config_manager.config, weights_path=weights_path)
-    
-    # Load the dataset and validate base model
-    dataset = DatasetBuilder().build(DatasetTypes.JSC, config=config_manager.config)
-    validator = Validator(torch.nn.CrossEntropyLoss(), dataset.get_test_loader())
-    
-    # Validate
-    start_acc, loss = validator.validate(model)
-
-    # Initialize the trainer and run training
-    trainer = Trainer(model, dataset)
-    
-    optimizer = torch.optim.Adam(model.parameters(), lr)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=15, verbose=True)
-    
-    name = config.replace('.yaml', '').split('/')[-1]
-    save_dir = f"{config_dir}"
-    
-    trainer.train(model, None, dataset, torch.nn.CrossEntropyLoss(), optimizer, lr, epochs, 200, scheduler, save_dir)
-    
-    # Reload model with best weights
-    model = ModelBuilder().build(ModelTypes.JSC, config=config_manager.config, weights_path=f"{save_dir}/best_weights.pth")
-
-    # Validate the model
-    acc, loss = validator.validate(model)
-
-    # Return accuracy and config name
-    return acc, loss
-
-def evaluate_max_acc_drop_by_key_layerwise(model_config, weights_path, layer_str_list, key, value_range, max_acc_drop, logger, save_dir, config_path=None):
-    
-    # Initialize dataset, validator and model
-    dataset = DatasetBuilder.build(DatasetTypes.JSC, config=model_config)
-    validator = Validator(torch.nn.CrossEntropyLoss(), dataset.get_test_loader())
-    
-    if config_path is not None:
-        model_config = ConfigurationManager(config_path).config
-    
-    model = ModelBuilder().build(ModelTypes.JSC, config=model_config, weights_path=weights_path)
-    
-    # Get baseline accuracy
-    baseline_acc, _ = validator.validate(model)
-    
-    # Get baseline sparsity
-    baseline_sparsity = get_sparsity_overview(model, layer_str_list)
-
-    # Go through all layers
-    for layer_str in layer_str_list:
-        reload_index = 0
-        
-        for index, val in enumerate(value_range):
-            
-            # Set new value and rebuild model
-            model_config = set_config_value(model_config, layer_str, key, val)
-            model = ModelBuilder().build(ModelTypes.JSC, config=model_config, weights_path=weights_path)
-            
-            # Validate model
-            acc, _ = validator.validate(model)
-            
-            print(f"{baseline_acc=} {acc=} {max_acc_drop=}")
-            
-            # If accuracy drop is too high, reload previous model configuration
-            if baseline_acc - acc > max_acc_drop:
-                reload_index = index - 1
-                print(f"Reload index: {reload_index}")
-                break
-            else:
-                reload_index = index
-
-        logger.debug(f"Layer: {layer_str} - {key} - {value_range[reload_index]}")
-        # Set back to previous "good" model configuration 
-        model_config = set_config_value(model_config, layer_str, key, value_range[reload_index])   
-        model = ModelBuilder().build(ModelTypes.JSC, config=model_config, weights_path=weights_path)
-        acc, _ = validator.validate(model) 
-      
-      
-    model = ModelBuilder().build(ModelTypes.JSC, config=model_config, weights_path=weights_path)
-    acc, loss = validator.validate(model)         
-    curr_model_sparsity = get_model_sparsity(model, layer_str_list)
-    
-    save_config_path = f"{save_dir}/config.yaml"
-    
-    logging.info(f"Saving configuration to {save_config_path}")
-    
-    manager = ConfigurationManager(model_config)
-    manager.write(save_config_path)
-    
-    return acc, loss, curr_model_sparsity
-
-# Define a generic ConfigManager for handling paths and configs
-class ConfigManager:
-    def __init__(self, config_path, weight_path):
-        self.config_path = config_path
-        self.weight_path = weight_path
-
-    def load_model_and_dataset(self):
-        model = ModelBuilder().build(ModelTypes.JSC, config=self.config_path, weights_path=self.weight_path)
-        dataset = DatasetBuilder.build(DatasetTypes.JSC, config=self.config_path)
-        return model, dataset
-
-    def save(self, save_dir):
-        os.makedirs(save_dir, exist_ok=True)
-        # Save relevant configuration information here
-        # For now, let's say we save the config path for reference
-        with open(f"{save_dir}/config.json", "w") as f:
-            json.dump({"config_path": self.config_path}, f, indent=4)
-
-# Define a class to manage the entire pipeline
-class Pipeline:
-    def __init__(self, config_manager):
-        self.config_manager = config_manager
-        self.report = None   
-        
-        self.baseline_acc = 0.0
-        
-    def delete_previous_results(self, save_dir):
-        print(f"Deleting previous results {save_dir}...")
-        if os.path.exists(save_dir):
-            shutil.rmtree(save_dir)
-        os.makedirs(save_dir, exist_ok=True)
-        self.report = dict()
-        
-    def validate_baseline(self):
-        model = ModelBuilder().build(ModelTypes.JSC, config=self.config_manager.config_path, weights_path=self.config_manager.weight_path)
-        dataset = DatasetBuilder.build(DatasetTypes.JSC, config=self.config_manager.config_path)
-        validator = Validator(torch.nn.CrossEntropyLoss(), dataset.get_test_loader())
-        acc, loss = validator.validate(model)
-            
-        return acc, loss
-            
-    def evaluate(self, eval_type ,model_config, model_weights, layer_str_list, save_dir, sparsity_range=None, weights_range=None, allowed_acc_drop=0.0):
-        ###Generalized evaluation for both sparsity and quantization
-        logger.debug(f"Evaluating {eval_type}")
-        
-        if eval_type == "sparsity":
-            model_config = set_config_value(model_config, "dense", "weight_disable_sparse", False)
-            acc, loss, current_model_sparsity = evaluate_max_acc_drop_by_key_layerwise(model_config, model_weights, layer_str_list,  "weight_sparse_eps", sparsity_range, allowed_acc_drop, logger, save_dir)
-            logger.info(f"Sparsity evaluation: {acc=} {allowed_acc_drop=} {current_model_sparsity=}")
-        elif eval_type == "quantization":
-            model_config = set_config_value(base_model_config, "dense", "weight_disable_quant", False)
-            acc, loss, current_model_sparsity = evaluate_max_acc_drop_by_key_layerwise(model_config, model_weights, layer_str_list,  "weight_bit_width", weights_range, allowed_acc_drop, logger, save_dir)
-            logger.info(f"Quantization evaluation: {acc}= {allowed_acc_drop=} {current_model_sparsity=}")
-
-        return acc, loss, current_model_sparsity
-    
-    def retrain(self, lr, epochs, config_dir, model_weights):
-        acc, loss = retrain(config_dir, model_weights, lr, epochs)
-        return acc, loss
-    
-    def execute_step(self, step, params, logger=None):
-
-        if step == "validate_baseline":
-            acc, loss = self.validate_baseline(**params)
-            logger.info(f"Validation baseline accuracy: {acc}% loss: {loss}")
-            
-        elif step == "evaluate":
-            acc, loss, model_sparsity = self.evaluate(**params)
-            logger.info(f"Validation baseline accuracy: {acc}% loss: {loss}")
-            
-        elif step == "retrain":
-            acc, loss = self.retrain(**params)
-            logger.info(f"Validation baseline accuracy: {acc}% loss: {loss}")
-        
-# Main orchestrator for running the pipeline
-if __name__ == "__main__":
-    # Configuration
-    base_model_config = f"{parent_directory}/configs/jsc/quant_jsc_xl_updated_quant.yaml"
-    float_model_weight_path = f"/home/mmecik/repositories/synapselab/train/jsc_xl_floating_point/run_331/best_weights.pth"
-    
-    base_dir = "tmp_data/experiment_quant_first"
-    base_line_acc = 0.0
-    
-    # Remove base directory if it exists
-    if os.path.exists(base_dir):
-        shutil.rmtree(base_dir)
-    
-    # Make sure the base directory exists
-    os.makedirs(base_dir, exist_ok=True)
-    
-    lr = 0.00009349
-    epochs = 30
-
-    # Define ranges for evaluation
-    sparsity_range = np.arange(0.0, 1.0, 0.05)
-    word_width_range = range(16, 3, -1)
-
-    max_allowed_acc_drop = 0.5
-    acc_drop_range_raw = np.arange(0.0, max_allowed_acc_drop + 0.25, 0.25)
-    allowed_acc_drop_range = [round(x, 2) for x in acc_drop_range_raw]
-    
-    # Create a ConfigManager instance
-    config_manager = ConfigManager(base_model_config, float_model_weight_path)
-    
-    layer_str_list = ["dense1", "dense2", "dense3", "dense4", "dense5"]
-
-    # Create the pipeline
-    pipeline = Pipeline(config_manager)
-
-    # Define the order of steps in the process
-    steps_order = [
-        "validate_baseline",
-        "evaluate",
-        "retrain",
-        "evaluate",
-        "retrain",
-    ]
-    
-    steps_params = [
-        {},
-        {
-            "model_config": base_model_config,
-            "model_weights": float_model_weight_path,
-            "weights_range": word_width_range,
-            "eval_type": "quantization",
-            "layer_str_list": layer_str_list,
-            "save_dir": f"{base_dir}/{0}_quantization",
-        },
-        {
-            "lr": lr, 
-            "epochs": 1, 
-            "config_dir": f"{base_dir}/{0}_quantization",
-            "model_weights": float_model_weight_path,
-        },
-        {
-            "model_config": base_model_config,
-            "model_weights": float_model_weight_path,
-            "weights_range": word_width_range,
-            "eval_type": "sparsity",
-            "layer_str_list": layer_str_list,
-            "config_dir": f"{base_dir}/{0}_quantization",
-            "save_dir": f"{base_dir}/{1}_sparsity",
-        },
-        {
-            "lr": lr, 
-            "epochs": 1, 
-            "config_dir": f"{base_dir}/{1}_sparsity",
-            "model_weights": float_model_weight_path,
-        },
-    ]
-
-    # Execute all steps in order
-    save_dir_base = "results"
-    
-    # Add processing bar here  
-    
-    overall_steps = (len(steps_order) - 1) * len(allowed_acc_drop_range) if "validate_baseline" in steps_order else len(steps_order) * len(acc_drop_range)
-    current_step = 1
-    
-    # Setup logging, which writes into a file in the base directory
-    logging.basicConfig(filename=f"{base_dir}/pipeline.log", level=logging.DEBUG)
-
-    # Make logging print to console as well
-    console = logging.StreamHandler()
-    logging.getLogger().addHandler(console)
-    
-    logger = logging.getLogger()
-    
-    # Format logs to include time and with  time % [LOGGING_LEVEL] % message
-    logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
-    
-    prev_base_dir = None
-
-    for i, (step, params) in enumerate(zip(steps_order, steps_params)):
-        current_step += 1
-        logger.info(f"Step {i+1}/{len(steps_order)} - {step}")
-
-        # Single steps
-        if step == "validate_baseline":
-            pipeline.execute_step(step, params, logger)
-            
-        elif step == "delete_previous_results":
-            pipeline.delete_previous_results(f"{save_dir_base}")
-
-        else: 
-            
-            # Create a copy of params
-            pipeline_params = params.copy()
-            base_save_dir = ""
-            # Loop over all accuracy drop values
-            for allowed_acc_drop in allowed_acc_drop_range:
-                logger.info(f"Step {i+1}/{len(steps_order)} - {step} - {current_step}/{overall_steps}")
-                
-                if "save_dir" in params:
-                    save_dir = os.path.join(params["save_dir"], f"allowed_acc_drop_{allowed_acc_drop}")
-                    pipeline_params["save_dir"] = save_dir
-                    # Add allowed_acc_drop to the params
-                    pipeline_params["allowed_acc_drop"] = allowed_acc_drop
-                if "config_dir" in params:
-                    config_dir = os.path.join(params["config_dir"], f"allowed_acc_drop_{allowed_acc_drop}")
-                    pipeline_params["config_dir"] = config_dir
-                
-                # Create save_dir if it does not exist
-                os.makedirs(save_dir, exist_ok=True)
-                
-                pipeline.execute_step(step, pipeline_params, logger)
-"""

@@ -60,22 +60,22 @@ class Mapper:
     def map_config_as_attr(config, module, obj, attr_name):
         """
         Maps the configuration to a module and sets it as an attribute of the object.
-        Handles optional weight and output quantizers.
+        Handles optional weight, input, output, and bias quantizers.
         """
         layer_config = dict(config)
         
-        weight_quant = Mapper.config_has_key(layer_config, 'weight_quant')
-        output_quant = Mapper.config_has_key(layer_config, 'output_quant')
-
-        # Pops also the keys if they exist
-        weight_quantizer = Mapper.get_quantizer_name_from_conf(layer_config, 'weight_quant') if 'weight_quant' in layer_config else None
-        output_quantizer = Mapper.get_quantizer_name_from_conf(layer_config, 'output_quant') if 'output_quant' in layer_config else None
+        # Initialize a dictionary to hold quantizer arguments
+        quantizer_args = {}
+        quantizer_keys = ['weight_quant', 'input_quant', 'output_quant', 'bias_quant']
         
-        if weight_quant:
-            setattr(obj, attr_name, module(**layer_config, weight_quant=weight_quantizer))
-        elif output_quant:
-            setattr(obj, attr_name, module(**layer_config, output_quant=output_quantizer))
-        elif weight_quant and output_quant:
-            setattr(obj, attr_name, module(**layer_config, weight_quant=weight_quantizer, output_quant=output_quantizer))
-        else:
-            setattr(obj, attr_name, module(**layer_config))
+        # Iterate over quantizer keys and add them to quantizer_args if they exist
+        for key in quantizer_keys:
+            if Mapper.config_has_key(layer_config, key):
+                quantizer_args[key] = Mapper.get_quantizer_name_from_conf(layer_config, key)
+        
+        # Remove quantizer keys from layer_config to avoid duplication
+        for key in quantizer_keys:
+            layer_config.pop(key, None)
+        
+        # Combine layer_config and quantizer_args when creating the module
+        setattr(obj, attr_name, module(**layer_config, **quantizer_args))
