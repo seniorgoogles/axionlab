@@ -1,6 +1,0 @@
-{
-    "step_name": "1_retrain_after_quantization",
-    "lr": 9.349e-05,
-    "epochs": 20,
-    "models_dir": "tmp_data/experiment_quant_first/0_quantization"
-}

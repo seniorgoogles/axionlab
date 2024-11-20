@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
     checkpoint = 331
 
-    model_config = f"{parent_directory}/configs/jsc/jsc_xl_wo_bias.yaml"
+    model_config = f"{parent_directory}/configs/jsc/jsc_xl.yaml"
     #best_weights = f"/home/mmecik/repositories/synapselab/train/jsc_xl_floating_point/run_{checkpoint}/best_weights.pth"
 
     trainer = Trainer()

@@ -304,6 +304,7 @@ def get_model_sparsity(model, layer_str_list):
 
 
 def sort_layers_by_param_num(model, layer_str_list):
+    
     layers = []
     params_count = []
     params = dict()
@@ -317,5 +318,5 @@ def sort_layers_by_param_num(model, layer_str_list):
     
     # Get the number of parameters for each layer to list
     sorted_params_count = [x for x in sorted(params_count, reverse=True)]
-        
+    
     return sorted_layers, sorted_params_count

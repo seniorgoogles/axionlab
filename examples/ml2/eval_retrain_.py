@@ -38,7 +38,7 @@ class Report:
             }
             
         self.result["processing_sequence"] = model_layers
-          
+
     # Write the report to a file as json
     def write(self, file_path):
         with open(file_path, "w") as f:
@@ -181,7 +181,7 @@ class Pipeline:
                         eval_model_config = set_config_value(eval_model_config, layer, "weight_disable_quant", False)
                     else:
                         raise ValueError("Invalid eval_key")
-                      
+
                     # Evaluation loop                  
                     for index, val in enumerate(eval_range):
                         
@@ -239,38 +239,58 @@ class Pipeline:
                 exp_index += 1
                         
     def retrain(self, *args, **kwargs):
+        
         print("Retraining model...")        
         lr = kwargs["lr"]
         epochs = kwargs["epochs"]
-        models_dir = kwargs["models_dir"]
+        
+        config_path = kwargs["config_path"]
+        weight_path = kwargs["weight_path"]
+        save_dir = kwargs["save_dir"]
+
+            
+        # Check if save_dir exists, if it exists, delete it and recreate it
+        if os.path.exists(save_dir):
+            shutil.rmtree(save_dir)
+            
+        os.makedirs(save_dir, exist_ok=True)
+
         step_name = kwargs["step_name"]
+
+        model_config = ConfigurationManager(config_path)
+        model = ModelBuilder().build(ModelTypes.JSC, config=model_config.config, weights_path=weight_path)
         
-        # List models folder 
-        model_dir_list = os.listdir(models_dir)
-        model_dir_list = [os.path.join(models_dir, model_dir) for model_dir in model_dir_list]
+        optimizer = torch.optim.Adam(model.parameters(), lr)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=15, verbose=True)
         
-        exp_index = 0
+        trainer = Trainer(model, self.pipeline_configuration.dataset)
+        trainer.train(model, None, self.pipeline_configuration.dataset, torch.nn.CrossEntropyLoss(), optimizer, lr, epochs, 200, scheduler, save_dir)
         
-        for model_dir in model_dir_list:
-            model_config = ConfigurationManager(os.path.join(model_dir, "config.yaml"))
-            model = ModelBuilder().build(ModelTypes.JSC, config=model_config.config, weights_path=self.pipeline_configuration.weights_config_path)
-            
-            optimizer = torch.optim.Adam(model.parameters(), lr)
-            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=15, verbose=True)
-            
-            trainer = Trainer(model, self.pipeline_configuration.dataset)
-            trainer.train(model, None, self.pipeline_configuration.dataset, torch.nn.CrossEntropyLoss(), optimizer, lr, epochs, 200, scheduler, model_dir)
-            
-            acc, _ = self.pipeline_configuration.validator.validate(model)
-            
-            # Write report to file
-            self.report.add_result_by_metric(step_name, f"exp_{exp_index}", {
-                "accuracy": acc,
-            })
-            
-            self.report.write(self.report_path)
-                                             
-            exp_index += 1
+        print(f"{lr=}")
+        trainer.train(model, None, self.pipeline_configuration.dataset, torch.nn.CrossEntropyLoss(), optimizer, lr, epochs - 10, 200, scheduler, save_dir)
+        
+        lr = lr + (lr * 0.005)
+        print(f"{lr=}")
+        trainer.train(model, None, self.pipeline_configuration.dataset, torch.nn.CrossEntropyLoss(), optimizer, lr, epochs - 10, 200, scheduler, save_dir)
+        
+        lr = lr + (lr * 0.005)
+        print(f"{lr=}")
+        trainer.train(model, None, self.pipeline_configuration.dataset, torch.nn.CrossEntropyLoss(), optimizer, lr, epochs - 20, 200, scheduler, save_dir)
+        
+        lr = lr +(lr * 0.005)        
+        print(f"{lr=}")
+        trainer.train(model, None, self.pipeline_configuration.dataset, torch.nn.CrossEntropyLoss(), optimizer, lr, epochs, 200, scheduler, save_dir)
+
+        
+        acc, _ = self.pipeline_configuration.validator.validate(model)
+        
+        # Write report to file
+        self.report.add_result_by_metric(step_name, f"exp", {
+            "accuracy": acc,
+        })
+        
+        self.report.write(self.report_path)
+
     def train(self, *args, **kwargs):
         print("Training model...")
     
@@ -292,12 +312,14 @@ if __name__ == "__main__":
     
     base_dir = "tmp_data/experiment_quant_first"
         
-    # Remove base directory if it exists
+    # Remove base directory if it exists, if user input is y else not
     if os.path.exists(base_dir):
-        shutil.rmtree(base_dir)    
-        
+        user_input = input("Directory exists, do you want to remove it? (y/n)")
+        if user_input == "y":
+            shutil.rmtree(base_dir)
+
     base_model_config = f"{parent_directory}/configs/jsc/quant_jsc_xl_weight_bias_quant.yaml"
-    float_model_weight_path = f"weights/jsc/jsc_xl_weights.pth"
+    float_model_weight_path = "/home/fry/new_repo/synapselab/train/jsc_xl/run_4/best_weights.pth"
     
     processing_sequence = ["dense2", "dense3", "dense4", "dense1", "dense5"]
     
@@ -323,9 +345,9 @@ if __name__ == "__main__":
 
     # Define the steps and their corresponding parameters
     steps = [
-        "evaluate", 
-        "retrain",
-        "evaluate",
+    #    "evaluate", 
+    #    "retrain",
+    #    "evaluate",
         "retrain"
     ]
     
@@ -363,19 +385,34 @@ if __name__ == "__main__":
             "eval_range": np.arange(0.0, 1.0, 0.01),
             "weight_prune_first": False,
             "use_basemodel": False,
-            "allowed_acc_drop": [4.0], #np.arange(0.0, 1.0, 1.0).tolist(),
+            "allowed_acc_drop": [3.0], #np.arange(0.0, 1.0, 1.0).tolist(),
             "layers": processing_sequence,
             "models_dir": f"{base_dir}/{0}_quantization",
             "save_dir": f"{base_dir}/{1}_pruning",
         }, 
         {    
             "step_name": "3_retrain_after_pruning",
-            "lr": 0.00009349,
-            "epochs": 45,
+            "lr": 0.00003349,
+            "epochs": 100,
             "models_dir": f"{base_dir}/{1}_pruning"
         }, 
     ]  # You can add actual parameters as needed
 
+    step_params_list = [
+        {    
+            "step_name": "0_init_train",
+            "lr": 0.02063015025,
+            "epochs": 35,
+            "config_path": f"/home/fry/new_repo/synapselab/weights/jsc/config.yaml",
+            "weight_path": f"/home/fry/new_repo/synapselab/weights/jsc/best_weights.pth",
+            "save_dir": f"{base_dir}/0_init_train",
+        },    
+    ]
     # Run the pipeline
     pipeline.run(steps, step_params_list)
+
+    #model = ModelBuilder().build(ModelTypes.JSC, config="/home/fry/new_repo/synapselab/tmp_data/experiment_quant_first/1_pruning/allowed_acc_3.0/config.yaml", weights_path="/home/fry/new_repo/synapselab/tmp_data/experiment_quant_first/1_pruning/allowed_acc_3.0/best_weights.pth")
+    #validator = Validator(torch.nn.CrossEntropyLoss(), dataset.get_test_loader())
+    #acc, _ = validator.validate(model)
+    
     

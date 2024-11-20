@@ -34,8 +34,8 @@ def export_model(model, output_path, validation_dataset, num_samples=100):
             model_dict[name] = {
                 "layerId": index,
                 "numNeurons": module.weight.shape[0],
-                "weight": module.weight.cpu().detach().numpy().tolist(),
-                "bias": module.bias.cpu().detach().numpy().tolist(),
+                "weight": module.quant_weight()[0].cpu().detach().numpy().tolist(),
+                "bias": module.quant_weight()[0].cpu().detach().numpy().tolist(),
                 "activationFunction": "ReLU"
             }
             
@@ -93,13 +93,12 @@ def visualize_layer_differences(layer, weight1, weight2):
 
 #base_model_config = f"{parent_directory}/configs/jsc/quant_jsc_xl_updated_quant.yaml"
 float_model_weight_path = f"weights/jsc/jsc_xl_weights.pth"
-float_model_config = "/home/mmecik/repositories/synapselab/configs/jsc/jsc_xl.yaml"
+float_model_config = "configs/jsc/jsc_xl.yaml"
 
-        
 model_acc_drop = f"50.0"
 
-quant_model_config = f"/home/mmecik/repositories/synapselab/tmp_data/experiment_quant_first/1_pruning/allowed_acc_4.0/config.yaml"
-quant_model_weight_path = f"/home/mmecik/repositories/synapselab/tmp_data/experiment_quant_first/1_pruning/allowed_acc_4.0/best_weights.pth"
+quant_model_config = f"tmp_data/experiment_quant_first/1_pruning/allowed_acc_4.0/config.yaml"
+quant_model_weight_path = f"tmp_data/experiment_quant_first/1_pruning/allowed_acc_4.0/best_weights.pth"
 
 dataset = DatasetBuilder().build(DatasetTypes.JSC, config=quant_model_config)
 quant_model = ModelBuilder().build(ModelTypes.JSC, config=quant_model_config, weights_path=quant_model_weight_path)
@@ -109,13 +108,12 @@ validator = Validator(torch.nn.CrossEntropyLoss(), dataset.get_test_loader())
 state_dict = copy.deepcopy(quant_model.state_dict())
 
 # Set cache for bias
-for name, module in quant_model.named_modules():
-    if isinstance(module, QuantLinear):
-        module.cache_inference_quant_bias = True
+#for name, module in quant_model.named_modules():
+#    if isinstance(module, QuantLinear):
+#        module.cache_inference_quant_bias = True
         
 # Run inference
 model_float = ModelBuilder().build(ModelTypes.JSC, config=float_model_config, weights_path=float_model_weight_path)
-model_float.load_state_dict(state_dict)
 
 acc, loss = validator.validate(quant_model)
 acc, loss = validator.validate(model_float)
@@ -128,18 +126,18 @@ for name, module in quant_model.named_modules():
             print(f"Layer: {name}")
             print(f"Weight: {module.quant_weight()[0].shape}")
 
-            visualize_layer_differences(name, module.quant_weight()[0].detach().numpy(), module.weight.detach().numpy())
+            #visualize_layer_differences(name, module.quant_weight()[0].detach().numpy(), module.weight.detach().numpy())
             state_dict[name + ".weight"] = module.quant_weight()[0]
             state_dict[name + ".bias"] = module.quant_bias()[0]
         except Exception as e:
             print(name)
             print(e)
 
-for name, module in model_float.named_modules():
+for name, module in quant_model.named_modules():
     if isinstance(module, Linear):
         print(f"Layer: {name}")
         print(f"Weight: {module.weight}")
   
   
-export_model(model_float, "ml2_jsc_weights", dataset.get_test_loader(), num_samples=100)
+export_model(quant_model, "ml2_jsc_weights", dataset.get_test_loader(), num_samples=100)
 
