@@ -131,8 +131,9 @@ class Pipeline:
         use_basemodel = kwargs["use_basemodel"]
         allowed_acc_drop = kwargs["allowed_acc_drop"]
         layers = kwargs["layers"]
-        models_dir = kwargs["models_dir"]
-        save_dir = kwargs["save_dir"]
+        config_path = kwargs["config_path"]
+        weight_path = kwargs["weight_path"]
+        save_dir = kwargs["save_dir"]      
                 
         # Convert allowed_acc_drop to list if it is not
         if not isinstance(allowed_acc_drop, list):
@@ -142,101 +143,99 @@ class Pipeline:
             
         # Check if basemodel is used, if not use models from models_dir
         if use_basemodel:
-            models_config_list = [self.pipeline_configuration.model_config_path]
-            model_weights_list = [self.pipeline_configuration.weights_config_path]
+            model_config = self.pipeline_configuration.model_config_path
+            model_weight = self.pipeline_configuration.weights_config_path
         else:
-            models_config_list = [os.path.join(models_dir, model_dir, "config.yaml") for model_dir in os.listdir(models_dir)]
-            model_weights_list = [os.path.join(models_dir, model_dir, "best_weights.pth") for model_dir in os.listdir(models_dir)]
+            model_config = config_path
+            model_weight = weight_path
         
         exp_index = 0
         
-        # Iiterate over all models
-        for model_config, model_weights in zip(models_config_list, model_weights_list):
-            # Reload index
-            reload_index = 0
+        # Get baseline accuracy
+        baseline_acc = self.pipeline_configuration.validator.validate(ModelBuilder().build(ModelTypes.JSC, 
+                                                                                        config=model_config, 
+                                                                                        weights_path=model_weight))[0]
+    
+        # Iterate over all allowed_acc_drop values
+        for allowed_acc_drop in allowed_acc_drop_list:
             
-            # Get baseline accuracy
-            baseline_acc = self.pipeline_configuration.validator.validate(ModelBuilder().build(ModelTypes.JSC, 
-                                                                                            config=model_config, 
-                                                                                            weights_path=model_weights))[0]
-        
-            # Iterate over all allowed_acc_drop values
-            for allowed_acc_drop in allowed_acc_drop_list:
+            # Load base model configuration
+            eval_model_config = ConfigurationManager(model_config).config          
+            bitwidth_weights_list = []
+            
+            # Iterate over all layers
+            for layer in layers:
+                # Iterate over all values in the range
                 
-                # Load base model configuration
-                eval_model_config = ConfigurationManager(model_config).config          
-                bitwidth_weights_list = []
+                # Setup model configuration
+                eval_model_config = set_config_value(eval_model_config, layer, "weight_prune_first", weight_prune_first)
                 
-                # Iterate over all layers
-                for layer in layers:
-                    # Iterate over all values in the range
-                    
-                    # Setup model configuration
-                    eval_model_config = set_config_value(eval_model_config, layer, "weight_prune_first", weight_prune_first)
-                    
-                    # If weight_sparse_eps is set, enable pruning, else if weight_bit_width is set, enable quantization
-                    if eval_key == "weight_sparse_eps":
-                        eval_model_config = set_config_value(eval_model_config, layer, "weight_disable_sparse", False)
-                    elif eval_key == "weight_bit_width":
-                        eval_model_config = set_config_value(eval_model_config, layer, "weight_disable_quant", False)
-                    else:
-                        raise ValueError("Invalid eval_key")
+                # If weight_sparse_eps is set, enable pruning, else if weight_bit_width is set, enable quantization
+                if eval_key == "weight_sparse_eps":
+                    eval_model_config = set_config_value(eval_model_config, layer, "weight_disable_sparse", False)
+                elif eval_key == "weight_bit_width":
+                    eval_model_config = set_config_value(eval_model_config, layer, "weight_disable_quant", False)
+                else:
+                    raise ValueError("Invalid eval_key")
 
-                    # Evaluation loop                  
-                    for index, val in enumerate(eval_range):
-                        
+                # Evaluation loop                  
+                for index, val in enumerate(eval_range):
                     
-                        print(f"Layer: {layer} - {eval_key}: {val}")
+                
+                    print(f"Layer: {layer} - {eval_key}: {val}")
 
-                        eval_model_config = set_config_value(eval_model_config, layer, eval_key, val)
-                        
-                        model = ModelBuilder().build(ModelTypes.JSC, config=eval_model_config, weights_path=model_weights)
-                        acc =  self.pipeline_configuration.validator.validate(model)[0]
-                        
-                        # If accuracy drop is too high, reload previous model configuration
-                        if baseline_acc - acc > allowed_acc_drop:
-                            if index > 0: 
-                                reload_index = index - 1
-
-                            break
-                        else:
-                            reload_index = index
+                    eval_model_config = set_config_value(eval_model_config, layer, eval_key, val)
                     
-                    # Set back to previous "good" model configuration 
-                    eval_model_config = set_config_value(eval_model_config, layer, eval_key, eval_range[reload_index])   
-                    bitwidth_weights_list.append(get_config_value(eval_model_config, layer, "weight_bit_width"))
+                    model = ModelBuilder().build(ModelTypes.JSC, config=eval_model_config, weights_path=model_weight)
                     acc =  self.pipeline_configuration.validator.validate(model)[0]
-                                        
-
-                layer_params_list = [get_weights_per_layer(model, layer) for layer in layers]
-                layer_params_zero_value_list = [get_weights_zero_value_per_layer(model, layer) for layer in layers]
-                layer_usagage_kb_max_list = [(params * 32) / 8 / 1024 for params in layer_params_list]
-                layer_usage_kb_curr_list = [(params * bitwidth) / 8 / 1024 for params, bitwidth in zip(layer_params_list, bitwidth_weights_list)]
-                
-                dict_layers = dict()
-                for layer, params, zero_params, max_usage, curr_usage, bitwidth_weights in zip(layers, layer_params_list, layer_params_zero_value_list, layer_usagage_kb_max_list, layer_usage_kb_curr_list, bitwidth_weights_list):
-                    dict_layers[layer] = {
-                        "params": params,
-                        "zero_params": zero_params,
-                        "max_usage_kb": max_usage,
-                        "curr_usage_kb": curr_usage,
-                        "bitwidth": bitwidth_weights
-                    }
                     
-                # Write report to file
-                self.report.add_result_by_metric(step_name, f"exp_{exp_index}", {
-                    "allowed_accuracy_drop": allowed_acc_drop,
-                    "accuracy": acc,
-                    "layers": dict_layers
-                })
-                # Create dir for saving data
-                os.makedirs(f"{save_dir}/allowed_acc_{allowed_acc_drop}", exist_ok=True)
-                self.report.write(self.report_path)
-                
-                manager = ConfigurationManager(eval_model_config)
-                manager.write(f"{save_dir}/allowed_acc_{allowed_acc_drop}/config.yaml")
+                    # If accuracy drop is too high, reload previous model configuration
+                    if baseline_acc - acc > allowed_acc_drop:
+                        if index > 0: 
+                            reload_index = index - 1
 
-                exp_index += 1
+                        break
+                    else:
+                        reload_index = index
+                
+                # Set back to previous "good" model configuration 
+                eval_model_config = set_config_value(eval_model_config, layer, eval_key, eval_range[reload_index])   
+                bitwidth_weights_list.append(get_config_value(eval_model_config, layer, "weight_bit_width"))
+                acc =  self.pipeline_configuration.validator.validate(model)[0]
+                                    
+
+            layer_params_list = [get_weights_per_layer(model, layer) for layer in layers]
+            layer_params_zero_value_list = [get_weights_zero_value_per_layer(model, layer) for layer in layers]
+            layer_usagage_kb_max_list = [(params * 32) / 8 / 1024 for params in layer_params_list]
+            layer_usage_kb_curr_list = [(params * bitwidth) / 8 / 1024 for params, bitwidth in zip(layer_params_list, bitwidth_weights_list)]
+            
+            dict_layers = dict()
+            for layer, params, zero_params, max_usage, curr_usage, bitwidth_weights in zip(layers, layer_params_list, layer_params_zero_value_list, layer_usagage_kb_max_list, layer_usage_kb_curr_list, bitwidth_weights_list):
+                dict_layers[layer] = {
+                    "params": params,
+                    "zero_params": zero_params,
+                    "max_usage_kb": max_usage,
+                    "curr_usage_kb": curr_usage,
+                    "bitwidth": bitwidth_weights
+                }
+                
+            # Write report to file
+            self.report.add_result_by_metric(step_name, f"exp_{exp_index}", {
+                "allowed_accuracy_drop": allowed_acc_drop,
+                "accuracy": acc,
+                "layers": dict_layers
+            })
+            
+            # If save_dir exists, delete it and recreate it
+            if os.path.exists(save_dir):
+                shutil.rmtree(save_dir)
+                
+            # Create dir for saving data
+            os.makedirs(f"{save_dir}", exist_ok=True)
+            self.report.write(self.report_path)
+            
+            manager = ConfigurationManager(eval_model_config)
+            manager.write(f"{save_dir}/config.yaml")
                         
     def retrain(self, *args, **kwargs):
         
@@ -267,15 +266,15 @@ class Pipeline:
         trainer.train(model, None, self.pipeline_configuration.dataset, torch.nn.CrossEntropyLoss(), optimizer, lr, epochs, 200, scheduler, save_dir)
         
         print(f"{lr=}")
-        trainer.train(model, None, self.pipeline_configuration.dataset, torch.nn.CrossEntropyLoss(), optimizer, lr, epochs - 10, 200, scheduler, save_dir)
+        trainer.train(model, None, self.pipeline_configuration.dataset, torch.nn.CrossEntropyLoss(), optimizer, lr, epochs + 10, 200, scheduler, save_dir)
         
         lr = lr + (lr * 0.005)
         print(f"{lr=}")
-        trainer.train(model, None, self.pipeline_configuration.dataset, torch.nn.CrossEntropyLoss(), optimizer, lr, epochs - 10, 200, scheduler, save_dir)
+        trainer.train(model, None, self.pipeline_configuration.dataset, torch.nn.CrossEntropyLoss(), optimizer, lr, epochs + 20, 200, scheduler, save_dir)
         
         lr = lr + (lr * 0.005)
         print(f"{lr=}")
-        trainer.train(model, None, self.pipeline_configuration.dataset, torch.nn.CrossEntropyLoss(), optimizer, lr, epochs - 20, 200, scheduler, save_dir)
+        trainer.train(model, None, self.pipeline_configuration.dataset, torch.nn.CrossEntropyLoss(), optimizer, lr, epochs + 10, 200, scheduler, save_dir)
         
         lr = lr +(lr * 0.005)        
         print(f"{lr=}")
@@ -310,7 +309,7 @@ class Pipeline:
 
 if __name__ == "__main__":
     
-    base_dir = "tmp_data/experiment_quant_first"
+    base_dir = "tmp_data/quant_first"
         
     # Remove base directory if it exists, if user input is y else not
     if os.path.exists(base_dir):
@@ -318,8 +317,8 @@ if __name__ == "__main__":
         if user_input == "y":
             shutil.rmtree(base_dir)
 
-    base_model_config = f"{parent_directory}/configs/jsc/quant_jsc_xl_weight_bias_quant.yaml"
-    float_model_weight_path = "/home/fry/new_repo/synapselab/train/jsc_xl/run_4/best_weights.pth"
+    base_model_config = f"{parent_directory}/weights/jsc/config.yaml"
+    float_model_weight_path = f"{parent_directory}/weights/jsc/best_weights.pth"
     
     processing_sequence = ["dense2", "dense3", "dense4", "dense1", "dense5"]
     
@@ -345,9 +344,9 @@ if __name__ == "__main__":
 
     # Define the steps and their corresponding parameters
     steps = [
-    #    "evaluate", 
-    #    "retrain",
-    #    "evaluate",
+        "evaluate", 
+        "retrain",
+        "evaluate",
         "retrain"
     ]
     
@@ -368,16 +367,19 @@ if __name__ == "__main__":
             "eval_range": [i for i in range(16, 2, -1)],
             "weight_prune_first": False,
             "use_basemodel": True,
-            "allowed_acc_drop": [60.0], #np.arange(0.0, 1.0, 1.0).tolist(),
+            "allowed_acc_drop": [50.0], #np.arange(0.0, 1.0, 1.0).tolist(),
             "layers": processing_sequence,
-            "models_dir": None,
-            "save_dir": f"{base_dir}/{0}_quantization",
+            "config_path": f"{parent_directory}/weights/jsc/config.yaml",
+            "weight_path": f"{parent_directory}/weights/jsc/best_weights.pth",
+            "save_dir": f"{base_dir}/{0}_quant",
         }, 
         {    
-            "step_name": "1_retrain_after_quantization",
-            "lr": 0.00019349,
-            "epochs": 40,
-            "models_dir": f"{base_dir}/{0}_quantization",
+            "step_name": "1_retrain_after_quant",
+            "lr": 0.00876,
+            "epochs": 35,
+            "config_path": f"{base_dir}/{0}_quant/config.yaml",
+            "weight_path": f"{parent_directory}/weights/jsc/best_weights.pth",
+            "save_dir": f"{base_dir}/1_init_train",
         }, 
         {   
             "step_name": "2_evaluate_pruning",
@@ -385,34 +387,105 @@ if __name__ == "__main__":
             "eval_range": np.arange(0.0, 1.0, 0.01),
             "weight_prune_first": False,
             "use_basemodel": False,
-            "allowed_acc_drop": [3.0], #np.arange(0.0, 1.0, 1.0).tolist(),
+            "allowed_acc_drop": [50.0], #np.arange(0.0, 1.0, 1.0).tolist(),
             "layers": processing_sequence,
-            "models_dir": f"{base_dir}/{0}_quantization",
-            "save_dir": f"{base_dir}/{1}_pruning",
+            "config_path": f"{base_dir}/{0}_quant/config.yaml",
+            "weight_path": f"{base_dir}/1_init_train/best_weights.pth",
+            "save_dir": f"{base_dir}/2_pruning",
         }, 
         {    
             "step_name": "3_retrain_after_pruning",
             "lr": 0.00003349,
-            "epochs": 100,
-            "models_dir": f"{base_dir}/{1}_pruning"
+            "epochs": 35,
+            "config_path": f"{base_dir}/2_pruning/config.yaml",
+            "weight_path": f"{base_dir}/1_init_train/best_weights.pth",
+            "save_dir": f"{base_dir}/3_retrain",
         }, 
     ]  # You can add actual parameters as needed
 
+    '''
     step_params_list = [
         {    
             "step_name": "0_init_train",
-            "lr": 0.02063015025,
+            "lr": 0.00876,
             "epochs": 35,
-            "config_path": f"/home/fry/new_repo/synapselab/weights/jsc/config.yaml",
-            "weight_path": f"/home/fry/new_repo/synapselab/weights/jsc/best_weights.pth",
+            "config_path": f"{parent_directory}/weights/jsc/config.yaml",
+            "weight_path": f"{parent_directory}/weights/jsc/best_weights.pth",
             "save_dir": f"{base_dir}/0_init_train",
         },    
     ]
+    '''
     # Run the pipeline
     pipeline.run(steps, step_params_list)
 
-    #model = ModelBuilder().build(ModelTypes.JSC, config="/home/fry/new_repo/synapselab/tmp_data/experiment_quant_first/1_pruning/allowed_acc_3.0/config.yaml", weights_path="/home/fry/new_repo/synapselab/tmp_data/experiment_quant_first/1_pruning/allowed_acc_3.0/best_weights.pth")
-    #validator = Validator(torch.nn.CrossEntropyLoss(), dataset.get_test_loader())
-    #acc, _ = validator.validate(model)
+    '''
+    config_path = f"{parent_directory}/weights/jsc/config.yaml"
+    weight_path = f"{parent_directory}/weights/jsc/best_weights.pth"
+
+    model = ModelBuilder().build(ModelTypes.JSC, config=config_path, weights_path=weight_path)
+    validator = Validator(torch.nn.CrossEntropyLoss(), dataset.get_test_loader())
+    acc, _ = validator.validate(model)
     
     
+    # Float with Act. 8-Bit Bias 16-Bit
+    config_path = f"{parent_directory}/weights/jsc/config.yaml"
+    weight_path = f"{parent_directory}/weights/jsc/best_weights.pth"
+
+    model = ModelBuilder().build(ModelTypes.JSC, config=config_path, weights_path=weight_path)
+    validator = Validator(torch.nn.CrossEntropyLoss(), dataset.get_test_loader())
+    acc, _ = validator.validate(model)
+    
+    # Get the total values of the model for the dense layers
+    layers, params = get_model_param_num(model)
+    print(f"Total params: {params}")
+    
+    layers, zero_params = get_model_zero_param_num(model)
+    print(f"Total zero params: {zero_params}")
+    
+    # Calculate percentage of zero values
+    zero_percentage_float = [(zero / total) * 100 for zero, total in zip(zero_params, params)]
+    print(f"Percentage of zero values: {zero_percentage_float}")
+    
+    
+    # Quant with Act. 8-Bit Bias 16-Bit
+    config_path = "/home/mmecik/repositories/synapselab/tmp_data/quant_first/0_quant/config.yaml"
+    weight_path = f"/home/mmecik/repositories/synapselab/tmp_data/quant_first/1_init_train/best_weights.pth"
+
+    model = ModelBuilder().build(ModelTypes.JSC, config=config_path, weights_path=weight_path)
+    validator = Validator(torch.nn.CrossEntropyLoss(), dataset.get_test_loader())
+    acc, _ = validator.validate(model)
+    
+    # Get the total values of the model for the dense layers
+    layers, params = get_model_param_num(model)
+    #print(f"Total params: {params}")
+    
+    layers, zero_params = get_model_zero_param_num(model)
+    print(f"Total zero params quant: {zero_params}")
+    
+    # Calculate percentage of zero values
+    zero_percentage_quant = [(zero / total) * 100 for zero, total in zip(zero_params, params)]
+    #print(f"Percentage of zero values: {zero_percentage_quant}")
+    
+    # Quant with Act. 8-Bit Bias 16-Bit
+    config_path = "/home/mmecik/repositories/synapselab/tmp_data/quant_first/2_pruning/config.yaml"
+    weight_path = f"/home/mmecik/repositories/synapselab/tmp_data/quant_first/3_retrain/best_weights.pth"
+
+    model = ModelBuilder().build(ModelTypes.JSC, config=config_path, weights_path=weight_path)
+    validator = Validator(torch.nn.CrossEntropyLoss(), dataset.get_test_loader())
+    acc, _ = validator.validate(model)
+    
+    # Get the total values of the model for the dense layers
+    layers, params = get_model_param_num(model)
+    #print(f"Total params: {params}")
+    
+    layers, zero_params = get_model_zero_param_num(model)
+    print(f"Total zero params prune: {zero_params}")
+    
+    # Calculate percentage of zero values
+    zero_percentage_prune = [(zero / total) * 100 for zero, total in zip(zero_params, params)]
+    
+    print(["dense1", "dense2", "dense3", "dense4", "dense5"])
+    print(f"Percentage of zero values: {zero_percentage_float}")
+    print(f"Percentage of zero values: {zero_percentage_quant}")
+    print(f"Percentage of zero values: {zero_percentage_prune}")
+    '''

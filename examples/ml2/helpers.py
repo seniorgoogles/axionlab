@@ -302,6 +302,23 @@ def get_model_sparsity(model, layer_str_list):
     
     return sparsity_overview["total"]["zero_weight_percentage"]
 
+def get_model_param_num(model, layers=["dense1", "dense2", "dense3", "dense4", "dense5"]):
+
+    params_count_per_layer = list()
+    
+    for layer in layers:
+        params_count_per_layer.append(get_weights_per_layer(model, layer))
+        
+    return layers, params_count_per_layer
+
+def get_model_zero_param_num(model, layers=["dense1", "dense2", "dense3", "dense4", "dense5"]):
+    
+        zero_params_per_layer = list()
+        
+        for layer in layers:
+            zero_params_per_layer.append(get_weights_zero_value_per_layer(model, layer))
+            
+        return layers, zero_params_per_layer
 
 def sort_layers_by_param_num(model, layer_str_list):
     
