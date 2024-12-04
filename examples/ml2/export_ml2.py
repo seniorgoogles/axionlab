@@ -238,6 +238,8 @@ float_model_config = "configs/jsc/jsc_xl.yaml"
 model_acc_drop = f"50.0"
 
 quant_model_config = f"tmp_data/quant_first/2_pruning/config.yaml"
+
+quant_model_config = f"tmp_data/quant_first/2_pruning/exp_max_quant_prune.yaml"
 quant_model_weight_path = f"tmp_data/quant_first/3_retrain/best_weights.pth"
 
 dataset = DatasetBuilder().build(DatasetTypes.JSC, config=quant_model_config)
@@ -286,4 +288,4 @@ for name, module in quant_model.named_modules():
             print(e)
   
 export_model(quant_model, "ml2_jsc_weights.json", dataset.get_test_loader(), num_samples=100)
-#export_configfile(quant_model, quant_model_config, "ml2_jsc_config.json", dataset.get_test_loader())
+export_configfile(quant_model, quant_model_config, "ml2_jsc_config.json", dataset.get_test_loader())

@@ -15,7 +15,7 @@
         "lsbIn": -8,
         "lsbInt": -8,
         "msbWeights": 3,
-        "lsbWeights": 0,
+        "lsbWeights": 1,
         "msbBias": 1,
         "lsbBias": -6,
         "method": "generic"
@@ -27,8 +27,8 @@
         "lsbInt": -8,
         "msbWeights": 2,
         "lsbWeights": 0,
-        "msbBias": 2,
-        "lsbBias": -5,
+        "msbBias": 1,
+        "lsbBias": -6,
         "method": "generic"
     },
     "layer3": {
@@ -38,8 +38,8 @@
         "lsbInt": -8,
         "msbWeights": 2,
         "lsbWeights": 0,
-        "msbBias": 1,
-        "lsbBias": -6,
+        "msbBias": 0,
+        "lsbBias": -7,
         "method": "generic"
     },
     "layer4": {
@@ -59,9 +59,9 @@
         "lsbIn": -8,
         "lsbInt": -8,
         "msbWeights": 2,
-        "lsbWeights": -1,
-        "msbBias": 3,
-        "lsbBias": -4,
+        "lsbWeights": 0,
+        "msbBias": 2,
+        "lsbBias": -5,
         "method": "generic"
     }
 }
