@@ -13,7 +13,7 @@ class Trainer:
         self.criterion = None
         self.save_dir = None
 
-    def train(self, model, config, dataset, criterion, optimizer, lr, epochs, update_step_count=200, scheduler=None, save_dir=None):
+    def train(self, model, config, dataset, criterion, optimizer, lr, epochs, update_step_count=200, scheduler=None, save_dir=None, save_model=False):
         self.lr = lr
         self.epochs = epochs
         self.optimizer = optimizer
@@ -22,10 +22,12 @@ class Trainer:
         device = DeviceSelector.get_device()
         model.to(device)
 
-        self._setup_save_directory(model)
 
         train_loader = dataset.get_train_loader()
         test_loader = dataset.get_test_loader()
+        
+        if save_model:
+            self._setup_save_directory(model)
 
         model.train()
         print(f"{Fore.GREEN}------------------------------------")
@@ -37,14 +39,17 @@ class Trainer:
         for epoch in range(self.epochs):
             self._train_one_epoch(model, train_loader, epoch, device, update_step_count)
             accuracy,_ = self.eval(model, test_loader, device, epoch, self.epochs, scheduler=scheduler)
-
-            # Save the last weights
-            self._save_model_weights(model, 'last_weights.pth', save_dir)
+            
+            if save_model:
+            
+                # Save the last weights
+                self._save_model_weights(model, 'last_weights.pth', save_dir)
 
             # Save the best weights
             if accuracy > best_accuracy:
                 best_accuracy = accuracy
-                self._save_model_weights(model, 'best_weights.pth')
+                if save_model:
+                    self._save_model_weights(model, 'best_weights.pth')
 
     """
     def train_by_strategy(self, model, dataset, criterion, optimizer, strategy):

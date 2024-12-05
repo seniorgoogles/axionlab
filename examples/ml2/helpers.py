@@ -107,8 +107,15 @@ def clear_folder(folder):
         shutil.rmtree(folder)
     except Exception as ex:
         print(ex)
+        
+        
+def train_model(dataset, trainer, model, lr, epochs, save_model=False):
 
-def train_model(dataset, trainer, validator, weights_path, model, lr, epochs, results_file_path, reload_weights, reload_weights_acc, logger):
+    optimizer = torch.optim.Adam(model.parameters(), lr)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=10, verbose=True)
+    trainer.train(model, None, dataset, torch.nn.CrossEntropyLoss(), optimizer, lr, epochs, 200, scheduler, save_model=save_model)
+    
+def train_model_old(dataset, trainer, validator, weights_path, model, lr, epochs, results_file_path, reload_weights, reload_weights_acc, logger):
         
     lr_list = []
     current_acc = 0.0
@@ -146,7 +153,7 @@ def train_model(dataset, trainer, validator, weights_path, model, lr, epochs, re
             previous_acc = current_acc
             
         optimizer = torch.optim.Adam(model.parameters(), lr)
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=10, verbose=True)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5, verbose=True)
         #scheduler = torch.optim.lr_scheduler.StepLR(optimizer, gamma=0.1, step_size=14)
         
         
