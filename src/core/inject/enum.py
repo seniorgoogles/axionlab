@@ -8,6 +8,7 @@ class ModelTypes:
     RESNET = auto()
     JSC = auto()
     HDR = auto()
+    CONTINUOUSFLOW_MNIST = auto()
 
 class DatasetTypes:
     MNIST = auto()

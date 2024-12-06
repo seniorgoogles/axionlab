@@ -9,6 +9,7 @@ from src.models.lenet import LeNet5
 from src.models.vgg import Vgg
 from src.models.hdr import Hdr
 from src.models.jsc import Jsc
+from src.models.continuousflow_mnist import ContinuousflowMnist
 from typing import Union
 
 class ModelBuilder:
@@ -26,6 +27,7 @@ class ModelBuilder:
             ModelTypes.RESNET: ResNet,
             ModelTypes.JSC: Jsc,
             ModelTypes.HDR: Hdr,
+            ModelTypes.CONTINUOUSFLOW_MNIST: ContinuousflowMnist
         }
 
         if modeltype not in model_map:
