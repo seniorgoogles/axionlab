@@ -153,6 +153,7 @@ class Trainer:
             
             self.optimizer.zero_grad()
             loss.backward()
+            #torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)  # Gradient clipping
             self.optimizer.step()
 
             val_loss += loss.item() * inputs.size(0)
@@ -249,7 +250,7 @@ class Trainer:
         loss = (val_loss/total)
         
         if scheduler is not None:
-            scheduler.step(loss)
+            scheduler.step(accuracy)
 
         return accuracy, loss
 

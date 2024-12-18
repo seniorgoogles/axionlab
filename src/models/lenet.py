@@ -8,10 +8,14 @@ class LeNet5(nn.Module):
 
     def __init__(self, config, preload_weights=False):
         super(LeNet5, self).__init__()
+        self.num_layers = None
+        self.name = None
         self.build(config)
 
     def build(self, config):
         backbone = config["backbone"]
+        self.name = config["name"]
+
         for layer_config in backbone:
             module_class = layer_config[2]
             module = Mapper.get_layer_by_name(module_class)

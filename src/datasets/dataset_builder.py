@@ -10,7 +10,7 @@ import yaml
 
 class DatasetBuilder:
     @staticmethod
-    def build(dataset, config=None):
+    def build(dataset, config=None, crop_border_pixels=0):
         batch_size = [0,0]
         num_workers = 0
         distributed = False
@@ -39,7 +39,7 @@ class DatasetBuilder:
 
         # Build model
         if dataset == DatasetTypes.MNIST:
-            return Mnist(train_path, test_path, batch_size, distributed, num_workers)
+            return Mnist(train_path, test_path, batch_size, distributed, num_workers, crop_border_pixels)
         if dataset == DatasetTypes.FASHION_MNIST:
             return FashionMnist(train_path, test_path, batch_size, distributed, num_workers)
         if dataset == DatasetTypes.CIFAR10:

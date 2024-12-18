@@ -7,7 +7,7 @@ train_path: None
 test_path: None
 num_workers: 16
 distributed: False
-batch_size: [128,5120] # train, test
+batch_size: [2048,1024] # train, test
 
 # Training Params
 epochs: 80
@@ -23,7 +23,7 @@ backbone:
   - [ -1, 1, ReLU, "relu2", { 'inplace': True } ]
 
   # Depthwise
-  - [-1, 1, Conv2d, "depthwise2", {'in_channels': 4, 'out_channels': 4, 'kernel_size': 3, 'stride': 1, 'padding': 0, 'groups': 4, 'bias':False}]
+  - [-1, 1, Conv2d, "depthwise2", {'in_channels': 4, 'out_channels': 4, 'kernel_size': 3, 'stride': 2, 'padding': 0, 'groups': 4, 'bias':False}]
   - [ -1, 1, ReLU, "relu3", { 'inplace': True } ]
   # Pointwise
   - [-1, 1, Conv2d, "pointwise2", {'in_channels': 4, 'out_channels': 16, 'kernel_size': 1, 'stride': 1, 'padding': 0, 'bias': False}]
