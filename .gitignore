@@ -2,8 +2,9 @@ tmp/*
 *.pyc
 .idea/workspace.xml
 .idea/*
-*.pth
 launch.json
 .weights/*
 result_lr_acc.txt
 tmp_data*
+coeffs/*
+examples/ml2/train/*

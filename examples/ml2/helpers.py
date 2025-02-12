@@ -5,6 +5,8 @@ import yaml
 import torch
 from torchviz import make_dot
 import json
+import colorama
+colorama.init()
 
 def load_config(config_path):
     with open(config_path, 'r') as f:
@@ -109,12 +111,73 @@ def clear_folder(folder):
         print(ex)
         
         
-def train_model(dataset, trainer, model, lr, epochs, save_model=False):
+def train_model(dataset, trainer, model, lr, epochs, save_model=False, save_dir=None):
 
     optimizer = torch.optim.Adam(model.parameters(), lr)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.1, patience=10, verbose=True)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.123, min_lr=0.00001, patience=20, verbose=True)
+    #scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=10)
+    trainer.train(model, None, dataset, torch.nn.CrossEntropyLoss(), optimizer, lr, epochs, 200, scheduler, save_model=save_model, save_dir=save_dir)
+
+    
+def train_student_teacher(dataset, trainer, student_model, teacher_model, lr, epochs,
+                          alpha=0.5, temperature=2.0, save_model=False):
+    """
+    Trains a student model using a teacher model for knowledge distillation.
+
+    Parameters:
+      - dataset: Your training dataset.
+      - trainer: A training helper object with a `.train()` method.
+      - student_model: The student network to be trained.
+      - teacher_model: The teacher network used for distillation.
+      - lr: The learning rate.
+      - epochs: Number of training epochs.
+      - alpha: Weighting factor between the cross-entropy and distillation loss.
+               (alpha=1 means only cross-entropy loss, alpha=0 only distillation loss)
+      - temperature: Temperature for softening probabilities.
+      - save_model: Whether to save the model after training.
+    """
+    
+    # Create an optimizer for the student model parameters
+    optimizer = torch.optim.Adam(student_model.parameters(), lr)
+    
+    # Create a learning rate scheduler (using both ReduceLROnPlateau and CosineAnnealingWarmRestarts)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max',
+                                                           factor=0.1, patience=10, verbose=True)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=10)
-    trainer.train(model, None, dataset, torch.nn.CrossEntropyLoss(), optimizer, lr, epochs, 200, scheduler, save_model=save_model)
+    
+    # Define the standard classification loss
+    ce_loss = torch.nn.CrossEntropyLoss()
+    # Define the distillation loss (KL divergence)
+    kd_loss = torch.nn.KLDivLoss(reduction='batchmean')
+    
+    def combined_loss(student_logits, teacher_logits, targets):
+        """
+        Compute the combined loss:
+          L = alpha * cross_entropy(student, targets)
+            + (1 - alpha) * [temperature^2 * KL(student || teacher)]
+        """
+        # Standard classification loss (hard targets)
+        loss_ce = ce_loss(student_logits, targets)
+        
+        # Compute the soft targets for both teacher and student
+        # Note: We scale the logits by temperature
+        student_log_probs = F.log_softmax(student_logits / temperature, dim=1)
+        teacher_probs = F.softmax(teacher_logits / temperature, dim=1)
+        loss_kd = kd_loss(student_log_probs, teacher_probs) * (temperature ** 2)
+        
+        return alpha * loss_ce + (1 - alpha) * loss_kd
+    
+    # If the teacher is fixed (i.e. pre-trained), set it to eval mode.
+    # For a "mean teacher" approach where the teacher is updated via EMA, you may not do this.
+    teacher_model.eval()
+    
+    # Start training: here we assume that trainer.train expects
+    # (student_model, teacher_model, dataset, loss_fn, optimizer, lr, epochs, <other params>, scheduler, ...)
+    #trainer.train(student_model, teacher_model, dataset, combined_loss,optimizer, lr, epochs, 200, scheduler, save_model=save_model)
+    
+    trainer.train(teacher_model, None, dataset, combined_loss, optimizer, lr, epochs, 200, scheduler, save_model=False)
+    trainer.train(student_model, None, dataset, combined_loss, optimizer, lr, epochs, 200, scheduler, save_model=save_model)
+
     
 def train_model_old(dataset, trainer, validator, weights_path, model, lr, epochs, results_file_path, reload_weights, reload_weights_acc, logger):
         
@@ -172,46 +235,6 @@ def train_model_old(dataset, trainer, validator, weights_path, model, lr, epochs
         with open(results_file_path, "a") as f:
             f.write(f"{run}\t{lr}= {current_acc=}\n")
 
-def train_student_teacher(dataset, trainer, validator, teacher, student, lr, epochs, logger):
-        
-    lr_list = []
-    current_acc = 0.0
-    previous_acc = 0.0
-    
-    # Make a deep copy of the model state
-    bak_model = copy.deepcopy(student.state_dict())
-    
-    # If learning rate is not a list, convert it to a list
-    if not isinstance(lr, list):
-        lr_list = [lr]
-    else:
-        lr_list = lr
-        
-    print(f"{lr_list=}")
-    
-    for lr in lr_list:
-        
-        logger.info(f"Training model with learning rate {lr}")
-        
-        # If current acc is better than the previous acc, deep copy the model state
-        #if current_acc > previous_acc:
-        #    bak_model = copy.deepcopy(student.state_dict())
-        #else:
-        #    logger.info(f"Previous acc: {previous_acc} Current acc: {current_acc}")
-        #    previous_acc = current_acc
-        
-        trainer.train_teacher_student(teacher, student, dataset, torch.nn.CrossEntropyLoss(), torch.optim.Adam(student.parameters(), lr), epochs, T=2, teacher_is_pretrained=True)
-        
-        # Validate the model
-        current_acc, loss = validator.validate(student)
-        
-        logger.info(f"Accuracy: {current_acc}")
-        
-        # Get the last run the folder
-        run = max([int(f.split('_')[-1]) for f in os.listdir(f"train/{student.name}") if os.path.isdir(os.path.join(f"train/{student.name}", f))])
-        
-        with open("result_lr_acc.txt", "a") as f:
-            f.write(f"{run}\t{lr}= {current_acc=}\n")
             
 def set_config_value(model_config, layer_str, key, value):
     layers = None
@@ -345,3 +368,43 @@ def sort_layers_by_param_num(model, layer_str_list):
     sorted_params_count = [x for x in sorted(params_count, reverse=True)]
     
     return sorted_layers, sorted_params_count
+
+# ANSI color codes
+RED     = "\033[91m"
+GREEN   = "\033[92m"
+YELLOW  = "\033[93m"
+BLUE    = "\033[94m"
+MAGENTA = "\033[95m"
+CYAN    = "\033[96m"
+RESET   = "\033[0m"
+
+def print_colored_window(text):
+    # Define the dimensions of the window
+    width = 50   # total width including borders
+    height = 5  # total height including top and bottom borders
+
+    # Print the top border
+    print(MAGENTA + "+" + "-" * (width - 2) + "+" + RESET)
+
+    # Print the middle part of the window
+    for i in range(height - 2):
+        # For the center line, we will print the text "best run" centered.
+        if i == (height - 2) // 2:
+            text_length = len(text)
+            # Calculate spaces on the left and right to center the text
+            left_spaces = ((width - 2) - text_length) // 2
+            right_spaces = (width - 2) - text_length - left_spaces
+            line = (
+                MAGENTA + "|" + RESET +
+                " " * left_spaces +
+                GREEN + text + RESET +
+                " " * right_spaces +
+                MAGENTA + "|" + RESET
+            )
+            print(line)
+        else:
+            # For all other lines, print empty space between the borders
+            print(MAGENTA + "|" + " " * (width - 2) + "|" + RESET)
+
+    # Print the bottom border
+    print(MAGENTA + "+" + "-" * (width - 2) + "+" + RESET)

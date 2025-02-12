@@ -24,4 +24,4 @@ from src.engine.trainer import Trainer
 from src.engine.tuner import Tuner
 from src.engine.config_manager import ConfigurationManager
 
-from src.quantizer.learned_bitwidth_quantizer import LearnedBitWidthQuantizer
+#from src.quantizer.learned_bitwidth_quantizer import LearnedBitWidthQuantizer
