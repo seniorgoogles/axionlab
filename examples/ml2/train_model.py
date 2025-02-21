@@ -59,7 +59,7 @@ if __name__ == "__main__":
     
     best_run = -1
     weights_path_best = f"/home/fry/Documents/repositories/synapselab/examples/ml2/train/jsc_xl/20250207_164607/run_{best_run}/best_weights.pth" if best_run >= 0 else None
-    best_lr = 0.00749591368227732
+    best_lr = 0.007464869999350717
     
 
     model = ModelBuilder().build(ModelTypes.JSC, config=model_config, weights_path=weights_path_best)

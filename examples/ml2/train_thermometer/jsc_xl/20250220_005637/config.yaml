@@ -1,0 +1,28 @@
+# This is a configuration file for the jsc_xl_floating_point model
+name: "jsc_xl"
+
+# Dataset Params
+dataset: "jsc"
+train_path: None
+test_path: None
+num_workers: 16
+distributed: False
+batch_size: [5000,5000] # train, test
+dataset_root_path: "/tmp/datasets/jsc/processed-pythia82-lhc13-all-pt1-50k-r1_h022_e0175_t220_nonu_truth.z"
+
+# Training Params
+epochs: 80
+nc: 10 # number of classes
+
+backbone:
+  # [from, repeats, module, args]
+    - [ -1, 1, Linear, "dense1", {'in_features': 160, 'out_features': 64, 'bias': True}]
+    - [ -1, 1, ReLU, "relu1", { 'inplace': True } ]
+    #- [ -1, 1, Linear, "dense2", { 'in_features': 128, 'out_features': 64, 'bias': True } ]
+    #- [ -1, 1, ReLU, "relu2", { 'inplace': True } ]
+    #- [ -1, 1, Linear, "dense3", { 'in_features': 64, 'out_features': 64, 'bias': True } ]
+    #- [ -1, 1, ReLU, "relu3", { 'inplace': True } ]
+    #- [ -1, 1, Linear, "dense4", { 'in_features': 64, 'out_features': 64, 'bias': True } ]
+    #- [ -1, 1, ReLU, "relu4", { 'inplace': True } ]
+    - [ -1, 1, Linear, "dense5", { 'in_features': 64, 'out_features': 5, 'bias': True } ]
+    - [ -1, 1, Softmax, "softmax", { 'dim': 1 } ]

@@ -8,12 +8,6 @@ class Jsc(nn.Module):
         self.num_layers = None
         self.name = None
         self.build(config)
-        
-        self.dropout1 = nn.Dropout(0.02)
-        self.dropout2 = nn.Dropout(0.02)
-        self.dropout3 = nn.Dropout(0.02)
-        self.dropout4 = nn.Dropout(0.02)
-        self.dropout5 = nn.Dropout(0.02)
 
     def build(self, config):
         backbone = config["backbone"]
@@ -33,11 +27,22 @@ class Jsc(nn.Module):
             x = self.dense3(x)
             x = self.softmax(x)
         elif self.name == "jsc_xl" or self.name == "quant_jsc_xl":
-            x = self.relu1(self.dropout1(self.dense1(x)))
-            x = self.relu2(self.dropout2(self.dense2(x)))
-            x = self.relu3(self.dropout3(self.dense3(x)))
-            x = self.relu4(self.dropout4(self.dense4(x)))
-            x = self.dropout5(self.dense5(x))
+            
+            if hasattr(self, "dense1"):
+                if hasattr(self, "relu1"):
+                    x = self.relu1(self.dense1(x))
+                else:
+                    x = self.dense1(x)
+                #x = self.relu1(self.dense1(x))
+                
+            if hasattr(self, "dense2"):
+                x = self.relu2(self.dense2(x))
+            if hasattr(self, "dense3"):
+                x = self.relu3(self.dense3(x))
+            if hasattr(self, "dense4"):
+                x = self.relu4(self.dense4(x))
+            if hasattr(self, "dense5"):
+                x = self.dense5(x)
             x = self.softmax(x)
         elif self.name == "jsc_m_lite" or self.name == "quant_jsc_m_lite":
             x = self.relu1(self.dense1(x))

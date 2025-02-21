@@ -45,6 +45,7 @@ class Validator(object):
 
                     _, predicted = torch.max(outputs, 1)
                     total += targets.size(0)
+
                     correct += (predicted == targets).sum().item()
 
                     accuracy = (100.0 * correct / total)

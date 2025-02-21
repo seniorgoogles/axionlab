@@ -1,0 +1,6 @@
+Model accuracy: 73.68 | 75.33% 
+dense1.weight: 10240 | 2048
+dense5.weight: 320 | 320
+-------------------------
+total_weights: 10560 | 18752
+total_biases: 69 | 325
