@@ -1,7 +1,6 @@
 import brevitas
 import torch.nn as nn
 import brevitas.nn as qnn
-import src.quantizer as quant
 
 class Mapper:
     
@@ -43,7 +42,7 @@ class Mapper:
         if quantizer_class in (None, 'None'):
             return None
         
-        for module in [brevitas.quant, brevitas.quant.fixed_point, quant]:
+        for module in [brevitas.quant, brevitas.quant.fixed_point]:
             if hasattr(module, quantizer_class):
                 return getattr(module, quantizer_class)
         
