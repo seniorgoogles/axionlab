@@ -8,3 +8,9 @@ result_lr_acc.txt
 tmp_data*
 coeffs/*
 examples/ml2/train/*
+src/synapselab.egg-info/top_level.txt
+src/synapselab.egg-info/SOURCES.txt
+src/synapselab.egg-info/PKG-INFO
+src/synapselab.egg-info/dependency_links.txt
+dist/synapselab-0.1.0.tar.gz
+dist/synapselab-0.1.0-py3-none-any.whl
