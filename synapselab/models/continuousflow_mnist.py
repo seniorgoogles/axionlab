@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import brevitas.nn as qnn
 import torchvision.models as models
-from src.utils.mapper import Mapper
+from synapselab.utils.mapper import Mapper
 
 
 class ContinuousflowMnist(nn.Module):

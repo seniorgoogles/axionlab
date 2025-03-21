@@ -1,7 +1,7 @@
 import torch.nn as nn
 import brevitas.nn as qnn
 import torchvision.models as models
-from src.utils.mapper import Mapper
+from synapselab.utils.mapper import Mapper
 import torch.nn.init as init
 
 class Vgg(nn.Module):

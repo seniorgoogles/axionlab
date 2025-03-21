@@ -8,7 +8,7 @@ from torch import Tensor
 from torch.utils.data import Dataset, DataLoader, distributed
 from typing import Union, List
 
-from src.datasets.jetSubstructure.preprocessing import normalize
+from synapselab.datasets.jetSubstructure.preprocessing import normalize
 
 
 class CustomDataset(Dataset):

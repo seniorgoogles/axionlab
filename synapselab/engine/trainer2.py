@@ -15,7 +15,7 @@ from ray.train import Checkpoint, get_checkpoint
 from ray.tune.schedulers import ASHAScheduler
 import ray.cloudpickle as pickle
 
-from src.utils.device_selector import DeviceSelector
+from synapselab.utils.device_selector import DeviceSelector
 
 
 def train_model(config):

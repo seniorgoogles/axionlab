@@ -1,16 +1,16 @@
 import os
-
-from src.core.inject.enum import DatasetTypes
-from src.datasets.imagenet import ImageNet
-from src.datasets.jetSubstructure.dataloader import JetSubstructureDataset
-from src.datasets.mnist import Mnist
-from src.datasets.fashionMnist import FashionMnist
-from src.utils.mapper import Mapper
 import yaml
+
+from synapselab.engine.config import Configuration
+from synapselab.datasets.imagenet import ImageNet
+from synapselab.datasets.jetSubstructure.dataloader import JetSubstructureDataset
+from synapselab.datasets.mnist import Mnist
+from synapselab.datasets.fashionMnist import FashionMnist
+from synapselab.utils.mapper import Mapper
 
 class DatasetBuilder:
     @staticmethod
-    def build(dataset, config=None, crop_border_pixels=0):
+    def build(config: Configuration, crop_border_pixels=0):
         batch_size = [0,0]
         num_workers = 0
         distributed = False
@@ -29,27 +29,26 @@ class DatasetBuilder:
             else:
                 raise Exception("Config does not exist")
 
-        train_path = config["train_path"]
-        test_path = config["test_path"]
+        train_path = config.train_path
+        test_path = config.test_path
 
-        batch_size = config["batch_size"]
-        num_workers = config["num_workers"]
-        distributed = config["distributed"]
-
+        batch_size = config.batch_size
+        num_workers = config.num_workers
+        distributed = config.distributed
 
         # Build model
-        if dataset == DatasetTypes.MNIST:
+        if config.dataset == "MNIST":
             return Mnist(train_path, test_path, batch_size, distributed, num_workers, crop_border_pixels)
-        if dataset == DatasetTypes.FASHION_MNIST:
+        if config.dataset == "FASHION_MNIST":
             return FashionMnist(train_path, test_path, batch_size, distributed, num_workers)
-        if dataset == DatasetTypes.CIFAR10:
+        if config.dataset == "CIFAR10":
             raise NotImplementedError
-        if dataset == DatasetTypes.IMAGENET:
+        if config.dataset == "IMAGENET":
             return ImageNet(train_path, test_path, batch_size, distributed, num_workers)
-        if dataset == DatasetTypes.COCO:
+        if config.dataset == "COCO":
             raise NotImplementedError
-        if dataset == DatasetTypes.JSC:
-            dataset_path = config["dataset_root_path"]
+        if config.dataset == "JSC":
+            dataset_path = config.dataset_root_path
             project_root = os.getenv("PROJECT_ROOT")
 
             if project_root is not None:
@@ -60,4 +59,4 @@ class DatasetBuilder:
             return JetSubstructureDataset(dataset_path, batch_size, distributed, num_workers)
 
         else:
-            raise Exception(f"{dataset} not implemented.")
+            raise Exception(f"{config.dataset} not implemented.")

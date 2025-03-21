@@ -1,0 +1,7 @@
+Metadata-Version: 2.1
+Name: synapselab
+Version: 0.1.0
+Summary: Framework for training and optimizing neural networks
+Author-email: Michael Mecik <michael.mecik@informatik.hs-fulda.de>
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown

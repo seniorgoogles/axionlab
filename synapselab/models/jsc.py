@@ -1,17 +1,19 @@
 import torch.nn as nn
-from src.utils.mapper import Mapper
+
+from synapselab.engine.config import Configuration
+from synapselab.utils.mapper import Mapper
 
 class Jsc(nn.Module):
 
-    def __init__(self, config, preload_weights=False):
+    def __init__(self, config: Configuration, preload_weights: bool=False):
         super(Jsc, self).__init__()
         self.num_layers = None
         self.name = None
         self.build(config)
 
     def build(self, config):
-        backbone = config["backbone"]
-        self.name = config["name"]
+        backbone = config.backbone
+        self.name = config.name
 
         for layer_config in backbone:
             module_class = layer_config[2]

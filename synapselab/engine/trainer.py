@@ -2,7 +2,7 @@ import os
 import torch
 from colorama import Fore
 from tqdm import tqdm
-from src.utils.device_selector import DeviceSelector
+from synapselab.utils.device_selector import DeviceSelector
 
 
 class Trainer:

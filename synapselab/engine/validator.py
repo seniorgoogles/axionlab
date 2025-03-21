@@ -1,7 +1,7 @@
 import torch
 
-from src.utils.device_selector import DeviceSelector
-from src.utils.timer import timer
+from synapselab.utils.device_selector import DeviceSelector
+from synapselab.utils.timer import timer
 from tqdm import tqdm
 
 class Validator(object):
