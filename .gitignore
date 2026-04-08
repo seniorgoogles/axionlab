@@ -8,3 +8,4 @@ result_lr_acc.txt
 tmp_data*
 coeffs/*
 examples/ml2/train/*
+SKILL.md

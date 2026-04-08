@@ -1,0 +1,16 @@
+# Experiment config for training JSC-XL model
+# Inherits model architecture from base config
+
+base: ../../models/jsc_xl_base.yaml
+
+# Training parameters (override base)
+epochs: 100
+learning_rate: 0.001
+optimizer: adam
+weight_decay: 0.0001
+
+# Batch sizes [train, test]
+batch_size: [1024, 2048]
+
+# Output directory for this experiment
+output_dir: "./outputs/jsc_xl_train"

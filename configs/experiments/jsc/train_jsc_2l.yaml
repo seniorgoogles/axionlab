@@ -1,0 +1,22 @@
+# Experiment config for training JSC-2L model
+# Uses jsc_2l.yaml model architecture directly
+
+name: "jsc_2l_experiment"
+
+# Use the jsc_2l model config directly
+base: "../../models/jsc_2l.yaml"
+
+# Training parameters
+epochs: 80
+learning_rate: 0.001
+optimizer: adam
+weight_decay: 0.0001
+
+# Batch sizes [train, test]
+batch_size: [1024, 1024]
+
+# Output directory for this experiment
+output_dir: "./outputs/jsc_2l"
+
+# Optional: experiment description
+description: "Training JSC-2L model (2-layer MLP) for jet classification"

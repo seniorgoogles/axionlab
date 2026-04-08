@@ -3,33 +3,30 @@
 Main entry point for importing configuration and model classes.
 
 Usage:
-    >>> from src.engine.config import ConfigReader, ConfigValidator, ModelConfig, TrainerConfig
-    >>> from src.engine.trainer import Model
+    >>> from src.config import ConfigReader, ConfigValidator, YAMLModelConfig
+    >>> from src.training import Trainer, TrainerConfig
+    >>> from src.models import ModelConfig
 """
 
-from .engine.config import (
+from .config import (
     ConfigReader,
     ConfigValidator,
     ConfigWriter,
     LayerDefinition,
     DatasetConfig,
     TrainingConfig,
-    QuantizationConfig,
-    ModelConfig,
-    TrainerConfig,
-    create_default_config,
+    QuantizationSettings,
+    YAMLModelConfig,
 )
 
 __all__ = [
-    # Config module exports
+    # Config module exports (YAML parsing)
     'ConfigReader',
     'ConfigValidator',
     'ConfigWriter',
     'LayerDefinition',
     'DatasetConfig',
     'TrainingConfig',
-    'QuantizationConfig',
-    'ModelConfig',
-    'TrainerConfig',
-    'create_default_config',
+    'QuantizationSettings',
+    'YAMLModelConfig',
 ]
