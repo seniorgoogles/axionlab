@@ -40,4 +40,4 @@ class Cifar10(object):
     def get_test_loader(self):
         return DataLoader(self.test_dataset, batch_size=self.batch_size_test, shuffle=False,
                           num_workers=self.num_workers, pin_memory=True,
-                          sampler=self.train_sampler if self.distributed_training else None)
+                          sampler=self.test_sampler if self.distributed_training else None)

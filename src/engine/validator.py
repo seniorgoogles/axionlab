@@ -7,7 +7,6 @@ from tqdm import tqdm
 class Validator(object):
 
     def __init__(self, criterion=None, dataset_loader=None, device=None):
-
         self.criterion = criterion
         self.dataset_loader = dataset_loader
 
@@ -16,7 +15,6 @@ class Validator(object):
         else:
             self.device = torch.device(device)
 
-    @timer
     def validate(self, model, num_batches=-1, debug=False):
 
         val_loss = 0.0

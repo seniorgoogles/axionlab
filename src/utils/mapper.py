@@ -10,10 +10,7 @@ class Mapper:
         """
         Checks if the given key exists in the configuration dictionary.
         """
-        if key in config_dict.keys():
-            return True
-        else:
-            return False
+        return key in config_dict
 
     @staticmethod 
     def get_quantizer_name_from_conf(config, key):

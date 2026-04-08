@@ -1,7 +1,7 @@
-from enum import auto
+from enum import Enum, auto
 
 
-class ModelTypes:
+class ModelTypes(Enum):
     """Enum for model types."""
     LENET = auto()
     VGG = auto()
@@ -10,7 +10,9 @@ class ModelTypes:
     HDR = auto()
     CONTINUOUSFLOW_MNIST = auto()
 
-class DatasetTypes:
+
+class DatasetTypes(Enum):
+    """Enum for dataset types."""
     MNIST = auto()
     FASHION_MNIST = auto()
     CIFAR10 = auto()
