@@ -1,0 +1,25 @@
+# Experiment: train/eval ResNet-18 on ImageNet via the Runner.
+# Consumed by Runner.from_experiment(). The model is defined in a separate net
+# yaml (so the same net can be reused across experiments/datasets).
+name: "resnet18_imagenet"
+
+# --- model (net definition) ---
+model: "configs/models/resnet18.yaml"
+
+# --- dataset (resolved by the dataset factory) ---
+dataset: "imagenet"
+train_path: "tmp/datasets/imagenet/train"
+test_path: "tmp/datasets/imagenet/val"
+num_workers: 16
+distributed: false
+batch_size: [128, 256]   # train, test/val
+
+# --- training ---
+epochs: 80
+learning_rate: 0.001
+output_dir: "./outputs/resnet18_imagenet"
+
+# --- checkpointing / selection ---
+best_metric_name: "accuracy"
+best_metric_mode: "max"
+validate_every: 1

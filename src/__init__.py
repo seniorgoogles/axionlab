@@ -1,11 +1,10 @@
 """Axionlab package.
 
-Main entry point for importing configuration and model classes.
-
 Usage:
-    >>> from src.config import ConfigReader, ConfigValidator, YAMLModelConfig
-    >>> from src.training import Trainer, TrainerConfig
-    >>> from src.models import ModelConfig
+    >>> from src.core import Runner, Phase          # train / validate / evaluate
+    >>> from src.core.build import build_from_config, build_graph
+    >>> from src.datasets import build_dataset
+    >>> from src.config import ConfigReader
 """
 
 from .config import (

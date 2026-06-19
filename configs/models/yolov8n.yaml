@@ -1,0 +1,39 @@
+# YOLOv8n in axionlab graph format (Ultralytics-equivalent).
+# [from, repeats, module, args]   args is a dict; c2 = out channels (pre width-scale).
+# Add  quant: {weight_bit_width: w, act_bit_width: a}  to any block to quantize it.
+name: "yolov8n"
+nc: 80
+ch: 3
+
+scales: {depth: 0.33, width: 0.25, max_channels: 1024}
+
+backbone:
+  - [-1, 1, Conv,  {c2: 64, k: 3, s: 2}]            # 0-P1/2
+  - [-1, 1, Conv,  {c2: 128, k: 3, s: 2}]           # 1-P2/4
+  - [-1, 3, C2f,   {c2: 128, shortcut: True}]       # 2
+  - [-1, 1, Conv,  {c2: 256, k: 3, s: 2}]           # 3-P3/8
+  - [-1, 6, C2f,   {c2: 256, shortcut: True}]       # 4
+  - [-1, 1, Conv,  {c2: 512, k: 3, s: 2}]           # 5-P4/16
+  - [-1, 6, C2f,   {c2: 512, shortcut: True}]       # 6
+  - [-1, 1, Conv,  {c2: 1024, k: 3, s: 2}]          # 7-P5/32
+  - [-1, 3, C2f,   {c2: 1024, shortcut: True}]      # 8
+  - [-1, 1, SPPF,  {c2: 1024, k: 5}]                # 9
+
+head:
+  - [-1, 1, nn.Upsample, {scale_factor: 2, mode: nearest}]   # 10
+  - [[-1, 6], 1, Concat, {dim: 1}]                           # 11
+  - [-1, 3, C2f, {c2: 512}]                                  # 12
+
+  - [-1, 1, nn.Upsample, {scale_factor: 2, mode: nearest}]   # 13
+  - [[-1, 4], 1, Concat, {dim: 1}]                           # 14
+  - [-1, 3, C2f, {c2: 256}]                                  # 15  (P3/8)
+
+  - [-1, 1, Conv, {c2: 256, k: 3, s: 2}]                     # 16
+  - [[-1, 12], 1, Concat, {dim: 1}]                          # 17
+  - [-1, 3, C2f, {c2: 512}]                                  # 18  (P4/16)
+
+  - [-1, 1, Conv, {c2: 512, k: 3, s: 2}]                     # 19
+  - [[-1, 9], 1, Concat, {dim: 1}]                           # 20
+  - [-1, 3, C2f, {c2: 1024}]                                 # 21  (P5/32)
+
+  - [[15, 18, 21], 1, Detect, {}]                            # 22  Detect(P3, P4, P5)

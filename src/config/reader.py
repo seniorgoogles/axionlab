@@ -35,7 +35,7 @@ class ConfigReader:
         Returns:
             Validated ModelConfig instance
         """
-        from .config_validator import ConfigValidator
+        from .validator import ConfigValidator
         config_dict = ConfigReader.read_config(config_file, validate=False)
         return ConfigValidator.validate_config(config_dict)
 
@@ -87,7 +87,7 @@ class ConfigReader:
                 config = merged_config
 
             if validate:
-                from .config_validator import ConfigValidator
+                from .validator import ConfigValidator
                 ConfigValidator.validate_config(config)
 
             return config

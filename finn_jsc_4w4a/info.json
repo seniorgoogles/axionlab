@@ -1,0 +1,10 @@
+{
+  "model_yaml": "configs/models/jsc_2l.yaml",
+  "weights": "outputs/jsc_2l_qat/best.pth",
+  "quantize": "w4a4",
+  "input_shape": "16",
+  "input_quant": 8,
+  "fpga_part": "xc7z020clg400-1",
+  "board": null,
+  "synth": "ip"
+}

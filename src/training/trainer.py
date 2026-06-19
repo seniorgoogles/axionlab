@@ -45,9 +45,19 @@ class Trainer:
     def __init__(self, config: TrainerConfig):
         """Initialize the Trainer.
 
+        .. deprecated::
+            Use ``src.core.Runner`` instead. Runner is the single training entry
+            point (train/validate/evaluate, phases, callbacks, best/last
+            checkpoints). Trainer is kept only for backward compatibility.
+
         Args:
             config: TrainerConfig instance with training configuration.
         """
+        import warnings
+        warnings.warn(
+            "training.Trainer is deprecated; use src.core.Runner instead.",
+            DeprecationWarning, stacklevel=2,
+        )
         self.config = config
         self.checkpoint_manager = CheckpointManager(
             config.save_dir, config.model_name, config

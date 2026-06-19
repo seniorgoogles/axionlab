@@ -1,44 +1,44 @@
 """Training module.
 
-This module provides a unified training infrastructure with checkpointing
-and metrics tracking.
+CANONICAL ENTRY POINT: ``src.core.Runner`` (train / validate / evaluate, phases,
+callbacks, best.pth + last.pth).
 
-Components:
-- Model: Unified model class for training, evaluation, and deployment
-- TrainableModelConfig: Configuration dataclass for model training and evaluation
-- Trainer: Main training loop with checkpointing (best.pth, last.pth)
-- TrainerConfig: Configuration dataclass for trainer settings
-- CheckpointManager: Handles saving/loading of model checkpoints
-- MetricTracker: Tracks and records training metrics
-- Validator: Model evaluation utilities
-- Callback: Base class for training callbacks
+Only the lightweight, current building blocks are imported eagerly
+(TrainerConfig, CheckpointManager). The legacy ``Trainer`` / ``Model`` /
+``Validator`` and the metric/callback helpers are loaded LAZILY (PEP 562) so that
+importing the Runner does not pull the deprecated code (and therefore none of its
+own heavy deps, e.g. the ``tqdm`` used by ``Validator``). They remain importable
+for backward compatibility (and emit DeprecationWarnings).
 """
 
-# Unified model classes
-from .model import Model, TrainableModelConfig, build_model
-
-# Trainer components
-from .trainer_config import TrainerConfig, create_default_config
-from .metric_tracker import MetricTracker, MetricHistory
 from .checkpoint_manager import CheckpointManager, CheckpointMetadata
-from .validator import Validator
-from .trainer import Trainer, EarlyStoppingException
-from .callbacks import Callback
+from .trainer_config import TrainerConfig, create_default_config
+
+# name -> submodule, imported on first access only
+_LAZY = {
+    "Trainer": ".trainer",
+    "EarlyStoppingException": ".trainer",
+    "Model": ".model",
+    "TrainableModelConfig": ".model",
+    "build_model": ".model",
+    "Validator": ".validator",
+    "Callback": ".callbacks",
+    "MetricTracker": ".metric_tracker",
+    "MetricHistory": ".metric_tracker",
+}
 
 __all__ = [
-    # Unified model classes
-    "Model",
-    "TrainableModelConfig",
-    "build_model",
-    # Trainer components
     "TrainerConfig",
     "create_default_config",
-    "MetricTracker",
-    "MetricHistory",
     "CheckpointManager",
     "CheckpointMetadata",
-    "Validator",
-    "Trainer",
-    "EarlyStoppingException",
-    "Callback",
+    *_LAZY.keys(),
 ]
+
+
+def __getattr__(name):
+    if name in _LAZY:
+        import importlib
+        module = importlib.import_module(_LAZY[name], __name__)
+        return getattr(module, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

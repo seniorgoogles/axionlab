@@ -1,0 +1,21 @@
+# QAT experiment: float warmup -> quantize -> fine-tune, on JSC (OpenML), tracked in a DB.
+# The model starts FLOAT (jsc_2l.yaml); the QAT phase quantizes it mid-training
+# (see examples/jsc_qat.py). Metrics + weights + yamls land in the tracking DB.
+name: "jsc_2l_qat"
+
+model: "configs/models/jsc_2l.yaml"      # float net; quantized by the QAT phase
+
+dataset: "jsc"                            # OpenML hls4ml_lhc_jets_hlf (needs scikit-learn)
+num_workers: 4
+distributed: false
+batch_size: [1024, 1024]
+
+epochs: 30                                # informational; the plan in jsc_qat.py overrides
+learning_rate: 0.001
+output_dir: "./outputs/jsc_2l_qat"
+
+best_metric_name: "accuracy"
+best_metric_mode: "max"
+validate_every: 1
+
+tracking_db: "./outputs/jsc_2l_qat/experiments.db"

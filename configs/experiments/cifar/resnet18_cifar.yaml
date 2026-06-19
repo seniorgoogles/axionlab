@@ -1,0 +1,22 @@
+# Experiment: ResNet-18 on CIFAR-10 via the Runner.
+# Model is float (configs/models/resnet18_cifar.yaml); the QAT phase quantizes it.
+# CIFAR-10 is downloaded automatically by the torchvision dataset into train_path.
+name: "resnet18_cifar"
+
+model: "configs/models/resnet18_cifar.yaml"
+
+dataset: "cifar10"
+train_path: "./tmp/datasets/cifar10"     # download/cache root
+num_workers: 8
+distributed: false
+batch_size: [128, 256]                    # train, test
+
+epochs: 60
+learning_rate: 0.01
+output_dir: "./outputs/resnet18_cifar"
+
+best_metric_name: "accuracy"
+best_metric_mode: "max"
+validate_every: 1
+
+tracking_db: "./outputs/resnet18_cifar/experiments.db"

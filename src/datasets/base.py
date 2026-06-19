@@ -15,6 +15,7 @@ class BaseDataset(ABC):
         batch_size: Tuple[int, int],
         distributed_training: bool,
         num_workers: int,
+        transform=None,
         **kwargs
     ):
         """
@@ -26,6 +27,8 @@ class BaseDataset(ABC):
             batch_size: Tuple of (train_batch_size, test_batch_size)
             distributed_training: Whether to use distributed sampling
             num_workers: Number of workers for data loading
+            transform: Optional preprocessing/transform to inject. Subclasses
+                should use `self.transform` instead of their default when it is set.
             **kwargs: Additional dataset-specific parameters
         """
         self.batch_size_train = batch_size[0]
@@ -34,6 +37,7 @@ class BaseDataset(ABC):
         self.num_workers = num_workers
         self.train_path = train_path
         self.test_path = test_path
+        self.transform = transform  # injectable preprocessing (None -> subclass default)
 
         # Do preprocessing (to be implemented by subclasses)
         self.train_dataset, self.test_dataset = self._do_preprocessing(**kwargs)

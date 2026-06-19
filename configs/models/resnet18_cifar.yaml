@@ -1,0 +1,81 @@
+# ResNet-18 adapted for CIFAR (32x32, 10 classes), FLOAT layers.
+# Float on purpose: the QAT phase starts from a float warmup and then quantizes
+# (Conv2d/Linear/ReLU -> Brevitas quant via set_bit_width), same flow as jsc_2l.
+# CIFAR stem = 3x3 stride-1 conv, NO maxpool (keeps 32x32 resolution); only the
+# stem and the final fc differ from torchvision resnet18.
+name: "resnet18_cifar"
+nc: 10
+
+backbone:
+  # --- CIFAR stem (3x3 s1, no maxpool) ---
+  - [-1, 1, Conv2d, "conv1", {in_channels: 3, out_channels: 64, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+  - [-1, 1, BatchNorm2d, "bn1", {num_features: 64}]
+  - [-1, 1, ReLU, "relu", {inplace: True}]
+
+  - layer1:
+      - BasicBlock:
+          - [-1, 1, Conv2d, "conv1", {in_channels: 64, out_channels: 64, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 64}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, Conv2d, "conv2", {in_channels: 64, out_channels: 64, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 64}]
+      - BasicBlock:
+          - [-1, 1, Conv2d, "conv1", {in_channels: 64, out_channels: 64, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 64}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, Conv2d, "conv2", {in_channels: 64, out_channels: 64, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 64}]
+
+  - layer2:
+      - BasicBlock:
+          - [-1, 1, Conv2d, "conv1", {in_channels: 64, out_channels: 128, kernel_size: 3, stride: 2, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 128}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, Conv2d, "conv2", {in_channels: 128, out_channels: 128, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 128}]
+          - downsample:
+              - [-1, 1, Conv2d, "0", {in_channels: 64, out_channels: 128, kernel_size: 1, stride: 2, padding: 0, bias: False}]
+              - [-1, 1, BatchNorm2d, "1", {num_features: 128}]
+      - BasicBlock:
+          - [-1, 1, Conv2d, "conv1", {in_channels: 128, out_channels: 128, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 128}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, Conv2d, "conv2", {in_channels: 128, out_channels: 128, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 128}]
+
+  - layer3:
+      - BasicBlock:
+          - [-1, 1, Conv2d, "conv1", {in_channels: 128, out_channels: 256, kernel_size: 3, stride: 2, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 256}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, Conv2d, "conv2", {in_channels: 256, out_channels: 256, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 256}]
+          - downsample:
+              - [-1, 1, Conv2d, "0", {in_channels: 128, out_channels: 256, kernel_size: 1, stride: 2, padding: 0, bias: False}]
+              - [-1, 1, BatchNorm2d, "1", {num_features: 256}]
+      - BasicBlock:
+          - [-1, 1, Conv2d, "conv1", {in_channels: 256, out_channels: 256, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 256}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, Conv2d, "conv2", {in_channels: 256, out_channels: 256, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 256}]
+
+  - layer4:
+      - BasicBlock:
+          - [-1, 1, Conv2d, "conv1", {in_channels: 256, out_channels: 512, kernel_size: 3, stride: 2, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 512}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, Conv2d, "conv2", {in_channels: 512, out_channels: 512, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 512}]
+          - downsample:
+              - [-1, 1, Conv2d, "0", {in_channels: 256, out_channels: 512, kernel_size: 1, stride: 2, padding: 0, bias: False}]
+              - [-1, 1, BatchNorm2d, "1", {num_features: 512}]
+      - BasicBlock:
+          - [-1, 1, Conv2d, "conv1", {in_channels: 512, out_channels: 512, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 512}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, Conv2d, "conv2", {in_channels: 512, out_channels: 512, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 512}]
+
+  - [-1, 1, AdaptiveAvgPool2d, "avgpool", {output_size: 1}]
+  - [-1, 1, Linear, "fc", {in_features: 512, out_features: 10}]

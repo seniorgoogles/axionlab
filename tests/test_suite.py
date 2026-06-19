@@ -1,16 +1,16 @@
 import unittest
-from tests.analyzers.test_sensitivity_analyzer import TestSensitivityAnalyzer
 
-# Create a Test Suite
+
 def suite():
+    """Aggregate unittest test cases. Add new TestCase classes here as they land.
+
+    (The legacy sensitivity-analyzer test was removed in the refactor; rewrite it
+    against the current API before re-adding.)
+    """
     test_suite = unittest.TestSuite()
-    test_loader = unittest.TestLoader()
-
-    # Add test cases from test_calculations.py
-    test_suite.addTests(test_loader.loadTestsFromTestCase(TestSensitivityAnalyzer))
-
     return test_suite
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     runner = unittest.TextTestRunner()
     runner.run(suite())

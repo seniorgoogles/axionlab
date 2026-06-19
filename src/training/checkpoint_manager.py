@@ -13,6 +13,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Tuple
 
+import torch
+
 from .trainer_config import TrainerConfig
 
 
@@ -82,6 +84,7 @@ class CheckpointManager:
 
         self.checkpoints: List[str] = []
         self.metadata: Dict[str, CheckpointMetadata] = {}
+        self._best_value: Optional[float] = None
         self._discover_checkpoints()
 
     def _discover_checkpoints(self) -> None:
@@ -185,53 +188,42 @@ class CheckpointManager:
             self.checkpoints.append(filename)
         self.metadata[filename] = metadata
 
-    def save_best(self, model, metric_value: float, metric_name: str, mode: str) -> bool:
-        """Save model as best if improved.
+    def save_best(self, model, metric_value: float, metric_name: str,
+                  mode: str = "max", epoch: int = 0) -> bool:
+        """Save model as best.pth if the metric improved over the previous best.
 
         Args:
             model: PyTorch model to save.
             metric_value: Current value of the metric.
             metric_name: Name of the metric.
             mode: "max" or "min" indicating how to determine improvement.
+            epoch: Current epoch number.
 
         Returns:
-            True if best checkpoint was saved, False otherwise.
+            True if a new best checkpoint was written, False otherwise.
         """
-        # Get current best
-        best_checkpoint = self.get_best_checkpoint()
-        best_value = best_checkpoint["value"] if best_checkpoint else None
+        improved = (
+            self._best_value is None
+            or (mode == "max" and metric_value > self._best_value)
+            or (mode == "min" and metric_value < self._best_value)
+        )
+        if not improved:
+            return False
 
-        # Check for improvement
-        improved = False
-        if best_value is None:
-            improved = True
-        elif mode == "max" and metric_value > best_value:
-            improved = True
-        elif mode == "min" and metric_value < best_value:
-            improved = True
+        self._best_value = metric_value
+        # same filename -> save_checkpoint overwrites in place (no manual unlink,
+        # which previously deleted the file we had just written).
+        self.save_checkpoint(
+            model, "best.pth", epoch=epoch,
+            metrics={metric_name: metric_value}, is_best=True, is_last=False,
+        )
+        return True
 
-        if improved:
-            filename = "best.pth"
-            self.save_checkpoint(
-                model,
-                filename,
-                epoch=best_checkpoint.get("epoch", 0),
-                metrics={metric_name: metric_value},
-                is_best=True,
-                is_last=False,
-            )
-
-            # Remove old best checkpoint if exists
-            old_best = self.save_dir / "best.pth"
-            if old_best.exists():
-                old_best.unlink()
-                old_metadata = self.save_dir / "best.json"
-                if old_metadata.exists():
-                    old_metadata.unlink()
-
-            return True
-
-        return False
+    def reset_best(self) -> None:
+        """Forget the tracked best value. Call when the model architecture changes
+        (e.g. after quantizing in a new phase) so best.pth restarts for the new
+        architecture instead of comparing across incompatible checkpoints."""
+        self._best_value = None
 
     def save_last(self, model, epoch: int, metrics: Optional[Dict[str, float]] = None) -> None:
         """Save model as last checkpoint.
@@ -244,23 +236,11 @@ class CheckpointManager:
         Example:
             >>> manager.save_last(model, epoch=100, accuracy=0.90)
         """
-        filename = "last.pth"
+        # same filename -> save_checkpoint overwrites in place.
         self.save_checkpoint(
-            model,
-            filename,
-            epoch=epoch,
-            metrics=metrics,
-            is_best=False,
-            is_last=True,
+            model, "last.pth", epoch=epoch,
+            metrics=metrics, is_best=False, is_last=True,
         )
-
-        # Remove old last checkpoint if exists
-        old_last = self.save_dir / "last.pth"
-        if old_last.exists():
-            old_last.unlink()
-            old_metadata = self.save_dir / "last.json"
-            if old_metadata.exists():
-                old_metadata.unlink()
 
     def save_intermediate(self, model, epoch: int, metrics: Optional[Dict[str, float]] = None) -> None:
         """Save intermediate checkpoint.
@@ -478,7 +458,3 @@ class CheckpointManager:
             True if no checkpoints exist, False otherwise.
         """
         return len(self.checkpoints) == 0
-
-
-# Import torch for model loading
-import torch

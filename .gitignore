@@ -9,3 +9,27 @@ tmp_data*
 coeffs/*
 examples/ml2/train/*
 SKILL.md
+
+# --- training / export artifacts (not source) ---
+outputs/
+sweep_runs/
+sweep_runs_cifar/
+cifar_test/
+finn_jsc/
+builds/
+screenshots/
+*.pth
+*.onnx
+*.db
+*.log
+accuracy.txt
+
+# --- python caches / build ---
+__pycache__/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+
+# --- large installer binary, do not version ---
+Miniconda3-latest-Linux-x86_64.sh

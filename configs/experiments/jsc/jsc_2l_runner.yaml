@@ -1,0 +1,18 @@
+# Experiment: train JSC-2L via the Runner (new convention: model path + dataset name).
+name: "jsc_2l"
+
+model: "configs/models/jsc_2l.yaml"
+
+dataset: "jsc"
+dataset_path: "tmp/datasets/jsc"     # JetSubstructureDataset takes a single root path
+num_workers: 4
+distributed: false
+batch_size: [1024, 1024]
+
+epochs: 80
+learning_rate: 0.001
+output_dir: "./outputs/jsc_2l"
+
+best_metric_name: "accuracy"
+best_metric_mode: "max"
+validate_every: 1

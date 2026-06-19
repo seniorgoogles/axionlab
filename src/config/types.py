@@ -93,7 +93,6 @@ class YAMLModelConfig:
     """Complete model configuration from YAML files.
 
     This is used for parsing model architecture from configuration files.
-    For runtime model configuration, use ModelConfig from src.models.config.
 
     Attributes:
         name: Model name

@@ -1,0 +1,90 @@
+# ResNet-18 in axionlab layer-list format.
+# Names match torchvision (layer1.0.conv1, layer1.0.downsample.0, fc, ...) so a
+# pretrained float resnet18 state_dict loads by name via load_float_state_dict().
+# Swap any layer float<->quant by changing module_type and adding bit_width / quantizer.
+name: "resnet18"
+
+dataset: "imagenet"
+train_path: "tmp/datasets/imagenet/train"
+test_path: "tmp/datasets/imagenet/val"
+num_workers: 16
+distributed: False
+batch_size: [128, 5120]   # train, test
+
+epochs: 80
+nc: 1000
+
+backbone:
+  # [from, repeats, module, name, args]
+  - [-1, 1, QuantConv2d, "conv1", {in_channels: 3, out_channels: 64, kernel_size: 7, stride: 2, padding: 3, bias: False, bit_width: 1}]
+  - [-1, 1, BatchNorm2d, "bn1", {num_features: 64}]
+  - [-1, 1, ReLU, "relu", {inplace: True}]
+  - [-1, 1, MaxPool2d, "maxpool", {kernel_size: 3, stride: 2, padding: 1}]
+
+  - layer1:
+      - BasicBlock:
+          - [-1, 1, QuantConv2d, "conv1", {in_channels: 64, out_channels: 64, kernel_size: 3, stride: 1, padding: 1, bias: False, bit_width: 1}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 64}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, QuantConv2d, "conv2", {in_channels: 64, out_channels: 64, kernel_size: 3, stride: 1, padding: 1, bias: False, bit_width: 1}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 64}]
+      - BasicBlock:
+          - [-1, 1, QuantConv2d, "conv1", {in_channels: 64, out_channels: 64, kernel_size: 3, stride: 1, padding: 1, bias: False, bit_width: 1}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 64}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, QuantConv2d, "conv2", {in_channels: 64, out_channels: 64, kernel_size: 3, stride: 1, padding: 1, bias: False, bit_width: 1}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 64}]
+
+  - layer2:
+      - BasicBlock:
+          - [-1, 1, QuantConv2d, "conv1", {in_channels: 64, out_channels: 128, kernel_size: 3, stride: 2, padding: 1, bias: False, bit_width: 1}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 128}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, QuantConv2d, "conv2", {in_channels: 128, out_channels: 128, kernel_size: 3, stride: 1, padding: 1, bias: False, bit_width: 1}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 128}]
+          - downsample:
+              - [-1, 1, QuantConv2d, "0", {in_channels: 64, out_channels: 128, kernel_size: 1, stride: 2, padding: 0, bias: False, bit_width: 1}]
+              - [-1, 1, BatchNorm2d, "1", {num_features: 128}]
+      - BasicBlock:
+          - [-1, 1, QuantConv2d, "conv1", {in_channels: 128, out_channels: 128, kernel_size: 3, stride: 1, padding: 1, bias: False, bit_width: 1}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 128}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, QuantConv2d, "conv2", {in_channels: 128, out_channels: 128, kernel_size: 3, stride: 1, padding: 1, bias: False, bit_width: 1}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 128}]
+
+  - layer3:
+      - BasicBlock:
+          - [-1, 1, QuantConv2d, "conv1", {in_channels: 128, out_channels: 256, kernel_size: 3, stride: 2, padding: 1, bias: False, bit_width: 1}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 256}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, QuantConv2d, "conv2", {in_channels: 256, out_channels: 256, kernel_size: 3, stride: 1, padding: 1, bias: False, bit_width: 1}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 256}]
+          - downsample:
+              - [-1, 1, QuantConv2d, "0", {in_channels: 128, out_channels: 256, kernel_size: 1, stride: 2, padding: 0, bias: False, bit_width: 1}]
+              - [-1, 1, BatchNorm2d, "1", {num_features: 256}]
+      - BasicBlock:
+          - [-1, 1, QuantConv2d, "conv1", {in_channels: 256, out_channels: 256, kernel_size: 3, stride: 1, padding: 1, bias: False, bit_width: 1}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 256}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, QuantConv2d, "conv2", {in_channels: 256, out_channels: 256, kernel_size: 3, stride: 1, padding: 1, bias: False, bit_width: 1}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 256}]
+
+  - layer4:
+      - BasicBlock:
+          - [-1, 1, QuantConv2d, "conv1", {in_channels: 256, out_channels: 512, kernel_size: 3, stride: 2, padding: 1, bias: False, bit_width: 1}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 512}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, QuantConv2d, "conv2", {in_channels: 512, out_channels: 512, kernel_size: 3, stride: 1, padding: 1, bias: False, bit_width: 1}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 512}]
+          - downsample:
+              - [-1, 1, QuantConv2d, "0", {in_channels: 256, out_channels: 512, kernel_size: 1, stride: 2, padding: 0, bias: False, bit_width: 1}]
+              - [-1, 1, BatchNorm2d, "1", {num_features: 512}]
+      - BasicBlock:
+          - [-1, 1, QuantConv2d, "conv1", {in_channels: 512, out_channels: 512, kernel_size: 3, stride: 1, padding: 1, bias: False, bit_width: 1}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 512}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, QuantConv2d, "conv2", {in_channels: 512, out_channels: 512, kernel_size: 3, stride: 1, padding: 1, bias: False, bit_width: 1}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 512}]
+
+  - [-1, 1, AdaptiveAvgPool2d, "avgpool", {output_size: 1}]
+  - [-1, 1, Linear, "fc", {in_features: 512, out_features: 1000}]

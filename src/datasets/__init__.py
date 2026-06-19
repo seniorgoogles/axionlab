@@ -1,27 +1,23 @@
-"""Datasets module for data loading and preprocessing.
+"""Datasets: a name-keyed factory with injectable preprocessing.
 
-This module provides dataset classes and utilities for loading various datasets.
+    from src.datasets import build_dataset, list_datasets
+    ds = build_dataset("cifar10", config, transform=optional_transform)
+    train_loader, test_loader = ds.get_train_loader(), ds.get_test_loader()
 
-Components:
-- BaseDataset: Abstract base class for all datasets
-- DatasetBuilder: Factory for building dataset instances
-- DatasetRegistry: Registry for dataset types
-- Individual dataset implementations (MNIST, FashionMNIST, ImageNet, etc.)
+Registered out of the box: cifar10, mnist, fashion_mnist, imagenet/imagefolder
+(also .zip archives), openml/jsc (tabular), yolo/coco/detection.
 """
 
 from .base import BaseDataset
-from .dataset_builder import DatasetBuilder, DatasetRegistry
-from .mnist import Mnist
-from .fashionMnist import FashionMnist
-from .cifar10 import Cifar10
-from .imagenet import ImageNet
+# importing the factory triggers best-effort registration of the built-in
+# dataset modules (vision/tabular/detection), each guarded so a missing optional
+# dependency doesn't break the whole package.
+from .factory import build_dataset, list_datasets, register, register_dataset
 
 __all__ = [
     "BaseDataset",
-    "DatasetBuilder",
-    "DatasetRegistry",
-    "Mnist",
-    "FashionMnist",
-    "Cifar10",
-    "ImageNet",
+    "build_dataset",
+    "list_datasets",
+    "register",
+    "register_dataset",
 ]

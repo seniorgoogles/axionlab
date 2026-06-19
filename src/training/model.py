@@ -146,9 +146,19 @@ class Model:
     def __init__(self, config: Union[TrainableModelConfig, Dict[str, Any]] = None):
         """Initialize the Model.
 
+        .. deprecated::
+            Use ``src.core.Runner`` (build the net via ``src.core.build`` and
+            train/eval through the Runner). This wrapper is kept for backward
+            compatibility only.
+
         Args:
             config: TrainableModelConfig instance or dictionary with configuration.
         """
+        import warnings
+        warnings.warn(
+            "training.Model is deprecated; use src.core.Runner + src.core.build instead.",
+            DeprecationWarning, stacklevel=2,
+        )
         if config is None:
             config = TrainableModelConfig()
         elif isinstance(config, dict):
