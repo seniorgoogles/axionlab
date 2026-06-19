@@ -512,7 +512,10 @@ def cmd_export(args):
         import shutil
 
         os.makedirs(args.bundle, exist_ok=True)
-        shutil.copy(args.out, os.path.join(args.bundle, "model.qonnx.onnx"))
+        bundle_onnx = os.path.join(args.bundle, "model.qonnx.onnx")
+        # --out may already be that exact file (e.g. --out <bundle>/model.qonnx.onnx)
+        if os.path.abspath(args.out) != os.path.abspath(bundle_onnx):
+            shutil.copy(args.out, bundle_onnx)
         shutil.copy(args.model, os.path.join(args.bundle, os.path.basename(args.model)))
         if args.weights and os.path.exists(args.weights):
             shutil.copy(args.weights, os.path.join(args.bundle, os.path.basename(args.weights)))

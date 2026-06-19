@@ -1,0 +1,21 @@
+# Experiment: ResNet-50 on CIFAR-10 via the Runner. Float model; QAT quantizes it.
+# CIFAR-10 auto-downloads (cached) into train_path.
+name: "resnet50_cifar"
+
+model: "configs/models/resnet50_cifar.yaml"
+
+dataset: "cifar10"
+train_path: "./tmp/datasets/cifar10"
+num_workers: 8
+distributed: false
+batch_size: [32, 64]      # small (5-6 GB) GPU; lower to [16, 32] if still OOM
+
+epochs: 60
+learning_rate: 0.01
+output_dir: "./outputs/resnet50_cifar"
+
+best_metric_name: "accuracy"
+best_metric_mode: "max"
+validate_every: 1
+
+tracking_db: "./outputs/resnet50_cifar/experiments.db"

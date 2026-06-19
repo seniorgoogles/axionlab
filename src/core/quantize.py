@@ -25,13 +25,22 @@ def _requantize(model: nn.Module, weight_bit_width: int, act_bit_width: int,
     """
     import brevitas.nn as qnn
 
+    from src.core.build.builder import BasicBlock, Bottleneck  # residual-add quantizer
+
     counts = {"conv": 0, "linear": 0, "act": 0}
 
     def visit(module):
         # Replace conv/linear/relu LEAVES; never recurse INTO a quant layer
         # (its internal proxies are not user layers and must not be touched).
         for name, child in list(module.named_children()):
-            if isinstance(child, nn.Conv2d):
+            if isinstance(child, (BasicBlock, Bottleneck)):
+                # give the residual add a shared-scale quantizer (FINN AddStreams),
+                # then recurse to convert the block's conv/bn/relu children.
+                if not (only_float and getattr(child, "add_quant", None) is not None):
+                    child.add_quant = qnn.QuantIdentity(bit_width=act_bit_width)
+                    counts["act"] += 1
+                visit(child)
+            elif isinstance(child, nn.Conv2d):
                 if not (only_float and isinstance(child, qnn.QuantConv2d)):
                     q = qnn.QuantConv2d(
                         child.in_channels, child.out_channels, child.kernel_size,

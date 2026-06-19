@@ -15,6 +15,9 @@ outputs/
 sweep_runs/
 sweep_runs_cifar/
 cifar_test/
+cnv_test/
+resnet_test/
+bundle/
 finn_jsc/
 builds/
 screenshots/

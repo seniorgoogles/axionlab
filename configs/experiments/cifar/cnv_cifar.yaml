@@ -1,0 +1,21 @@
+# Experiment: sequential conv net (cnv_cifar) on CIFAR-10 via the Runner.
+# Float model; the QAT phase quantizes it. CIFAR-10 auto-downloads (cached).
+name: "cnv_cifar"
+
+model: "configs/models/cnv_cifar.yaml"
+
+dataset: "cifar10"
+train_path: "./tmp/datasets/cifar10"
+num_workers: 8
+distributed: false
+batch_size: [128, 256]
+
+epochs: 40
+learning_rate: 0.01
+output_dir: "./outputs/cnv_cifar"
+
+best_metric_name: "accuracy"
+best_metric_mode: "max"
+validate_every: 1
+
+tracking_db: "./outputs/cnv_cifar/experiments.db"

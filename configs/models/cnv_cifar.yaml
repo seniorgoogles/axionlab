@@ -1,0 +1,40 @@
+# Sequential conv net for CIFAR-10 (VGG/CNV style, NO residual skips), FLOAT.
+# This is FINN's bread-and-butter topology: a straight conv->pool->fc chain that
+# goes through the dataflow build cleanly. Use it to validate the conv toolchain;
+# residual nets (resnet18_cifar) are a separate, harder FINN problem.
+# Float layers on purpose -> the QAT phase quantizes them (same flow as jsc_2l).
+name: "cnv_cifar"
+nc: 10
+
+backbone:
+  # 32x32 -> block 64
+  - [-1, 1, Conv2d, "conv1", {in_channels: 3, out_channels: 64, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+  - [-1, 1, BatchNorm2d, "bn1", {num_features: 64}]
+  - [-1, 1, ReLU, "relu1", {inplace: True}]
+  - [-1, 1, Conv2d, "conv2", {in_channels: 64, out_channels: 64, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+  - [-1, 1, BatchNorm2d, "bn2", {num_features: 64}]
+  - [-1, 1, ReLU, "relu2", {inplace: True}]
+  - [-1, 1, MaxPool2d, "pool1", {kernel_size: 2, stride: 2}]      # 32 -> 16
+
+  # block 128
+  - [-1, 1, Conv2d, "conv3", {in_channels: 64, out_channels: 128, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+  - [-1, 1, BatchNorm2d, "bn3", {num_features: 128}]
+  - [-1, 1, ReLU, "relu3", {inplace: True}]
+  - [-1, 1, Conv2d, "conv4", {in_channels: 128, out_channels: 128, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+  - [-1, 1, BatchNorm2d, "bn4", {num_features: 128}]
+  - [-1, 1, ReLU, "relu4", {inplace: True}]
+  - [-1, 1, MaxPool2d, "pool2", {kernel_size: 2, stride: 2}]      # 16 -> 8
+
+  # block 256
+  - [-1, 1, Conv2d, "conv5", {in_channels: 128, out_channels: 256, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+  - [-1, 1, BatchNorm2d, "bn5", {num_features: 256}]
+  - [-1, 1, ReLU, "relu5", {inplace: True}]
+  - [-1, 1, Conv2d, "conv6", {in_channels: 256, out_channels: 256, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+  - [-1, 1, BatchNorm2d, "bn6", {num_features: 256}]
+  - [-1, 1, ReLU, "relu6", {inplace: True}]
+  - [-1, 1, MaxPool2d, "pool3", {kernel_size: 2, stride: 2}]      # 8 -> 4
+
+  # classifier (SequentialGraph auto-flattens before the first Linear)
+  - [-1, 1, Linear, "fc1", {in_features: 4096, out_features: 512}]   # 256*4*4 = 4096
+  - [-1, 1, ReLU, "relu_fc", {inplace: True}]
+  - [-1, 1, Linear, "fc2", {in_features: 512, out_features: 10}]

@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>axionlab control</title>
+<style>
+  :root { --bg:#0f1115; --panel:#181b22; --line:#262b35; --fg:#e6e6e6; --mut:#8b93a1; --acc:#4f9cff; --ok:#3fb950; --bad:#f85149; --warn:#d29922; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:14px/1.5 system-ui,sans-serif; background:var(--bg); color:var(--fg); }
+  header { padding:14px 20px; border-bottom:1px solid var(--line); font-weight:600; }
+  .wrap { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:16px; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px; }
+  .panel h2 { margin:0 0 10px; font-size:14px; color:var(--mut); text-transform:uppercase; letter-spacing:.05em; }
+  label { display:block; font-size:12px; color:var(--mut); margin:8px 0 2px; }
+  input, select { width:100%; padding:7px 9px; background:#0e1117; color:var(--fg); border:1px solid var(--line); border-radius:6px; }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  button { margin-top:10px; padding:8px 14px; background:var(--acc); color:#fff; border:0; border-radius:6px; cursor:pointer; font-weight:600; }
+  button.sec { background:#2a2f3a; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--mut); font-weight:500; }
+  .pill { padding:1px 8px; border-radius:20px; font-size:12px; }
+  .running{ background:#14304f; color:var(--acc);} .done{ background:#10331c; color:var(--ok);}
+  .failed{ background:#3a1416; color:var(--bad);} .stopped{ background:#3a3014; color:var(--warn);}
+  #log { background:#0a0c10; border:1px solid var(--line); border-radius:8px; padding:10px; height:340px; overflow:auto; white-space:pre-wrap; font:12px/1.45 ui-monospace,monospace; color:#cdd3dc; }
+  .span2 { grid-column:1 / span 2; }
+  .mut { color:var(--mut); font-size:12px; }
+</style>
+</head>
+<body>
+<header>axionlab &middot; control</header>
+<div class="wrap">
+
+  <section class="panel">
+    <h2>Train</h2>
+    <label>Experiment</label><select id="tr_exp"></select>
+    <div class="row">
+      <div><label>Epochs (override)</label><input id="tr_ep" placeholder="default"></div>
+      <div><label>Device</label><select id="tr_dev"><option value="">auto</option><option>cuda</option><option>mps</option><option>cpu</option></select></div>
+    </div>
+    <button onclick="start('train',{exp:v('tr_exp'),epochs:num('tr_ep'),device:v('tr_dev')||null})">Start training</button>
+  </section>
+
+  <section class="panel">
+    <h2>QAT</h2>
+    <label>Experiment</label><select id="qa_exp"></select>
+    <div class="row">
+      <div><label>Warmup epochs</label><input id="qa_warm" value="0"></div>
+      <div><label>Device</label><select id="qa_dev"><option value="">auto</option><option>cuda</option><option>mps</option><option>cpu</option></select></div>
+    </div>
+    <div class="row">
+      <div><label>Schedule</label><input id="qa_sched" value="w8a8:6,w4a4:6"></div>
+      <div><label>Min acc (rollback)</label><input id="qa_min" placeholder="none"></div>
+    </div>
+    <button onclick="start('qat',{exp:v('qa_exp'),warmup_epochs:num('qa_warm')||0,schedule:v('qa_sched'),min_acc:num('qa_min'),device:v('qa_dev')||null})">Start QAT</button>
+  </section>
+
+  <section class="panel">
+    <h2>Export (QONNX + bundle)</h2>
+    <label>Model yaml</label><select id="ex_model"></select>
+    <div class="row">
+      <div><label>Weights (.pth)</label><input id="ex_w" placeholder="outputs/.../best.pth"></div>
+      <div><label>Quantize</label><input id="ex_q" value="w4a4"></div>
+    </div>
+    <div class="row">
+      <div><label>Input shape</label><input id="ex_shape" value="3,32,32"></div>
+      <div><label>Input quant bits</label><input id="ex_iq" value="8"></div>
+    </div>
+    <div class="row">
+      <div><label>FPGA part</label><input id="ex_part" value="xck26-sfvc784-2LV-c"></div>
+      <div><label>Synth</label><select id="ex_synth"><option>estimate</option><option>ip</option><option>bitfile</option></select></div>
+    </div>
+    <label>Bundle dir</label><input id="ex_bundle" value="bundle">
+    <button onclick="doExport()">Export</button>
+  </section>
+
+  <section class="panel">
+    <h2>FINN build</h2>
+    <label>Bundle dir (cwd)</label><input id="fn_bundle" value="bundle">
+    <label>Command</label><input id="fn_cmd" value="./run-docker.sh python build.py">
+    <p class="mut">Runs inside the FINN docker image. The bundle must reach run-docker.sh.</p>
+    <button onclick="start('finn',{bundle:v('fn_bundle'),command:v('fn_cmd')})">Start FINN build</button>
+  </section>
+
+  <section class="panel span2">
+    <h2>Jobs</h2>
+    <table><thead><tr><th>#</th><th>kind</th><th>status</th><th>command</th><th></th></tr></thead><tbody id="jobs"></tbody></table>
+    <h2 style="margin-top:14px">Log <span class="mut" id="logwho"></span></h2>
+    <div id="log"></div>
+  </section>
+
+  <section class="panel span2">
+    <h2>Past runs</h2>
+    <table><thead><tr><th>name</th><th>best acc</th><th>epochs</th><th>created</th><th>db</th></tr></thead><tbody id="runs"></tbody></table>
+  </section>
+
+</div>
+<script>
+const v = id => document.getElementById(id).value.trim();
+const num = id => { const x = v(id); return x === "" ? null : Number(x); };
+
+async function loadConfig(){
+  const c = await (await fetch('/api/config')).json();
+  for (const id of ['tr_exp','qa_exp']) fill(id, c.experiments);
+  fill('ex_model', c.models);
+}
+function fill(id, items){ const s=document.getElementById(id); s.innerHTML = items.map(x=>`<option>${x}</option>`).join(''); }
+
+async function start(kind, body){
+  const r = await fetch('/api/start/'+kind, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+  const j = await r.json();
+  if (j.id){ watch(j.id); refreshJobs(); }
+  else alert('error: '+JSON.stringify(j));
+}
+function doExport(){
+  start('export',{model:v('ex_model'),weights:v('ex_w'),quantize:v('ex_q'),input_shape:v('ex_shape'),
+    input_quant:num('ex_iq'),fpga_part:v('ex_part'),out:v('ex_bundle')+'/model.qonnx.onnx',bundle:v('ex_bundle'),synth:v('ex_synth')});
+}
+
+let watching=null, offset=0;
+function watch(id){ watching=id; offset=0; document.getElementById('log').textContent=''; document.getElementById('logwho').textContent='#'+id; }
+
+async function refreshJobs(){
+  const jobs = await (await fetch('/api/jobs')).json();
+  document.getElementById('jobs').innerHTML = jobs.map(j=>`
+    <tr>
+      <td>${j.id}</td><td>${j.kind}</td>
+      <td><span class="pill ${j.status}">${j.status}</span></td>
+      <td style="max-width:520px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${j.cmd}">${j.cmd}</td>
+      <td>
+        <button class="sec" style="margin:0;padding:3px 8px" onclick="watch(${j.id})">log</button>
+        ${j.status==='running'?`<button class="sec" style="margin:0;padding:3px 8px" onclick="stopJob(${j.id})">stop</button>`:''}
+      </td>
+    </tr>`).join('');
+}
+async function stopJob(id){ await fetch('/api/stop/'+id,{method:'POST'}); refreshJobs(); }
+
+async function pollLog(){
+  if(watching!==null){
+    const d = await (await fetch(`/api/jobs/${watching}/log?offset=${offset}`)).json();
+    if(d.lines && d.lines.length){
+      const el=document.getElementById('log');
+      el.textContent += d.lines.join('\n')+'\n'; offset=d.next_offset; el.scrollTop=el.scrollHeight;
+    }
+  }
+}
+async function refreshRuns(){
+  const runs = await (await fetch('/api/runs')).json();
+  document.getElementById('runs').innerHTML = runs.map(r=>`
+    <tr><td>${r.name}</td><td>${r.best_acc!=null?r.best_acc.toFixed(4):'-'}</td>
+    <td>${r.last_epoch!=null?r.last_epoch:'-'}</td><td>${r.created||''}</td><td class="mut">${r.db}</td></tr>`).join('');
+}
+
+loadConfig(); refreshJobs(); refreshRuns();
+setInterval(refreshJobs, 2000);
+setInterval(pollLog, 1200);
+setInterval(refreshRuns, 5000);
+</script>
+</body>
+</html>

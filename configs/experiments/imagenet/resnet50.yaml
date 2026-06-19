@@ -1,0 +1,23 @@
+# Experiment: ResNet-50 on ImageNet via the Runner. Float model (configs/models/
+# resnet50.yaml); the QAT phase quantizes it. Point train_path/test_path at your
+# ImageNet folders (class subdirs) or a .zip archive.
+name: "resnet50_imagenet"
+
+model: "configs/models/resnet50.yaml"
+
+dataset: "imagenet"
+train_path: "tmp/datasets/imagenet/train"
+test_path: "tmp/datasets/imagenet/val"
+num_workers: 16
+distributed: false
+batch_size: [128, 256]
+
+epochs: 90
+learning_rate: 0.01
+output_dir: "./outputs/resnet50_imagenet"
+
+best_metric_name: "accuracy"
+best_metric_mode: "max"
+validate_every: 1
+
+tracking_db: "./outputs/resnet50_imagenet/experiments.db"

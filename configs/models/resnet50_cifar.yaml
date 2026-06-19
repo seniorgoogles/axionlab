@@ -1,0 +1,168 @@
+# ResNet-50 adapted for CIFAR-10 (32x32, 10 classes), FLOAT.
+# Same Bottleneck stages as resnet50.yaml; only the stem (3x3 s1, no maxpool) and
+# the final fc (->10) differ. Float on purpose -> the QAT phase quantizes it.
+# Spatial: 32 -> layer1(32) -> layer2(16) -> layer3(8) -> layer4(4) -> avgpool.
+name: "resnet50_cifar"
+nc: 10
+
+backbone:
+  # --- CIFAR stem (3x3 s1, no maxpool) ---
+  - [-1, 1, Conv2d, "conv1", {in_channels: 3, out_channels: 64, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+  - [-1, 1, BatchNorm2d, "bn1", {num_features: 64}]
+  - [-1, 1, ReLU, "relu", {inplace: True}]
+
+  # --- layer1: 3x Bottleneck, 64 -> 256 (stride 1) ---
+  - layer1:
+      - Bottleneck:
+          - [-1, 1, Conv2d, "conv1", {in_channels: 64, out_channels: 64, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 64}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, Conv2d, "conv2", {in_channels: 64, out_channels: 64, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 64}]
+          - [-1, 1, Conv2d, "conv3", {in_channels: 64, out_channels: 256, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn3", {num_features: 256}]
+          - downsample:
+              - [-1, 1, Conv2d, "0", {in_channels: 64, out_channels: 256, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+              - [-1, 1, BatchNorm2d, "1", {num_features: 256}]
+      - Bottleneck:
+          - [-1, 1, Conv2d, "conv1", {in_channels: 256, out_channels: 64, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 64}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, Conv2d, "conv2", {in_channels: 64, out_channels: 64, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 64}]
+          - [-1, 1, Conv2d, "conv3", {in_channels: 64, out_channels: 256, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn3", {num_features: 256}]
+      - Bottleneck:
+          - [-1, 1, Conv2d, "conv1", {in_channels: 256, out_channels: 64, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 64}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, Conv2d, "conv2", {in_channels: 64, out_channels: 64, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 64}]
+          - [-1, 1, Conv2d, "conv3", {in_channels: 64, out_channels: 256, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn3", {num_features: 256}]
+
+  # --- layer2: 4x Bottleneck, 128 -> 512 (stride 2 in block0) ---
+  - layer2:
+      - Bottleneck:
+          - [-1, 1, Conv2d, "conv1", {in_channels: 256, out_channels: 128, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 128}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, Conv2d, "conv2", {in_channels: 128, out_channels: 128, kernel_size: 3, stride: 2, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 128}]
+          - [-1, 1, Conv2d, "conv3", {in_channels: 128, out_channels: 512, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn3", {num_features: 512}]
+          - downsample:
+              - [-1, 1, Conv2d, "0", {in_channels: 256, out_channels: 512, kernel_size: 1, stride: 2, padding: 0, bias: False}]
+              - [-1, 1, BatchNorm2d, "1", {num_features: 512}]
+      - Bottleneck:
+          - [-1, 1, Conv2d, "conv1", {in_channels: 512, out_channels: 128, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 128}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, Conv2d, "conv2", {in_channels: 128, out_channels: 128, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 128}]
+          - [-1, 1, Conv2d, "conv3", {in_channels: 128, out_channels: 512, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn3", {num_features: 512}]
+      - Bottleneck:
+          - [-1, 1, Conv2d, "conv1", {in_channels: 512, out_channels: 128, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 128}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, Conv2d, "conv2", {in_channels: 128, out_channels: 128, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 128}]
+          - [-1, 1, Conv2d, "conv3", {in_channels: 128, out_channels: 512, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn3", {num_features: 512}]
+      - Bottleneck:
+          - [-1, 1, Conv2d, "conv1", {in_channels: 512, out_channels: 128, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 128}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, Conv2d, "conv2", {in_channels: 128, out_channels: 128, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 128}]
+          - [-1, 1, Conv2d, "conv3", {in_channels: 128, out_channels: 512, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn3", {num_features: 512}]
+
+  # --- layer3: 6x Bottleneck, 256 -> 1024 (stride 2 in block0) ---
+  - layer3:
+      - Bottleneck:
+          - [-1, 1, Conv2d, "conv1", {in_channels: 512, out_channels: 256, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 256}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, Conv2d, "conv2", {in_channels: 256, out_channels: 256, kernel_size: 3, stride: 2, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 256}]
+          - [-1, 1, Conv2d, "conv3", {in_channels: 256, out_channels: 1024, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn3", {num_features: 1024}]
+          - downsample:
+              - [-1, 1, Conv2d, "0", {in_channels: 512, out_channels: 1024, kernel_size: 1, stride: 2, padding: 0, bias: False}]
+              - [-1, 1, BatchNorm2d, "1", {num_features: 1024}]
+      - Bottleneck:
+          - [-1, 1, Conv2d, "conv1", {in_channels: 1024, out_channels: 256, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 256}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, Conv2d, "conv2", {in_channels: 256, out_channels: 256, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 256}]
+          - [-1, 1, Conv2d, "conv3", {in_channels: 256, out_channels: 1024, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn3", {num_features: 1024}]
+      - Bottleneck:
+          - [-1, 1, Conv2d, "conv1", {in_channels: 1024, out_channels: 256, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 256}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, Conv2d, "conv2", {in_channels: 256, out_channels: 256, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 256}]
+          - [-1, 1, Conv2d, "conv3", {in_channels: 256, out_channels: 1024, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn3", {num_features: 1024}]
+      - Bottleneck:
+          - [-1, 1, Conv2d, "conv1", {in_channels: 1024, out_channels: 256, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 256}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, Conv2d, "conv2", {in_channels: 256, out_channels: 256, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 256}]
+          - [-1, 1, Conv2d, "conv3", {in_channels: 256, out_channels: 1024, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn3", {num_features: 1024}]
+      - Bottleneck:
+          - [-1, 1, Conv2d, "conv1", {in_channels: 1024, out_channels: 256, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 256}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, Conv2d, "conv2", {in_channels: 256, out_channels: 256, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 256}]
+          - [-1, 1, Conv2d, "conv3", {in_channels: 256, out_channels: 1024, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn3", {num_features: 1024}]
+      - Bottleneck:
+          - [-1, 1, Conv2d, "conv1", {in_channels: 1024, out_channels: 256, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 256}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, Conv2d, "conv2", {in_channels: 256, out_channels: 256, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 256}]
+          - [-1, 1, Conv2d, "conv3", {in_channels: 256, out_channels: 1024, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn3", {num_features: 1024}]
+
+  # --- layer4: 3x Bottleneck, 512 -> 2048 (stride 2 in block0) ---
+  - layer4:
+      - Bottleneck:
+          - [-1, 1, Conv2d, "conv1", {in_channels: 1024, out_channels: 512, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 512}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, Conv2d, "conv2", {in_channels: 512, out_channels: 512, kernel_size: 3, stride: 2, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 512}]
+          - [-1, 1, Conv2d, "conv3", {in_channels: 512, out_channels: 2048, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn3", {num_features: 2048}]
+          - downsample:
+              - [-1, 1, Conv2d, "0", {in_channels: 1024, out_channels: 2048, kernel_size: 1, stride: 2, padding: 0, bias: False}]
+              - [-1, 1, BatchNorm2d, "1", {num_features: 2048}]
+      - Bottleneck:
+          - [-1, 1, Conv2d, "conv1", {in_channels: 2048, out_channels: 512, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 512}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, Conv2d, "conv2", {in_channels: 512, out_channels: 512, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 512}]
+          - [-1, 1, Conv2d, "conv3", {in_channels: 512, out_channels: 2048, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn3", {num_features: 2048}]
+      - Bottleneck:
+          - [-1, 1, Conv2d, "conv1", {in_channels: 2048, out_channels: 512, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn1", {num_features: 512}]
+          - [-1, 1, ReLU, "relu", {inplace: True}]
+          - [-1, 1, Conv2d, "conv2", {in_channels: 512, out_channels: 512, kernel_size: 3, stride: 1, padding: 1, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn2", {num_features: 512}]
+          - [-1, 1, Conv2d, "conv3", {in_channels: 512, out_channels: 2048, kernel_size: 1, stride: 1, padding: 0, bias: False}]
+          - [-1, 1, BatchNorm2d, "bn3", {num_features: 2048}]
+
+  # --- head ---
+  - [-1, 1, AdaptiveAvgPool2d, "avgpool", {output_size: 1}]
+  - [-1, 1, Linear, "fc", {in_features: 2048, out_features: 10}]
