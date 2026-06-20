@@ -21,14 +21,17 @@ from pydantic import BaseModel
 from src.webapp.jobs import JobManager
 from src.webapp.projects import ARTIFACT_KINDS, ProjectDB
 from src.webapp.runs import list_runs
+from src.webapp.transforms import TransformDB
 
 REPO = str(Path(__file__).resolve().parents[2])     # .../axionlab
 STATIC = Path(__file__).parent / "static"
 PY = sys.executable
+_DB = str(Path(REPO) / "projects.db")
 
 app = FastAPI(title="axionlab control")
 jm = JobManager(REPO)
-pdb = ProjectDB(str(Path(REPO) / "projects.db"))
+pdb = ProjectDB(_DB)
+tdb = TransformDB(_DB)
 
 
 # ---- discovery -------------------------------------------------------------
@@ -202,6 +205,43 @@ def delete_artifact(project_id: int, artifact_id: int):
     if not pdb.delete_artifact(artifact_id):
         raise HTTPException(404, f"no artifact with id {artifact_id}")
     return {"deleted": artifact_id}
+
+
+# ---- transforms (lineage) --------------------------------------------------
+class StepReq(BaseModel):
+    run_id: str
+    seq: int
+    step: str
+    status: str = "ok"
+    project_id: Optional[int] = None
+    input: str = ""
+    output: str = ""
+    params: dict = {}
+    error: str = ""
+    snapshot: str = ""
+
+
+@app.get("/api/transforms")
+def transforms(project_id: Optional[int] = None):
+    return tdb.list_runs(project_id)
+
+
+@app.get("/api/transforms/{run_id}")
+def transform_run(run_id: str):
+    steps = tdb.get_run(run_id)
+    if not steps:
+        raise HTTPException(404, f"no transform run '{run_id}'")
+    return {"run_id": run_id, "steps": steps, "first_failed": tdb.first_failed(run_id)}
+
+
+@app.post("/api/transforms")
+def record_step(r: StepReq):
+    try:
+        sid = tdb.record_step(r.run_id, r.seq, r.step, r.status, r.project_id,
+                              r.input, r.output, r.params, r.error, r.snapshot)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    return {"id": sid}
 
 
 # ---- UI --------------------------------------------------------------------
