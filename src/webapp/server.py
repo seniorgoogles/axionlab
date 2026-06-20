@@ -23,6 +23,7 @@ from src.webapp.jobs import JobManager
 from src.webapp.projects import ARTIFACT_KINDS, ProjectDB
 from src.webapp.runs import list_runs
 from src.webapp.transforms import TransformDB
+from src.webapp.workers import WorkerRegistry, detect_capabilities
 
 REPO = str(Path(__file__).resolve().parents[2])     # .../axionlab
 STATIC = Path(__file__).parent / "static"
@@ -33,6 +34,7 @@ app = FastAPI(title="axionlab control")
 jm = JobManager(REPO)
 pdb = ProjectDB(_DB)
 tdb = TransformDB(_DB)
+wreg = WorkerRegistry(_DB)
 
 
 # ---- discovery -------------------------------------------------------------
@@ -131,6 +133,76 @@ def start_finn(r: FinnReq):
 @app.get("/api/finn/preflight")
 def finn_preflight(synth: str = "estimate"):
     return finn_docker.preflight(synth=synth)
+
+
+# ---- workers (distributed jobs) --------------------------------------------
+class WorkerReq(BaseModel):
+    name: str
+    url: str
+    capabilities: List[str] = []
+
+
+@app.get("/api/capabilities")
+def capabilities():
+    """What this machine can do -- a worker advertises this to a controller."""
+    return {"capabilities": detect_capabilities()}
+
+
+@app.get("/api/workers")
+def list_workers():
+    return wreg.list()
+
+
+@app.post("/api/workers")
+def register_worker(r: WorkerReq):
+    try:
+        wreg.register(r.name, r.url, r.capabilities)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    return wreg.get(r.name)
+
+
+@app.delete("/api/workers/{name}")
+def remove_worker(name: str):
+    if not wreg.remove(name):
+        raise HTTPException(404, f"no worker '{name}'")
+    return {"removed": name}
+
+
+@app.get("/api/workers/{name}/ping")
+def ping_worker(name: str):
+    """Reachability check + pull the worker's advertised capabilities."""
+    w = wreg.get(name)
+    if w is None:
+        raise HTTPException(404, f"no worker '{name}'")
+    import requests
+    try:
+        resp = requests.get(f"{w['url']}/api/capabilities", timeout=5)
+        caps = resp.json().get("capabilities", [])
+        wreg.register(name, w["url"], caps)         # refresh capabilities
+        return {"ok": True, "capabilities": caps}
+    except requests.RequestException as e:
+        return {"ok": False, "error": str(e)}
+
+
+@app.post("/api/workers/{name}/start/{kind}")
+def start_on_worker(name: str, kind: str, body: dict):
+    """Forward a job start to a worker's own /api/start/{kind}."""
+    w = wreg.get(name)
+    if w is None:
+        raise HTTPException(404, f"no worker '{name}'")
+    import requests
+    try:
+        resp = requests.post(f"{w['url']}/api/start/{kind}", json=body, timeout=15)
+        return JSONResponse(resp.json(), status_code=resp.status_code)
+    except requests.RequestException as e:
+        raise HTTPException(502, f"worker '{name}' unreachable: {e}")
+
+
+@app.get("/api/route/{kind}")
+def route_kind(kind: str):
+    """Which worker would a job of this kind go to?"""
+    return {"kind": kind, "worker": wreg.route(kind)}
 
 
 # ---- monitor ---------------------------------------------------------------

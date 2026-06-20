@@ -163,6 +163,17 @@
   </section>
 
   <section class="panel span2">
+    <h2>Workers (distributed jobs)</h2>
+    <div class="row">
+      <div><label>Name</label><input id="wk_name" placeholder="fpga-box"></div>
+      <div><label>URL</label><input id="wk_url" placeholder="http://10.0.0.6:8000"></div>
+    </div>
+    <button onclick="registerWorker()">Register worker</button>
+    <p class="mut">A worker is another axionlab server. Capabilities are pulled on ping; FINN jobs route to a worker with Vivado.</p>
+    <table style="margin-top:8px"><thead><tr><th>name</th><th>url</th><th>capabilities</th><th></th></tr></thead><tbody id="workers"></tbody></table>
+  </section>
+
+  <section class="panel span2">
     <h2>Transforms &amp; ONNX viewer</h2>
     <table><thead><tr><th>run</th><th>project</th><th>steps</th><th>status</th><th>created</th></tr></thead><tbody id="tf_runs"></tbody></table>
     <div id="tf_steps" style="margin-top:10px"></div>
@@ -359,6 +370,34 @@ async function saveExp(overwrite){
   loadConfig();                       // new experiment shows up in the train/qat dropdowns
 }
 
+// ---- workers --------------------------------------------------------------
+async function refreshWorkers(){
+  const ws = await (await fetch('/api/workers')).json();
+  document.getElementById('workers').innerHTML = ws.map(w=>`
+    <tr><td>${w.name}</td><td class="mut">${w.url}</td>
+    <td>${(w.capabilities||[]).join(', ')||'<span class="mut">unknown</span>'}</td>
+    <td>
+      <button class="sec" style="margin:0;padding:3px 8px" onclick="pingWorker('${w.name}')">ping</button>
+      <button class="sec" style="margin:0;padding:3px 8px" onclick="delWorker('${w.name}')">remove</button>
+    </td></tr>`).join('') || '<tr><td colspan="4" class="mut">no workers (jobs run locally)</td></tr>';
+}
+async function registerWorker(){
+  const name=v('wk_name'), url=v('wk_url');
+  if(!name||!url){ alert('name and url required'); return; }
+  await fetch('/api/workers',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({name,url,capabilities:[]})});
+  document.getElementById('wk_name').value=''; document.getElementById('wk_url').value='';
+  refreshWorkers();
+}
+async function pingWorker(name){
+  const r = await (await fetch('/api/workers/'+encodeURIComponent(name)+'/ping')).json();
+  alert(r.ok ? ('reachable — capabilities: '+(r.capabilities.join(', ')||'none')) : ('unreachable: '+r.error));
+  refreshWorkers();
+}
+async function delWorker(name){
+  await fetch('/api/workers/'+encodeURIComponent(name),{method:'DELETE'}); refreshWorkers();
+}
+
 // ---- transforms (lineage) + onnx viewer -----------------------------------
 async function refreshTransforms(){
   const q = openProject!==null ? '?project_id='+openProject : '';
@@ -421,11 +460,12 @@ async function finnPreflight(){
     `<b style="color:${pf.ok?'var(--ok)':'var(--bad)'}">${pf.ok?'ready':'blocked: '+pf.blocking.join(', ')}</b><br>${rows}`;
 }
 
-loadConfig(); loadKinds(); loadBuilder(); refreshJobs(); refreshRuns(); refreshProjects(); refreshTransforms();
+loadConfig(); loadKinds(); loadBuilder(); refreshJobs(); refreshRuns(); refreshProjects(); refreshTransforms(); refreshWorkers();
 setInterval(refreshJobs, 2000);
 setInterval(pollLog, 1200);
 setInterval(refreshRuns, 5000);
 setInterval(refreshTransforms, 5000);
+setInterval(refreshWorkers, 8000);
 </script>
 </body>
 </html>

@@ -130,14 +130,15 @@ dass „remote worker agents" dasselbe Interface anbieten — der Controller sol
 und entfernte Jobs gleich behandeln. Heute läuft alles als lokaler Subprozess.
 
 ### Aufgaben / offene Fragen
-- [ ] Worker-Konzept: jeder Rechner stellt das `JobManager`-Interface bereit
-      (start / stop / status / log streamen)
-- [ ] Worker registrieren/auflisten (Adresse, Fähigkeiten: GPU? Vivado? Docker?)
-- [ ] Job-Routing: Job an einen passenden Worker schicken (manuell wählbar + automatisch
-      nach Anforderungen, z. B. FINN → Worker mit Vivado)
-- [ ] Logs/Status entfernter Jobs einheitlich in die GUI streamen (wie lokale Jobs)
+- [x] Worker-Konzept: jeder Rechner = eine axionlab-Server-Instanz mit demselben Job-API
+- [x] Worker registrieren/auflisten mit Capabilities (`src/webapp/workers.py`, `/api/workers`)
+- [x] Capability-Erkennung (docker/gpu/vivado) torch-frei (`/api/capabilities`, via ping geholt)
+- [x] Job-Routing nach Anforderung (FINN → Vivado-Worker), `route()` + `/api/route/{kind}`
+- [x] Job an Worker weiterleiten (`/api/workers/{name}/start/{kind}`-Proxy) — end-to-end getestet
+- [x] GUI-Panel: Worker registrieren/pingen/entfernen
+- [ ] Logs/Status entfernter Jobs in der GUI proxien (aktuell nur Start; Logs lokal pro Worker)
 - [ ] Artefakte zwischen Rechnern transportieren (Checkpoints, QONNX, Bundle, Build-Outputs)
-- [ ] Authentifizierung/Transport festlegen (z. B. HTTP-API der Worker, SSH, o. Ä.)
+- [ ] Authentifizierung/Transport absichern (aktuell offenes HTTP, nur für vertrauenswürdige Netze)
 
 ## ONNX-Transformationen interaktiv ansehen
 
