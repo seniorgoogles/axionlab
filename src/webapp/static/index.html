@@ -163,6 +163,27 @@
   </section>
 
   <section class="panel span2">
+    <h2>Transforms &amp; ONNX viewer</h2>
+    <table><thead><tr><th>run</th><th>project</th><th>steps</th><th>status</th><th>created</th></tr></thead><tbody id="tf_runs"></tbody></table>
+    <div id="tf_steps" style="margin-top:10px"></div>
+
+    <div style="margin-top:12px;border-top:1px solid var(--line);padding-top:10px">
+      <h2>Inspect an ONNX file</h2>
+      <div class="row">
+        <div><label>ONNX path</label><input id="ox_a" placeholder="bundle/model.qonnx.onnx"></div>
+        <div><label>Diff against (optional)</label><input id="ox_b" placeholder="another .onnx"></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="onnxSummary()">Summary</button>
+        <button class="sec" onclick="onnxDiff()">Diff</button>
+        <button class="sec" onclick="onnxNetron()">Open in Netron</button>
+      </div>
+      <div id="ox_out" class="mut" style="margin-top:8px;white-space:pre-wrap;font:12px/1.45 ui-monospace,monospace"></div>
+      <iframe id="ox_frame" style="display:none;width:100%;height:480px;border:1px solid var(--line);border-radius:8px;margin-top:8px"></iframe>
+    </div>
+  </section>
+
+  <section class="panel span2">
     <h2>Past runs</h2>
     <table><thead><tr><th>name</th><th>best acc</th><th>epochs</th><th>created</th><th>db</th></tr></thead><tbody id="runs"></tbody></table>
   </section>
@@ -338,6 +359,61 @@ async function saveExp(overwrite){
   loadConfig();                       // new experiment shows up in the train/qat dropdowns
 }
 
+// ---- transforms (lineage) + onnx viewer -----------------------------------
+async function refreshTransforms(){
+  const q = openProject!==null ? '?project_id='+openProject : '';
+  const runs = await (await fetch('/api/transforms'+q)).json();
+  document.getElementById('tf_runs').innerHTML = runs.map(r=>`
+    <tr><td><a href="#" onclick="showRun('${r.run_id}');return false">${r.run_id}</a></td>
+    <td class="mut">${r.project_id??''}</td><td>${r.steps}</td>
+    <td><span class="pill ${r.status==='ok'?'done':r.status}">${r.status}</span></td>
+    <td class="mut">${r.created||''}</td></tr>`).join('')
+    || '<tr><td colspan="5" class="mut">no transform runs yet</td></tr>';
+}
+async function showRun(runId){
+  const d = await (await fetch('/api/transforms/'+encodeURIComponent(runId))).json();
+  const rows = d.steps.map(s=>{
+    const snap = s.snapshot ? `<button class="sec" style="margin:0;padding:2px 7px" onclick="document.getElementById('ox_a').value='${s.snapshot}';onnxSummary()">view</button>` : '';
+    const bad = s.status==='failed';
+    return `<tr style="${bad?'background:#2a1416':''}">
+      <td>${s.seq}</td><td>${s.step}</td>
+      <td><span class="pill ${s.status==='ok'?'done':s.status}">${s.status}</span></td>
+      <td class="mut">${s.output||''}</td><td>${snap}</td></tr>`;
+  }).join('');
+  const ff = d.first_failed ? `<p style="color:var(--bad)">first failed step: #${d.first_failed.seq} ${d.first_failed.step} — ${d.first_failed.error||''}</p>` : '';
+  document.getElementById('tf_steps').innerHTML =
+    `<h2>${runId}</h2>${ff}<table><thead><tr><th>seq</th><th>step</th><th>status</th><th>output</th><th>onnx</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+function oxShow(t){ const f=document.getElementById('ox_frame'); f.style.display='none'; document.getElementById('ox_out').textContent=t; }
+async function onnxSummary(){
+  const r = await fetch('/api/onnx/summary?path='+encodeURIComponent(v('ox_a')));
+  if(!r.ok){ oxShow('error: '+(await r.text())); return; }
+  const s = await r.json();
+  const ops = Object.entries(s.op_counts).map(([k,n])=>`${k}:${n}`).join('  ');
+  oxShow(`${s.path}\nnodes: ${s.n_nodes}  initializers: ${s.n_initializers}\nop counts: ${ops}\n`+
+    `inputs: ${s.inputs.map(i=>i.name+' '+i.dtype+' ['+i.shape.join(',')+']').join(', ')}\n`+
+    `outputs: ${s.outputs.map(i=>i.name+' '+i.dtype).join(', ')}`);
+}
+async function onnxDiff(){
+  const a=v('ox_a'), b=v('ox_b'); if(!b){ alert('set a diff target'); return; }
+  const r = await fetch(`/api/onnx/diff?a=${encodeURIComponent(a)}&b=${encodeURIComponent(b)}`);
+  if(!r.ok){ oxShow('error: '+(await r.text())); return; }
+  const d = await r.json();
+  const delta = Object.entries(d.op_delta).map(([k,n])=>`${n>0?'+':''}${n} ${k}`).join('  ');
+  oxShow(`${d.a}  →  ${d.b}\nnodes: ${d.n_nodes_before} → ${d.n_nodes_after}\n`+
+    `op delta: ${delta||'(none)'}\nadded: ${d.added.map(n=>n.op_type).join(', ')||'-'}\n`+
+    `removed: ${d.removed.map(n=>n.op_type).join(', ')||'-'}`);
+}
+async function onnxNetron(){
+  const r = await fetch('/api/onnx/netron?path='+encodeURIComponent(v('ox_a')),{method:'POST'});
+  if(!r.ok){ oxShow('error: '+(await r.text())); return; }
+  const j = await r.json();
+  const f=document.getElementById('ox_frame');
+  // give netron a moment to bind its port, then embed it
+  document.getElementById('ox_out').textContent='netron serving at '+j.url+' (loading…)';
+  setTimeout(()=>{ f.src=j.url; f.style.display='block'; }, 1500);
+}
+
 async function finnPreflight(){
   const pf = await (await fetch('/api/finn/preflight?synth='+v('ex_synth'))).json();
   const rows = pf.checks.map(c=>`${c.ok?'✓':'✗'} ${c.name}: ${c.detail}`).join('<br>');
@@ -345,10 +421,11 @@ async function finnPreflight(){
     `<b style="color:${pf.ok?'var(--ok)':'var(--bad)'}">${pf.ok?'ready':'blocked: '+pf.blocking.join(', ')}</b><br>${rows}`;
 }
 
-loadConfig(); loadKinds(); loadBuilder(); refreshJobs(); refreshRuns(); refreshProjects();
+loadConfig(); loadKinds(); loadBuilder(); refreshJobs(); refreshRuns(); refreshProjects(); refreshTransforms();
 setInterval(refreshJobs, 2000);
 setInterval(pollLog, 1200);
 setInterval(refreshRuns, 5000);
+setInterval(refreshTransforms, 5000);
 </script>
 </body>
 </html>

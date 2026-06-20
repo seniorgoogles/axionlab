@@ -18,7 +18,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from src.webapp import expbuilder, finn_docker
+from src.webapp import expbuilder, finn_docker, onnxview
 from src.webapp.jobs import JobManager
 from src.webapp.projects import ARTIFACT_KINDS, ProjectDB
 from src.webapp.runs import list_runs
@@ -307,6 +307,55 @@ def save_experiment(s: ExpSpec):
     except FileExistsError as e:
         raise HTTPException(409, f"{e} already exists (set overwrite to replace)")
     return res
+
+
+# ---- ONNX viewer -----------------------------------------------------------
+_netron_port = [8210]                  # next port for a netron viewer subprocess
+
+
+@app.get("/api/onnx/summary")
+def onnx_summary(path: str):
+    try:
+        return onnxview.summary(REPO, path)
+    except (FileNotFoundError, ValueError) as e:
+        raise HTTPException(404, str(e))
+    except ImportError:
+        raise HTTPException(501, "onnx not installed in this environment")
+
+
+@app.get("/api/onnx/diff")
+def onnx_diff(a: str, b: str):
+    try:
+        return onnxview.diff(REPO, a, b)
+    except (FileNotFoundError, ValueError) as e:
+        raise HTTPException(404, str(e))
+    except ImportError:
+        raise HTTPException(501, "onnx not installed in this environment")
+
+
+@app.get("/api/onnx/file")
+def onnx_file(path: str):
+    try:
+        p = onnxview._safe(REPO, path)
+    except (FileNotFoundError, ValueError) as e:
+        raise HTTPException(404, str(e))
+    return FileResponse(str(p), media_type="application/octet-stream")
+
+
+@app.post("/api/onnx/netron")
+def onnx_netron(path: str):
+    """Launch Netron as a job to serve an interactive graph; returns its URL."""
+    try:
+        p = onnxview._safe(REPO, path)
+    except (FileNotFoundError, ValueError) as e:
+        raise HTTPException(404, str(e))
+    port = _netron_port[0]
+    _netron_port[0] += 1
+    code = (f"import netron; netron.start({str(p)!r}, "
+            f"address=('127.0.0.1', {port}), browse=False); "
+            "import time\nwhile True: time.sleep(3600)")
+    job = jm.start("netron", [PY, "-c", code])
+    return {"id": job.id, "url": f"http://127.0.0.1:{port}", "port": port}
 
 
 # ---- UI --------------------------------------------------------------------

@@ -149,11 +149,12 @@ Hintergrund: Ab dem QONNX-Export ist jeder HW-Schritt eine ONNX→ONNX-Transform
 ONNX-Zwischenstand ablegt, lässt sich die Veränderung Schritt für Schritt zeigen.
 
 ### Aufgaben / offene Fragen
-- [ ] Pro Transformationsschritt den ONNX-Zwischenstand speichern (Snapshot je Stufe)
-- [ ] ONNX-Graph in der GUI rendern (Knoten, Tensoren, Datentypen/Bit-Breiten)
-- [ ] Vorher/Nachher-Vergleich je Schritt: was wurde gefaltet/entfernt/zusammengelegt
-      (Diff hervorheben)
-- [ ] Durch die Schritte navigieren (Slider/Timeline entlang des Transformationspfads)
-- [ ] Knoten-Details zeigen (z. B. MultiThreshold-Schwellen, Gewichte, Datentypen)
-- [ ] An Tracking + Fehlerbehebung koppeln: am fehlerhaften Schritt direkt den Graph ansehen
-- [ ] Klären: bestehenden Viewer (z. B. Netron) einbetten vs. eigene Darstellung
+- [x] ONNX-Graph-Summary (Knoten, op-counts, IO, Initializer mit Datentypen) — `src/webapp/onnxview.py`
+- [x] Vorher/Nachher-Diff je Schritt: added/removed Knoten + op-delta
+- [x] Bestehenden Viewer einbetten: Netron als Job gestartet, per iframe eingebettet (`/api/onnx/netron`)
+- [x] An Tracking koppeln: Transform-Run mit Status je Stufe, fehlerhafte Stufe markiert,
+      „view"-Button öffnet den ONNX-Snapshot der Stufe (GUI-Panel „Transforms & ONNX viewer")
+- [ ] Pro FINN-Schritt den ONNX-Zwischenstand automatisch speichern (Snapshot je Stufe)
+      — Voraussetzung, damit echte FINN-Builds hier auftauchen (custom build step in build.py)
+- [ ] Timeline/Slider zum Durchsteppen + automatischer Diff zwischen aufeinanderfolgenden Snapshots
+- [ ] Knoten-Detail-Inspektor (MultiThreshold-Schwellen, Gewichtswerte)
