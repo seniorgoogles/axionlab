@@ -32,6 +32,37 @@
 <header>axionlab &middot; control</header>
 <div class="wrap">
 
+  <section class="panel span2">
+    <h2>Projects</h2>
+    <div class="row">
+      <div><label>New project name</label><input id="pj_name" placeholder="e.g. jsc-2l-w4a4"></div>
+      <div><label>Description</label><input id="pj_desc" placeholder="optional"></div>
+    </div>
+    <button onclick="createProject()">Create project</button>
+    <table style="margin-top:12px"><thead><tr><th>#</th><th>name</th><th>artifacts</th><th>created</th><th></th></tr></thead><tbody id="projects"></tbody></table>
+
+    <div id="pj_detail" style="display:none;margin-top:14px;border-top:1px solid var(--line);padding-top:12px">
+      <h2 style="display:flex;justify-content:space-between;align-items:center">
+        <span id="pj_title"></span>
+        <button class="sec" style="margin:0;padding:3px 8px" onclick="closeProject()">close</button>
+      </h2>
+      <p class="mut" id="pj_descline"></p>
+      <div id="pj_artifacts"></div>
+      <div style="margin-top:12px;border-top:1px solid var(--line);padding-top:10px">
+        <h2>Add artifact</h2>
+        <div class="row">
+          <div><label>Kind</label><select id="ar_kind"></select></div>
+          <div><label>Name</label><input id="ar_name" placeholder="e.g. best.pth / cifar10 / Pynq-Z2"></div>
+        </div>
+        <div class="row">
+          <div><label>Path (optional)</label><input id="ar_path" placeholder="outputs/.../best.pth"></div>
+          <div><label>Meta JSON (optional)</label><input id="ar_meta" placeholder='{"fpga_part":"xc7z020clg400-1"}'></div>
+        </div>
+        <button onclick="addArtifact()">Add to project</button>
+      </div>
+    </div>
+  </section>
+
   <section class="panel">
     <h2>Train</h2>
     <label>Experiment</label><select id="tr_exp"></select>
@@ -152,7 +183,81 @@ async function refreshRuns(){
     <td>${r.last_epoch!=null?r.last_epoch:'-'}</td><td>${r.created||''}</td><td class="mut">${r.db}</td></tr>`).join('');
 }
 
-loadConfig(); refreshJobs(); refreshRuns();
+// ---- projects -------------------------------------------------------------
+const KIND_LABELS = {model:'Models', quant_model:'Quantized models',
+  training_data:'Training data', hardware_model:'Hardware models'};
+let openProject = null;
+
+async function loadKinds(){
+  const kinds = await (await fetch('/api/artifact-kinds')).json();
+  document.getElementById('ar_kind').innerHTML =
+    kinds.map(k=>`<option value="${k}">${KIND_LABELS[k]||k}</option>`).join('');
+}
+async function refreshProjects(){
+  const ps = await (await fetch('/api/projects')).json();
+  document.getElementById('projects').innerHTML = ps.map(p=>`
+    <tr>
+      <td>${p.id}</td>
+      <td><a href="#" onclick="showProject(${p.id});return false">${p.name}</a></td>
+      <td>${p.artifact_count}</td>
+      <td class="mut">${p.created||''}</td>
+      <td><button class="sec" style="margin:0;padding:3px 8px" onclick="delProject(${p.id})">delete</button></td>
+    </tr>`).join('') || '<tr><td colspan="5" class="mut">no projects yet</td></tr>';
+}
+async function createProject(){
+  const name = v('pj_name');
+  if(!name){ alert('name required'); return; }
+  const r = await fetch('/api/projects',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({name, description:v('pj_desc')})});
+  const j = await r.json();
+  document.getElementById('pj_name').value=''; document.getElementById('pj_desc').value='';
+  refreshProjects(); if(j.id) showProject(j.id);
+}
+async function delProject(id){
+  if(!confirm('delete project #'+id+'?')) return;
+  await fetch('/api/projects/'+id,{method:'DELETE'});
+  if(openProject===id) closeProject();
+  refreshProjects();
+}
+async function showProject(id){
+  openProject = id;
+  const p = await (await fetch('/api/projects/'+id)).json();
+  document.getElementById('pj_detail').style.display='block';
+  document.getElementById('pj_title').textContent = '#'+p.id+' '+p.name;
+  document.getElementById('pj_descline').textContent = p.description||'';
+  const order = ['model','quant_model','training_data','hardware_model'];
+  document.getElementById('pj_artifacts').innerHTML = order.map(k=>{
+    const items = (p.artifacts[k]||[]);
+    const rows = items.map(a=>`
+      <tr><td>${a.name}</td>
+      <td class="mut">${a.path||''}</td>
+      <td class="mut">${a.meta&&Object.keys(a.meta).length?JSON.stringify(a.meta):''}</td>
+      <td><button class="sec" style="margin:0;padding:2px 7px" onclick="delArtifact(${p.id},${a.id})">x</button></td></tr>`
+      ).join('') || `<tr><td colspan="4" class="mut">none</td></tr>`;
+    return `<h2 style="margin-top:10px">${KIND_LABELS[k]} <span class="mut">(${items.length})</span></h2>
+      <table><thead><tr><th>name</th><th>path</th><th>meta</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+  }).join('');
+}
+function closeProject(){ openProject=null; document.getElementById('pj_detail').style.display='none'; }
+async function addArtifact(){
+  if(openProject===null){ alert('open a project first'); return; }
+  let meta = {};
+  const raw = v('ar_meta');
+  if(raw){ try{ meta = JSON.parse(raw); }catch(e){ alert('meta is not valid JSON'); return; } }
+  const body = {kind:v('ar_kind'), name:v('ar_name'), path:v('ar_path'), meta};
+  if(!body.name){ alert('artifact name required'); return; }
+  const r = await fetch('/api/projects/'+openProject+'/artifacts',
+    {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok){ alert('error: '+(await r.text())); return; }
+  document.getElementById('ar_name').value=''; document.getElementById('ar_path').value=''; document.getElementById('ar_meta').value='';
+  showProject(openProject); refreshProjects();
+}
+async function delArtifact(pid, aid){
+  await fetch('/api/projects/'+pid+'/artifacts/'+aid,{method:'DELETE'});
+  showProject(pid); refreshProjects();
+}
+
+loadConfig(); loadKinds(); refreshJobs(); refreshRuns(); refreshProjects();
 setInterval(refreshJobs, 2000);
 setInterval(pollLog, 1200);
 setInterval(refreshRuns, 5000);

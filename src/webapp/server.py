@@ -13,12 +13,13 @@ import sys
 from pathlib import Path
 from typing import List, Optional
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from src.webapp.jobs import JobManager
+from src.webapp.projects import ARTIFACT_KINDS, ProjectDB
 from src.webapp.runs import list_runs
 
 REPO = str(Path(__file__).resolve().parents[2])     # .../axionlab
@@ -27,6 +28,7 @@ PY = sys.executable
 
 app = FastAPI(title="axionlab control")
 jm = JobManager(REPO)
+pdb = ProjectDB(str(Path(REPO) / "projects.db"))
 
 
 # ---- discovery -------------------------------------------------------------
@@ -138,6 +140,68 @@ def job_log(job_id: int, offset: int = 0):
 @app.get("/api/runs")
 def runs():
     return list_runs(REPO)
+
+
+# ---- projects --------------------------------------------------------------
+class ProjectReq(BaseModel):
+    name: str
+    description: str = ""
+
+
+class ArtifactReq(BaseModel):
+    kind: str                          # model | quant_model | training_data | hardware_model
+    name: str
+    path: str = ""
+    meta: dict = {}
+    parent_id: Optional[int] = None
+
+
+@app.get("/api/artifact-kinds")
+def artifact_kinds():
+    return list(ARTIFACT_KINDS)
+
+
+@app.get("/api/projects")
+def list_projects():
+    return pdb.list_projects()
+
+
+@app.post("/api/projects")
+def create_project(r: ProjectReq):
+    if not r.name.strip():
+        raise HTTPException(400, "project name is required")
+    return {"id": pdb.create_project(r.name.strip(), r.description)}
+
+
+@app.get("/api/projects/{project_id}")
+def get_project(project_id: int):
+    proj = pdb.get_project(project_id)
+    if proj is None:
+        raise HTTPException(404, f"no project with id {project_id}")
+    return proj
+
+
+@app.delete("/api/projects/{project_id}")
+def delete_project(project_id: int):
+    if not pdb.delete_project(project_id):
+        raise HTTPException(404, f"no project with id {project_id}")
+    return {"deleted": project_id}
+
+
+@app.post("/api/projects/{project_id}/artifacts")
+def add_artifact(project_id: int, r: ArtifactReq):
+    try:
+        aid = pdb.add_artifact(project_id, r.kind, r.name, r.path, r.meta, r.parent_id)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    return {"id": aid}
+
+
+@app.delete("/api/projects/{project_id}/artifacts/{artifact_id}")
+def delete_artifact(project_id: int, artifact_id: int):
+    if not pdb.delete_artifact(artifact_id):
+        raise HTTPException(404, f"no artifact with id {artifact_id}")
+    return {"deleted": artifact_id}
 
 
 # ---- UI --------------------------------------------------------------------
