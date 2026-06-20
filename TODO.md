@@ -23,6 +23,23 @@ gehörigen Artefakte eines Experiments/Vorhabens. Ein Projekt soll enthalten kö
 - [ ] Artefakte direkt aus Job-Ergebnissen anlegen (z. B. Export → quant_model automatisch ans Projekt hängen)
 - [ ] Datei-Upload / Datei-Browser statt nur Pfad-Eingabe für Artefakte
 
+## Experiment-Builder (exp_config.yaml in der GUI erstellen)
+
+Netzbeschreibung (Modell-YAML) öffnen/wählen → Dataset wählen → Training
+konfigurieren → daraus entsteht eine `exp_config.yaml`, die Netz + Dataset +
+Training zusammenfasst.
+
+### Aufgaben
+- [x] Builder-Logik: spec → exp_config-dict → YAML (`src/webapp/expbuilder.py`)
+- [x] Netzbeschreibung öffnen (Modell-YAML-Inhalt anzeigen)
+- [x] Dataset-Liste aus der Registry (Fallback ohne torch)
+- [x] API: `/api/datasets`, `/api/model-content`, `/api/experiments/preview`, `/api/experiments`
+- [x] GUI-Panel: Felder + Preview + Save (neue Config erscheint im Train/QAT-Dropdown)
+- [x] Verifiziert: generierte YAML lädt über den projekteigenen `ConfigReader`
+- [ ] Netzbeschreibung selbst in der GUI bauen/bearbeiten (Layer-Liste editieren),
+      nicht nur referenzieren
+- [ ] Experiment direkt aus dem Builder einem Projekt zuordnen
+
 ## Transformationen tracken
 
 Ziel: Den Weg vom Float-Modell bis zur Hardware lückenlos nachvollziehbar machen.

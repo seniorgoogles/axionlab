@@ -63,6 +63,43 @@
     </div>
   </section>
 
+  <section class="panel span2">
+    <h2>New experiment (build exp_config.yaml)</h2>
+    <div class="row">
+      <div><label>Name</label><input id="eb_name" placeholder="e.g. jsc_2l_qat"></div>
+      <div><label>Dataset</label><select id="eb_ds"></select></div>
+    </div>
+    <div class="row">
+      <div><label>Network description (model yaml)</label><select id="eb_model"></select></div>
+      <div style="display:flex;align-items:flex-end">
+        <button class="sec" style="margin:0" onclick="openNet()">Open net</button>
+      </div>
+    </div>
+    <div class="row">
+      <div><label>Epochs</label><input id="eb_ep" value="30"></div>
+      <div><label>Learning rate</label><input id="eb_lr" value="0.01"></div>
+    </div>
+    <div class="row">
+      <div><label>Batch size (train)</label><input id="eb_bstr" value="128"></div>
+      <div><label>Batch size (test)</label><input id="eb_bste" value="256"></div>
+    </div>
+    <div class="row">
+      <div><label>Num workers</label><input id="eb_nw" value="4"></div>
+      <div><label>Train/cache path (optional)</label><input id="eb_tp" placeholder="./tmp/datasets/..."></div>
+    </div>
+    <div class="row">
+      <div><label>Output dir (optional)</label><input id="eb_out" placeholder="./outputs/<name>"></div>
+      <div><label>Save to (optional)</label><input id="eb_path" placeholder="configs/experiments/generated/<name>.yaml"></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="previewExp()">Preview yaml</button>
+      <button class="sec" onclick="saveExp(false)">Save</button>
+      <button class="sec" onclick="saveExp(true)">Save (overwrite)</button>
+    </div>
+    <label style="margin-top:10px">Generated exp_config.yaml / net description</label>
+    <div id="eb_yaml" style="background:#0a0c10;border:1px solid var(--line);border-radius:8px;padding:10px;min-height:120px;max-height:320px;overflow:auto;white-space:pre-wrap;font:12px/1.45 ui-monospace,monospace;color:#cdd3dc"></div>
+  </section>
+
   <section class="panel">
     <h2>Train</h2>
     <label>Experiment</label><select id="tr_exp"></select>
@@ -257,7 +294,47 @@ async function delArtifact(pid, aid){
   showProject(pid); refreshProjects();
 }
 
-loadConfig(); loadKinds(); refreshJobs(); refreshRuns(); refreshProjects();
+// ---- experiment builder ---------------------------------------------------
+async function loadBuilder(){
+  const c = await (await fetch('/api/config')).json();
+  fill('eb_model', c.models);
+  const ds = await (await fetch('/api/datasets')).json();
+  fill('eb_ds', ds);
+}
+function ebSpec(){
+  return {
+    name: v('eb_name'), model: v('eb_model'), dataset: v('eb_ds'),
+    epochs: num('eb_ep')||30, learning_rate: num('eb_lr')||0.01,
+    batch_size: [num('eb_bstr')||128, num('eb_bste')||256],
+    num_workers: num('eb_nw')||4,
+    train_path: v('eb_tp')||null, output_dir: v('eb_out')||null,
+    path: v('eb_path')||null,
+  };
+}
+function showYaml(t){ document.getElementById('eb_yaml').textContent = t; }
+async function openNet(){
+  const path = v('eb_model'); if(!path){ alert('pick a model yaml'); return; }
+  const r = await fetch('/api/model-content?path='+encodeURIComponent(path));
+  if(!r.ok){ showYaml('error: '+(await r.text())); return; }
+  showYaml((await r.json()).content);
+}
+async function previewExp(){
+  const r = await fetch('/api/experiments/preview',{method:'POST',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify(ebSpec())});
+  if(!r.ok){ showYaml('error: '+(await r.text())); return; }
+  showYaml((await r.json()).yaml);
+}
+async function saveExp(overwrite){
+  const body = ebSpec(); body.overwrite = overwrite;
+  const r = await fetch('/api/experiments',{method:'POST',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const j = await r.json();
+  if(!r.ok){ alert('error: '+(j.detail||JSON.stringify(j))); return; }
+  showYaml('saved -> '+j.path+(j.overwritten?' (overwritten)':''));
+  loadConfig();                       // new experiment shows up in the train/qat dropdowns
+}
+
+loadConfig(); loadKinds(); loadBuilder(); refreshJobs(); refreshRuns(); refreshProjects();
 setInterval(refreshJobs, 2000);
 setInterval(pollLog, 1200);
 setInterval(refreshRuns, 5000);

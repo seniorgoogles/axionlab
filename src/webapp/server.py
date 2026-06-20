@@ -18,6 +18,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from src.webapp import expbuilder
 from src.webapp.jobs import JobManager
 from src.webapp.projects import ARTIFACT_KINDS, ProjectDB
 from src.webapp.runs import list_runs
@@ -242,6 +243,62 @@ def record_step(r: StepReq):
     except ValueError as e:
         raise HTTPException(400, str(e))
     return {"id": sid}
+
+
+# ---- experiment builder ----------------------------------------------------
+class ExpSpec(BaseModel):
+    name: str
+    model: str                          # path to a model (network) yaml
+    dataset: str
+    epochs: int = 30
+    learning_rate: float = 0.01
+    batch_size: List[int] = [128, 256]
+    num_workers: int = 4
+    distributed: bool = False
+    train_path: Optional[str] = None
+    output_dir: Optional[str] = None
+    best_metric_name: str = "accuracy"
+    best_metric_mode: str = "max"
+    validate_every: int = 1
+    # save-only fields
+    path: Optional[str] = None          # where to write (relative to repo)
+    overwrite: bool = False
+
+
+@app.get("/api/datasets")
+def datasets():
+    return expbuilder.list_datasets()
+
+
+@app.get("/api/model-content")
+def model_content(path: str):
+    """Open a network description (model yaml) so the GUI can show it."""
+    try:
+        return {"path": path, "content": expbuilder.read_model(REPO, path)}
+    except (FileNotFoundError, ValueError) as e:
+        raise HTTPException(404, str(e))
+
+
+@app.post("/api/experiments/preview")
+def preview_experiment(s: ExpSpec):
+    try:
+        cfg = expbuilder.build_exp_config(s.model_dump())
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    return {"yaml": expbuilder.to_yaml(cfg),
+            "default_path": expbuilder.default_path(REPO, cfg["name"])}
+
+
+@app.post("/api/experiments")
+def save_experiment(s: ExpSpec):
+    try:
+        cfg = expbuilder.build_exp_config(s.model_dump())
+        res = expbuilder.save_exp_config(REPO, cfg, s.path, s.overwrite)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    except FileExistsError as e:
+        raise HTTPException(409, f"{e} already exists (set overwrite to replace)")
+    return res
 
 
 # ---- UI --------------------------------------------------------------------
