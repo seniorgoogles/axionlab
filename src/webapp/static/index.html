@@ -147,8 +147,12 @@
     <h2>FINN build</h2>
     <label>Bundle dir (cwd)</label><input id="fn_bundle" value="bundle">
     <label>Command</label><input id="fn_cmd" value="./run-docker.sh python build.py">
-    <p class="mut">Runs inside the FINN docker image. The bundle must reach run-docker.sh.</p>
-    <button onclick="start('finn',{bundle:v('fn_bundle'),command:v('fn_cmd')})">Start FINN build</button>
+    <p class="mut">Runs inside the FINN docker image; run-docker.sh is dropped into the bundle automatically.</p>
+    <div style="display:flex;gap:8px">
+      <button onclick="start('finn',{bundle:v('fn_bundle'),command:v('fn_cmd')})">Start FINN build</button>
+      <button class="sec" onclick="finnPreflight()">Preflight</button>
+    </div>
+    <div id="fn_pf" class="mut" style="margin-top:8px"></div>
   </section>
 
   <section class="panel span2">
@@ -332,6 +336,13 @@ async function saveExp(overwrite){
   if(!r.ok){ alert('error: '+(j.detail||JSON.stringify(j))); return; }
   showYaml('saved -> '+j.path+(j.overwritten?' (overwritten)':''));
   loadConfig();                       // new experiment shows up in the train/qat dropdowns
+}
+
+async function finnPreflight(){
+  const pf = await (await fetch('/api/finn/preflight?synth='+v('ex_synth'))).json();
+  const rows = pf.checks.map(c=>`${c.ok?'✓':'✗'} ${c.name}: ${c.detail}`).join('<br>');
+  document.getElementById('fn_pf').innerHTML =
+    `<b style="color:${pf.ok?'var(--ok)':'var(--bad)'}">${pf.ok?'ready':'blocked: '+pf.blocking.join(', ')}</b><br>${rows}`;
 }
 
 loadConfig(); loadKinds(); loadBuilder(); refreshJobs(); refreshRuns(); refreshProjects();

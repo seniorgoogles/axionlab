@@ -18,7 +18,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from src.webapp import expbuilder
+from src.webapp import expbuilder, finn_docker
 from src.webapp.jobs import JobManager
 from src.webapp.projects import ARTIFACT_KINDS, ProjectDB
 from src.webapp.runs import list_runs
@@ -122,7 +122,15 @@ def start_export(r: ExportReq):
 def start_finn(r: FinnReq):
     # FINN runs in its docker image; run the given command inside the bundle dir.
     cwd = r.bundle if Path(r.bundle).is_absolute() else str(Path(REPO) / r.bundle)
+    # make the default './run-docker.sh ...' work by dropping the script into the bundle
+    if r.command.strip().startswith("./run-docker.sh") and Path(cwd).is_dir():
+        finn_docker.ensure_run_docker(cwd)
     return _started(jm.start("finn", r.command.split(), cwd=cwd))
+
+
+@app.get("/api/finn/preflight")
+def finn_preflight(synth: str = "estimate"):
+    return finn_docker.preflight(synth=synth)
 
 
 # ---- monitor ---------------------------------------------------------------

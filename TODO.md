@@ -106,18 +106,17 @@ im Bundle-Ordner auf. `export --bundle` erzeugt den selbstständigen Build-Ordne
 (qonnx + build.py + info.json). Es fehlt die eigentliche Docker-Orchestrierung.
 
 ### Aufgaben / offene Fragen
-- [ ] Docker-Aufruf kapseln: FINN-Image starten, Bundle-Ordner als Volume mounten,
-      `build.py` ausführen, Build-Outputs zurückschreiben
-- [ ] Voraussetzungen prüfen/melden (Docker vorhanden, FINN-Image vorhanden/pullbar,
-      Vivado/Vitis-Lizenz erreichbar) statt kryptischer Fehler
-- [ ] synth-Level durchreichen (estimate / ip / bitfile) und die passenden Outputs erwarten
-- [ ] Build als Job über `JobManager` führen: Live-Logs, Stop, Status, Rückgabecode
-- [ ] Lange Laufzeiten der Synthese handhaben (Stunden): Hintergrundlauf, Wiederanlauf,
-      Fortschritt/ETA aus den FINN-Schritten ableiten
-- [ ] Outputs einsammeln und als Artefakte ans Projekt hängen (Reports, stitched IP,
-      Bitfile, PYNQ-Treiber, Deployment-Package, Thresholds/Gewichte)
-- [ ] An Tracking + Fehlerbehebung koppeln: Build-Schritte als Stufen mit Status,
-      fehlerhafte Stufe markieren (siehe Abschnitt oben)
+- [x] Docker-Aufruf kapseln: FINN-Image, Bundle als `/work` mounten, Vivado mounten
+      (`src/webapp/finn_docker.py` + `run-docker.sh`-Template ins Bundle)
+- [x] Voraussetzungen prüfen/melden (Docker / Image / Vivado) statt kryptischer Fehler
+      (`preflight()` + `/api/finn/preflight`, im FINN-Panel angezeigt)
+- [x] Build als Job über `JobManager` führen (Default `./run-docker.sh` wird ins Bundle gelegt)
+- [x] `export --bundle` legt `run-docker.sh` mit ab → Bundle ist selbstständig
+- [ ] synth-Level-Outputs einsammeln und als Artefakte ans Projekt hängen (Reports,
+      stitched IP, Bitfile, PYNQ-Treiber, Deployment-Package, Thresholds/Gewichte)
+- [ ] Lange Laufzeiten der Synthese handhaben (Stunden): Fortschritt/ETA aus FINN-Schritten
+- [ ] An Tracking + Fehlerbehebung koppeln: Build-Schritte als Stufen mit Status
+- [ ] Echten Bitfile-Build verifizieren (braucht FINN-Image + Vivado; hier nicht testbar)
 - [ ] Später: Remote-Worker-Variante (das `JobManager`-Interface ist dafür schon vorgesehen)
 
 ## Jobs auf verschiedene Rechner verteilen

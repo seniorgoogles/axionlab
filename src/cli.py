@@ -536,7 +536,10 @@ def cmd_export(args):
                        "quantize": args.quantize, "input_shape": args.input_shape,
                        "input_quant": args.input_quant, "fpga_part": args.fpga_part,
                        "board": args.board, "synth": args.synth}, f, indent=2)
-        print(f"bundle ready: {args.bundle}/  (model.qonnx.onnx, build.py, info.json, configs, weights)")
+        # drop a run-docker.sh so the bundle is self-contained: ./run-docker.sh python build.py
+        from src.webapp.finn_docker import ensure_run_docker
+        ensure_run_docker(args.bundle)
+        print(f"bundle ready: {args.bundle}/  (model.qonnx.onnx, build.py, run-docker.sh, info.json, configs, weights)")
 
 
 def cmd_finn(args):
